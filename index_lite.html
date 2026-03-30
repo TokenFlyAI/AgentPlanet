@@ -2061,9 +2061,21 @@ function computeHealthScore(agent) {
   score += stPts;
   tips.push('Status: ' + stPts + '/20');
 
-  // Velocity (20 pts) — no local task board data, use neutral 10
-  score += 10;
-  tips.push('Vel: 10/20');
+  // Velocity (20 pts) — tasks done in last 3 days
+  const cutoffMs = now - 3 * 24 * 3600000;
+  const cutoffDate = new Date(cutoffMs).toISOString().slice(0, 10);
+  const agentTasks = Array.isArray(tasks) ? tasks.filter(t => (t.assignee || '').toLowerCase() === (agent.name || '').toLowerCase()) : [];
+  const doneTasks = agentTasks.filter(t => (t.status || '') === 'done');
+  const recentDone = doneTasks.filter(t => (t.updated || t.created || '') >= cutoffDate).length;
+  let velPts;
+  if (agentTasks.length === 0)              velPts = 10;
+  else if (doneTasks.length === 0)          velPts = 5;
+  else if (recentDone === 0)                velPts = 8;
+  else if (recentDone >= 3)                 velPts = 20;
+  else if (recentDone >= 2)                 velPts = 16;
+  else                                      velPts = 12;
+  score += velPts;
+  tips.push('Vel: ' + velPts + '/20');
 
   // Recency (10 pts)
   let recPts = 10;
