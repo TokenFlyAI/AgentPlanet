@@ -1583,10 +1583,23 @@ async function handleRequest(req, res) {
       .filter((f) => f.endsWith(".md"))
       .map((f) => {
         const content = safeRead(path.join(dir, f));
-        const dateM = f.match(/(\d{4}[-_]\d{2}[-_]\d{2})/);
-        return { filename: f, content, date: dateM ? dateM[1].replace(/_/g, "-") : null };
+        // Extract timestamp: YYYY_MM_DD_HH_MM_SS
+        const tsMatch = f.match(/^(\d{4})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{2})/);
+        const timestamp = tsMatch
+          ? `${tsMatch[1]}-${tsMatch[2]}-${tsMatch[3]}T${tsMatch[4]}:${tsMatch[5]}:${tsMatch[6]}`
+          : null;
+        // Extract sender from filename: ..._from_<name>.md
+        const fromM = f.match(/_from_([^.]+)\.md$/i);
+        return {
+          filename: f,
+          content,
+          message: content,
+          from: fromM ? fromM[1] : null,
+          date: timestamp,
+          timestamp,
+        };
       })
-      .sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+      .sort((a, b) => (b.filename || "").localeCompare(a.filename || "")); // sort by full filename (includes HH_MM_SS)
     return json(res, files);
   }
 

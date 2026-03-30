@@ -352,6 +352,26 @@ test.describe("GET /api/announcements", () => {
   });
 });
 
+test.describe("GET /api/team-channel", () => {
+  test("returns 200 with array", async () => {
+    const { status, body } = await apiGet("/api/team-channel");
+    expect(status).toBe(200);
+    expect(Array.isArray(body)).toBe(true);
+  });
+
+  test("POST then GET includes from field parsed from filename", async () => {
+    const { status: postStatus } = await apiPost("/api/team-channel", {
+      message: "E2E test message",
+      from: "e2etester",
+    });
+    expect(postStatus).toBe(200);
+    const { body } = await apiGet("/api/team-channel");
+    const msg = body.find(m => m.from === "e2etester");
+    expect(msg).toBeDefined();
+    expect(msg.message || msg.content).toBe("E2E test message");
+  });
+});
+
 // ---------------------------------------------------------------------------
 // Search
 // ---------------------------------------------------------------------------
