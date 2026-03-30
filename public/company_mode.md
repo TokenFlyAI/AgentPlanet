@@ -4,10 +4,10 @@
 **normal**
 
 ## Set By
-ceo
+tina_e2e
 
 ## Reason
-e2e test
+e2e QA restore
 
 ## Switch Triggers — When to Change Mode
 
@@ -29,4 +29,4 @@ e2e test
 ## Mode Switch Log
 | Date | From | To | Who | Reason |
 |------|------|----|-----|--------|
-| 2026-03-29 | normal | normal | ceo | e2e test |
+| 2026-03-30 | plan | normal | tina_e2e | e2e QA restore |

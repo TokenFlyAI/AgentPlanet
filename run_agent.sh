@@ -9,26 +9,14 @@ AGENT_DIR="${COMPANY_DIR}/agents/${AGENT_NAME}"
 # Validate
 [ -z "$AGENT_NAME" ] && echo "Usage: $0 <agent_name>" && exit 1
 [ ! -d "$AGENT_DIR" ] && echo "Error: Agent dir not found: $AGENT_DIR" && exit 1
-[ ! -d "$HOME/.claude/plugins" ] && echo "Error: ~/.claude/ not set up" && exit 1
 
 # Create directories
 mkdir -p "${AGENT_DIR}/logs" "${AGENT_DIR}/chat_inbox/processed" "${AGENT_DIR}/knowledge"
 
-# Build isolated config dir
-CONFIG_DIR="/tmp/aicompany_config/${AGENT_NAME}"
-rm -rf "$CONFIG_DIR"
-mkdir -p "$CONFIG_DIR/projects"
-
-# Symlink shared read-only content from ~/.claude/
-ln -sf "$HOME/.claude/plugins" "$CONFIG_DIR/plugins"
-ln -sf "$HOME/.claude/meta" "$CONFIG_DIR/meta"
-ln -sf "$HOME/.claude/skills" "$CONFIG_DIR/skills"
-[ -f "$HOME/.claude/.claude-templates-manifest.json" ] && \
-    ln -sf "$HOME/.claude/.claude-templates-manifest.json" \
-           "$CONFIG_DIR/.claude-templates-manifest.json"
-
-# Generate agent-specific settings.json
-cat > "$CONFIG_DIR/settings.json" << 'EOF'
+# Write agent-specific settings (hooks only) to a temp file.
+# We use --settings instead of CLAUDE_CONFIG_DIR so that default auth (~/.claude.json) is preserved.
+SETTINGS_FILE="/tmp/aicompany_settings_${AGENT_NAME}.json"
+cat > "$SETTINGS_FILE" << 'EOF'
 {
   "env": { "DISABLE_AUTOUPDATER": "1" },
   "skipDangerousModePermissionPrompt": true,
@@ -46,10 +34,14 @@ cat > "$CONFIG_DIR/settings.json" << 'EOF'
 }
 EOF
 
-# Onboarding flags
-cat > "$CONFIG_DIR/.claude.json" << 'EOF'
-{"hasCompletedOnboarding":true,"autoUpdates":false,"numStartups":100}
-EOF
+# Portable timeout: 'timeout' on Linux, 'gtimeout' via brew on macOS, or no timeout
+TIMEOUT_CMD=""
+if command -v timeout &>/dev/null; then
+    TIMEOUT_CMD="timeout 1800"
+elif command -v gtimeout &>/dev/null; then
+    TIMEOUT_CMD="gtimeout 1800"
+fi
+# Without timeout, --max-turns 200 acts as the natural limit
 
 # Daily log paths
 TODAY=$(date +%Y_%m_%d)
@@ -61,8 +53,9 @@ echo "" >> "$DAILY_LOG"
 echo "========== CYCLE START — ${TIMESTAMP} ==========" >> "$DAILY_LOG"
 
 # Run claude — unset parent env vars to prevent nested-Claude issues
+# Do NOT set CLAUDE_CONFIG_DIR so the default auth from ~/.claude.json is used
 cd "$AGENT_DIR"
-timeout 1800 env \
+$TIMEOUT_CMD env \
     -u CLAUDECODE \
     -u CLAUDE_CODE_ENTRYPOINT \
     -u CLAUDE_LAUNCHER_SESSION_FILE \
@@ -70,12 +63,12 @@ timeout 1800 env \
     -u CLAUDE_CODE_TMPDIR \
     -u ANTHROPIC_CUSTOM_HEADERS \
     -u CODEX_INTERNAL_ORIGINATOR_OVERRIDE \
-    CLAUDE_CONFIG_DIR="$CONFIG_DIR" \
     claude -p "$(cat "${AGENT_DIR}/prompt.md")" \
         --output-format stream-json \
         --verbose \
         --dangerously-skip-permissions \
         --max-turns 200 \
+        --settings "$SETTINGS_FILE" \
         2>/dev/null \
     | tee -a "$RAW_LOG" \
     | jq --unbuffered -r '

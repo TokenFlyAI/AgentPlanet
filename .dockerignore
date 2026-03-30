@@ -1,0 +1,33 @@
+# Tokenfly .dockerignore
+# Keep image lean — agents/ and public/ are volume-mounted at runtime
+
+# Version control
+.git
+.github
+
+# Node
+node_modules
+npm-debug.log*
+
+# Agents and public data (volume-mounted at runtime, not baked in)
+agents/
+public/
+
+# Test artifacts
+e2e/
+test-results/
+playwright.config.js
+
+# Runtime logs
+/tmp/
+
+# Dev configs
+.env
+.env.*
+*.local
+
+# Editor
+.vscode
+.idea
+*.swp
+*.swo

@@ -1,0 +1,431 @@
+/**
+ * Tokenfly Agent Team Lab — Backend API Module
+ * Bob (Backend Engineer) — Task 2: Beta task
+ *
+ * REST API for agent status, task board, and messaging.
+ * Designed to be mounted into server.js or run standalone.
+ *
+ * Endpoints:
+ *   GET  /api/agents              — list all agents with status
+ *   GET  /api/agents/:name        — single agent detail
+ *   GET  /api/tasks               — list all tasks from task_board.md
+ *   POST /api/tasks               — create a new task
+ *   PATCH /api/tasks/:id          — update a task (status, assignee, priority)
+ *   DELETE /api/tasks/:id         — delete a task
+ *   POST /api/messages/:agent     — send a DM to an agent
+ *   GET  /api/health              — server health check
+ */
+
+"use strict";
+
+const fs     = require("fs");
+const path   = require("path");
+const crypto = require("crypto");
+
+const SERVER_START = Date.now();
+
+// ---------------------------------------------------------------------------
+// SEC-001: API key authentication
+// Set API_KEY env var to enable. If unset, auth is skipped (dev mode).
+// Accepts: Authorization: Bearer <key>  OR  X-API-Key: <key>
+// ---------------------------------------------------------------------------
+const API_KEY = process.env.API_KEY || "";
+
+function isAuthorized(req) {
+  if (!API_KEY) return true;
+  const authHeader = req.headers["authorization"] || "";
+  const xApiKey    = req.headers["x-api-key"] || "";
+  const provided   = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : xApiKey;
+  if (!provided) return false;
+  try {
+    const a = Buffer.from(provided.padEnd(API_KEY.length));
+    const b = Buffer.from(API_KEY.padEnd(provided.length));
+    return a.length === b.length && crypto.timingSafeEqual(a, b);
+  } catch (_) {
+    return false;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Request metrics — file-based queue (zero-dep)
+// Written as JSONL; drained to PostgreSQL by backend/db_sync.js
+// ---------------------------------------------------------------------------
+const METRICS_QUEUE = path.resolve(__dirname, "metrics_queue.jsonl");
+
+function recordRequestMetric(endpoint, method, statusCode, durationMs) {
+  const row = JSON.stringify({
+    endpoint,
+    method,
+    status_code: statusCode,
+    duration_ms: Math.round(durationMs),
+    recorded_at: new Date().toISOString(),
+  });
+  try { fs.appendFileSync(METRICS_QUEUE, row + "\n"); } catch (_) { /* non-fatal */ }
+}
+
+// ---------------------------------------------------------------------------
+// Config
+// ---------------------------------------------------------------------------
+const DEFAULT_DIR = path.resolve(__dirname, "..");
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function safeRead(p) {
+  try { return fs.readFileSync(p, "utf8"); } catch (_) { return null; }
+}
+
+function safeWrite(p, content) {
+  fs.mkdirSync(path.dirname(p), { recursive: true });
+  fs.writeFileSync(p, content, "utf8");
+}
+
+function listDir(p) {
+  try { return fs.readdirSync(p); } catch (_) { return []; }
+}
+
+function fileMtime(p) {
+  try { return fs.statSync(p).mtimeMs; } catch (_) { return null; }
+}
+
+function timestamp() {
+  return new Date().toISOString()
+    .replace(/[-:T]/g, "_")
+    .replace(/\.\d{3}Z$/, "");
+}
+
+// Prevent markdown table injection — strip pipes and newlines from task fields
+// (SEC-003 / QI-012: a literal `|` in a title/description breaks the table row)
+function sanitizeTaskField(value) {
+  return String(value).replace(/[|\r\n]/g, " ").trim();
+}
+
+// ---------------------------------------------------------------------------
+// Agents
+// ---------------------------------------------------------------------------
+
+function listAgents(dir) {
+  const agentsDir = path.join(dir, "agents");
+  const names = listDir(agentsDir).filter(
+    (n) => fs.statSync(path.join(agentsDir, n)).isDirectory()
+  );
+
+  return names.map((name) => {
+    const base = path.join(agentsDir, name);
+    const statusRaw = safeRead(path.join(base, "status.md")) || "";
+    const heartbeatRaw = safeRead(path.join(base, "heartbeat.md")) || "";
+    const heartbeatMtime = fileMtime(path.join(base, "heartbeat.md"));
+    const aliveThresholdMs = 5 * 60 * 1000; // 5 min
+    const isAlive = heartbeatMtime && Date.now() - heartbeatMtime < aliveThresholdMs;
+
+    // Parse current task from status.md (## Current Task section)
+    const currentTaskMatch = statusRaw.match(/## Current Task\s*\n([\s\S]*?)(?=\n##|\n$|$)/);
+    const currentTask = currentTaskMatch ? currentTaskMatch[1].trim() : null;
+
+    // Count unread inbox messages
+    const inboxDir = path.join(base, "chat_inbox");
+    const inboxFiles = listDir(inboxDir).filter(
+      (f) => !f.startsWith("read_") && f.endsWith(".md")
+    );
+
+    return {
+      name,
+      alive: Boolean(isAlive),
+      heartbeat_at: heartbeatMtime ? new Date(heartbeatMtime).toISOString() : null,
+      current_task: currentTask,
+      unread_messages: inboxFiles.length,
+    };
+  });
+}
+
+function getAgent(dir, name) {
+  const agentsDir = path.join(dir, "agents");
+  const base = path.join(agentsDir, name);
+  if (!fs.existsSync(base)) return null;
+
+  const statusRaw = safeRead(path.join(base, "status.md")) || "";
+  const heartbeatMtime = fileMtime(path.join(base, "heartbeat.md"));
+  const aliveThresholdMs = 5 * 60 * 1000;
+  const isAlive = heartbeatMtime && Date.now() - heartbeatMtime < aliveThresholdMs;
+
+  const inboxDir = path.join(base, "chat_inbox");
+  const inboxFiles = listDir(inboxDir).filter((f) => f.endsWith(".md"));
+  // Return metadata only — no content to prevent unauthenticated data exposure (QI-003)
+  const inbox = inboxFiles.map((f) => ({
+    file: f,
+    read: f.startsWith("read_"),
+  }));
+
+  return {
+    name,
+    alive: Boolean(isAlive),
+    heartbeat_at: heartbeatMtime ? new Date(heartbeatMtime).toISOString() : null,
+    statusMd: statusRaw,
+    status_md: statusRaw,
+    inbox,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Tasks — parse/serialize task_board.md
+// ---------------------------------------------------------------------------
+
+const TASK_BOARD_PATH_REL = "public/task_board.md";
+
+function parseTaskBoard(dir) {
+  const raw = safeRead(path.join(dir, TASK_BOARD_PATH_REL)) || "";
+  const tasks = [];
+
+  for (const line of raw.split("\n")) {
+    // Match table rows: | id | title | description | priority | assignee | status | created | updated |
+    const m = line.match(
+      /^\|\s*(\d+)\s*\|\s*([^|]+?)\s*\|\s*([^|]*?)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|$/
+    );
+    if (!m) continue;
+    tasks.push({
+      id: parseInt(m[1], 10),
+      title:       m[2].trim(),
+      description: m[3].trim(),
+      priority:    m[4].trim(),
+      assignee:    m[5].trim(),
+      status:      m[6].trim(),
+      created:     m[7].trim(),
+      updated:     m[8].trim(),
+    });
+  }
+  return tasks;
+}
+
+function serializeTaskBoard(dir, tasks) {
+  const header = `# Task Board\n\n## Tasks\n| ID | Title | Description | Priority | Assignee | Status | Created | Updated |\n|----|-------|-------------|----------|----------|--------|---------|---------|`;
+  const rows = tasks
+    .map(
+      (t) =>
+        `| ${t.id} | ${t.title} | ${t.description || ""} | ${t.priority} | ${t.assignee} | ${t.status} | ${t.created} | ${t.updated} |`
+    )
+    .join("\n");
+  safeWrite(path.join(dir, TASK_BOARD_PATH_REL), `${header}\n${rows}\n`);
+}
+
+function nextTaskId(tasks) {
+  return tasks.length > 0 ? Math.max(...tasks.map((t) => t.id)) + 1 : 1;
+}
+
+// ---------------------------------------------------------------------------
+// Messaging
+// ---------------------------------------------------------------------------
+
+function sendMessage(dir, agentName, content, from = "api") {
+  const inboxDir = path.join(dir, "agents", agentName, "chat_inbox");
+  if (!fs.existsSync(path.join(dir, "agents", agentName))) {
+    return { ok: false, error: `Agent '${agentName}' not found` };
+  }
+  fs.mkdirSync(inboxDir, { recursive: true });
+  const ts = timestamp();
+  // Sanitize from field to prevent path traversal / filename injection (Task #12)
+  const safeFrom = String(from || "api").replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 50);
+  const filename = `${ts}_from_${safeFrom}.md`;
+  safeWrite(path.join(inboxDir, filename), content);
+  return { ok: true, file: filename };
+}
+
+// ---------------------------------------------------------------------------
+// Request router
+// ---------------------------------------------------------------------------
+
+/**
+ * Handle an API request.
+ * @param {http.IncomingMessage} req
+ * @param {http.ServerResponse}  res
+ * @param {string}               dir   — company root dir
+ * @returns {boolean}  true if this function handled the request
+ */
+function handleApiRequest(req, res, dir) {
+  dir = dir || DEFAULT_DIR;
+  const reqStart = Date.now();
+  const parsed = new URL(req.url, `http://localhost`);
+  const pathname = parsed.pathname;
+
+  // SEC-001: require valid API key when API_KEY env var is set
+  if (!isAuthorized(req)) {
+    res.writeHead(401, { "Content-Type": "application/json", "WWW-Authenticate": "Bearer" });
+    res.end(JSON.stringify({ error: "Unauthorized" }));
+    recordRequestMetric(pathname, req.method.toUpperCase(), 401, Date.now() - reqStart);
+    return true;
+  }
+
+  function json(status, body) {
+    const payload = JSON.stringify(body, null, 2);
+    res.writeHead(status, {
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*",
+    });
+    res.end(payload);
+    recordRequestMetric(pathname, req.method.toUpperCase(), status, Date.now() - reqStart);
+    return true;
+  }
+
+  function err(status, msg) {
+    return json(status, { error: msg });
+  }
+
+  function parseBody(cb) {
+    const MAX_BODY = 512 * 1024; // 512 KB
+    let body = "";
+    req.on("data", (chunk) => {
+      body += chunk;
+      if (body.length > MAX_BODY) {
+        req.destroy();
+        err(413, "Request body too large");
+      }
+    });
+    req.on("end", () => {
+      try { cb(JSON.parse(body || "{}")); }
+      catch (_) { err(400, "Invalid JSON body"); }
+    });
+  }
+
+  const method = req.method.toUpperCase();
+
+  // OPTIONS (CORS preflight)
+  if (method === "OPTIONS") {
+    res.writeHead(204, {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, PATCH, DELETE, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+    });
+    res.end();
+    return true;
+  }
+
+  // GET /api/health
+  if (method === "GET" && pathname === "/api/health") {
+    return json(200, { status: "ok", uptime_ms: Date.now() - SERVER_START });
+  }
+
+  // GET /api/agents
+  if (method === "GET" && pathname === "/api/agents") {
+    return json(200, listAgents(dir));
+  }
+
+  // GET /api/agents/:name
+  const agentDetailMatch = pathname.match(/^\/api\/agents\/([a-zA-Z0-9_-]+)$/);
+  if (method === "GET" && agentDetailMatch) {
+    const name = agentDetailMatch[1];
+    const agent = getAgent(dir, name);
+    if (!agent) return err(404, `Agent '${name}' not found`);
+    return json(200, agent);
+  }
+
+  // GET /api/tasks
+  if (method === "GET" && pathname === "/api/tasks") {
+    const tasks = parseTaskBoard(dir);
+    // Support ?assignee=bob or ?status=open filters
+    const assignee = parsed.searchParams.get("assignee");
+    const status   = parsed.searchParams.get("status");
+    const filtered = tasks.filter((t) => {
+      if (assignee && t.assignee.toLowerCase() !== assignee.toLowerCase()) return false;
+      if (status   && t.status.toLowerCase()   !== status.toLowerCase())   return false;
+      return true;
+    });
+    return json(200, filtered);
+  }
+
+  // POST /api/tasks
+  if (method === "POST" && pathname === "/api/tasks") {
+    parseBody((body) => {
+      const { title, description, priority, assignee } = body;
+      if (!title || !String(title).trim()) return err(400, "title is required");
+      const VALID_PRIORITIES = ["low", "medium", "high", "critical"];
+      const resolvedPriority = (priority || "medium").toLowerCase();
+      if (!VALID_PRIORITIES.includes(resolvedPriority)) {
+        return err(400, `priority must be one of: ${VALID_PRIORITIES.join(", ")}`);
+      }
+      const tasks = parseTaskBoard(dir);
+      const today = new Date().toISOString().slice(0, 10);
+      const task = {
+        id:          nextTaskId(tasks),
+        title:       sanitizeTaskField(title),
+        description: description ? sanitizeTaskField(description) : "",
+        priority:    resolvedPriority,
+        assignee:    (assignee || "unassigned").toLowerCase(),
+        status:      "open",
+        created:     today,
+        updated:     today,
+      };
+      tasks.push(task);
+      serializeTaskBoard(dir, tasks);
+      json(201, task);
+    });
+    return true;
+  }
+
+  // PATCH /api/tasks/:id
+  const taskUpdateMatch = pathname.match(/^\/api\/tasks\/(\d+)$/);
+  if (method === "PATCH" && taskUpdateMatch) {
+    const id = parseInt(taskUpdateMatch[1], 10);
+    parseBody((body) => {
+      const tasks = parseTaskBoard(dir);
+      const idx = tasks.findIndex((t) => t.id === id);
+      if (idx === -1) return err(404, `Task ${id} not found`);
+      const VALID_STATUSES   = ["open", "in_progress", "blocked", "in_review", "done", "cancelled"];
+      const VALID_PRIORITIES = ["low", "medium", "high", "critical"];
+      if (body.status   !== undefined && !VALID_STATUSES.includes(String(body.status).toLowerCase())) {
+        return err(400, `status must be one of: ${VALID_STATUSES.join(", ")}`);
+      }
+      if (body.priority !== undefined && !VALID_PRIORITIES.includes(String(body.priority).toLowerCase())) {
+        return err(400, `priority must be one of: ${VALID_PRIORITIES.join(", ")}`);
+      }
+      const allowed = ["title", "description", "priority", "assignee", "status"];
+      const caseNormalized = new Set(["status", "priority", "assignee"]);
+      const pipeEscaped    = new Set(["title", "description"]);
+      for (const field of allowed) {
+        if (body[field] !== undefined) {
+          const v = pipeEscaped.has(field)
+            ? sanitizeTaskField(body[field])
+            : String(body[field]).trim();
+          tasks[idx][field] = caseNormalized.has(field) ? v.toLowerCase() : v;
+        }
+      }
+      // Auto-set completed_at when task transitions to done (schema constraint)
+      if (body.status === "done" && !tasks[idx].completed_at) {
+        tasks[idx].completed_at = new Date().toISOString();
+      }
+      tasks[idx].updated = new Date().toISOString().slice(0, 10);
+      serializeTaskBoard(dir, tasks);
+      json(200, tasks[idx]);
+    });
+    return true;
+  }
+
+  // DELETE /api/tasks/:id
+  if (method === "DELETE" && taskUpdateMatch) {
+    const id = parseInt(taskUpdateMatch[1], 10);
+    const tasks = parseTaskBoard(dir);
+    const idx = tasks.findIndex((t) => t.id === id);
+    if (idx === -1) return err(404, `Task ${id} not found`);
+    const removed = tasks.splice(idx, 1)[0];
+    serializeTaskBoard(dir, tasks);
+    return json(200, { deleted: removed });
+  }
+
+  // POST /api/messages/:agent
+  const msgMatch = pathname.match(/^\/api\/messages\/([a-zA-Z0-9_-]+)$/);
+  if (method === "POST" && msgMatch) {
+    const agentName = msgMatch[1];
+    parseBody((body) => {
+      const { content, from } = body;
+      if (!content) return err(400, "content is required");
+      const result = sendMessage(dir, agentName, String(content), from || "api");
+      if (!result.ok) return err(404, result.error);
+      json(201, result);
+    });
+    return true;
+  }
+
+  // Not an API route
+  return false;
+}
+
+module.exports = { handleApiRequest, parseTaskBoard, serializeTaskBoard, listAgents, getAgent, sendMessage };

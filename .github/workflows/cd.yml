@@ -1,0 +1,271 @@
+# Tokenfly Agent Team Lab — Continuous Deployment
+# Quinn (Cloud Engineer) — 2026-03-30
+#
+# Triggered ONLY after CI passes on main branch (workflow_run event).
+# Stages: build+push ECR → deploy ECS (rolling update) → smoke test
+#
+# Required GitHub Secrets (Settings → Secrets → Actions):
+#   AWS_ACCESS_KEY_ID         — IAM key for deploy role
+#   AWS_SECRET_ACCESS_KEY     — IAM secret for deploy role
+#   AWS_ACCOUNT_ID            — 12-digit AWS account ID
+#   ECR_REPOSITORY            — ECR repo name (e.g. tokenfly)
+#   ECS_CLUSTER_NAME          — ECS cluster name (terraform output ecs_cluster_name)
+#   ECS_SERVICE_NAME          — ECS service name (terraform output ecs_service_name)
+#   SLACK_DEPLOY_WEBHOOK      — (optional) Slack webhook for deploy notifications
+#
+# Required GitHub Variables (Settings → Variables → Actions):
+#   AWS_REGION                — e.g. us-east-1
+
+name: CD — Deploy to ECS
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [main]
+
+  # Also allow manual deploys with optional SHA override
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "Docker image tag to deploy (default: latest main SHA)"
+        required: false
+        default: ""
+
+concurrency:
+  # Only one deployment at a time; do NOT cancel in-progress deploys
+  group: cd-deploy
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
+  IMAGE_NAME: tokenfly
+
+jobs:
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Gate: only proceed if the triggering CI run succeeded
+  # ─────────────────────────────────────────────────────────────────────────────
+  gate:
+    name: Check CI Status
+    runs-on: ubuntu-latest
+    outputs:
+      should_deploy: ${{ steps.check.outputs.should_deploy }}
+      sha: ${{ steps.check.outputs.sha }}
+
+    steps:
+      - name: Evaluate trigger
+        id: check
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "should_deploy=true" >> "$GITHUB_OUTPUT"
+            echo "sha=${{ github.sha }}" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event.workflow_run.conclusion }}" = "success" ]; then
+            echo "should_deploy=true" >> "$GITHUB_OUTPUT"
+            echo "sha=${{ github.event.workflow_run.head_sha }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "should_deploy=false" >> "$GITHUB_OUTPUT"
+            echo "sha=" >> "$GITHUB_OUTPUT"
+            echo "CI did not succeed (conclusion: ${{ github.event.workflow_run.conclusion }}). Skipping deploy."
+          fi
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Build & Push: multi-arch Docker image → ECR
+  # ─────────────────────────────────────────────────────────────────────────────
+  build-push:
+    name: Build & Push to ECR
+    runs-on: ubuntu-latest
+    needs: gate
+    if: needs.gate.outputs.should_deploy == 'true'
+    timeout-minutes: 20
+
+    outputs:
+      image_uri: ${{ steps.build.outputs.image_uri }}
+      image_tag: ${{ steps.build.outputs.image_tag }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.gate.outputs.sha }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set image tag
+        id: tag
+        run: |
+          # Use input tag (manual dispatch) or short git SHA
+          INPUT_TAG="${{ github.event.inputs.image_tag }}"
+          if [ -n "$INPUT_TAG" ]; then
+            TAG="$INPUT_TAG"
+          else
+            TAG="${{ needs.gate.outputs.sha }}"
+            TAG="${TAG:0:12}"
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "Image tag: $TAG"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: agents/quinn/output/docker_setup/Dockerfile
+          push: true
+          platforms: linux/amd64
+          tags: |
+            ${{ steps.ecr-login.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${{ steps.tag.outputs.tag }}
+            ${{ steps.ecr-login.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          labels: |
+            org.opencontainers.image.revision=${{ needs.gate.outputs.sha }}
+            org.opencontainers.image.created=${{ github.event.repository.updated_at }}
+
+      - name: Export outputs
+        run: |
+          echo "image_uri=${{ steps.ecr-login.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${{ steps.tag.outputs.tag }}" >> "$GITHUB_OUTPUT"
+          echo "image_tag=${{ steps.tag.outputs.tag }}" >> "$GITHUB_OUTPUT"
+        # Workaround: re-export from build step that uses dynamic outputs
+        id: build-export
+        shell: bash
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Deploy: rolling ECS service update
+  # ─────────────────────────────────────────────────────────────────────────────
+  deploy:
+    name: Deploy to ECS
+    runs-on: ubuntu-latest
+    needs: [gate, build-push]
+    if: needs.gate.outputs.should_deploy == 'true'
+    timeout-minutes: 15
+    environment: production   # requires manual approval if configured in GitHub
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.gate.outputs.sha }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Download current task definition
+        id: task-def-download
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition ${{ secrets.ECS_SERVICE_NAME }} \
+            --query taskDefinition \
+            > task-definition.json
+          echo "Task definition downloaded."
+
+      - name: Update task definition image
+        id: task-def-update
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: tokenfly
+          image: ${{ steps.ecr-login.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${{ needs.build-push.outputs.image_tag }}
+
+      - name: Deploy to ECS service
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def-update.outputs.task-definition }}
+          service: ${{ secrets.ECS_SERVICE_NAME }}
+          cluster: ${{ secrets.ECS_CLUSTER_NAME }}
+          wait-for-service-stability: true
+          wait-for-minutes: 10
+          # Circuit breaker: if new tasks fail to start, ECS will roll back automatically
+          # (configured in Terraform: deployment_circuit_breaker { enable = true, rollback = true })
+
+      - name: Notify Slack on success
+        if: success() && secrets.SLACK_DEPLOY_WEBHOOK != ''
+        run: |
+          curl -sS -X POST "${{ secrets.SLACK_DEPLOY_WEBHOOK }}" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"text\": \":rocket: *Tokenfly deployed successfully*\n*SHA*: \`${{ needs.gate.outputs.sha }}\`\n*Tag*: \`${{ needs.build-push.outputs.image_tag }}\`\n*Actor*: ${{ github.actor }}\n*Workflow*: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View run>\"
+            }"
+
+      - name: Notify Slack on failure
+        if: failure() && secrets.SLACK_DEPLOY_WEBHOOK != ''
+        run: |
+          curl -sS -X POST "${{ secrets.SLACK_DEPLOY_WEBHOOK }}" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"text\": \":x: *Tokenfly deploy FAILED*\n*SHA*: \`${{ needs.gate.outputs.sha }}\`\n*Actor*: ${{ github.actor }}\n*Workflow*: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View run>\n_ECS circuit breaker will have rolled back the service._\"
+            }"
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Smoke test: verify the newly deployed service responds
+  # ─────────────────────────────────────────────────────────────────────────────
+  smoke-test:
+    name: Post-deploy Smoke Test
+    runs-on: ubuntu-latest
+    needs: [gate, deploy]
+    if: needs.gate.outputs.should_deploy == 'true'
+    timeout-minutes: 5
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Get ALB endpoint
+        id: alb
+        run: |
+          # Fetch the ALB DNS from ECS service load balancer config
+          DNS=$(aws elbv2 describe-load-balancers \
+            --query "LoadBalancers[?contains(LoadBalancerName, 'tokenfly')].DNSName | [0]" \
+            --output text)
+          echo "alb_dns=$DNS" >> "$GITHUB_OUTPUT"
+          echo "ALB: $DNS"
+
+      - name: Health check (GET /api/health)
+        run: |
+          ALB="${{ steps.alb.outputs.alb_dns }}"
+          for i in $(seq 1 10); do
+            STATUS=$(curl -sf --max-time 5 "http://${ALB}/api/health" \
+              | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('status',''))" 2>/dev/null || echo "")
+            if [ "$STATUS" = "ok" ]; then
+              echo "Health check passed after ${i} attempt(s)"
+              exit 0
+            fi
+            echo "Attempt $i: status='$STATUS', retrying in 5s..."
+            sleep 5
+          done
+          echo "Health check failed after 10 attempts"
+          exit 1
+
+      - name: Ping endpoint check (GET /api/ping)
+        run: |
+          ALB="${{ steps.alb.outputs.alb_dns }}"
+          RESPONSE=$(curl -sf --max-time 5 "http://${ALB}/api/ping" || echo "FAILED")
+          echo "Ping response: $RESPONSE"
+          if echo "$RESPONSE" | grep -q "pong"; then
+            echo "Ping check passed"
+          else
+            echo "WARNING: ping endpoint did not return expected response (non-fatal)"
+          fi

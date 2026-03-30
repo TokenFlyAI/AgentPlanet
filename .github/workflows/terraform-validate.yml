@@ -1,0 +1,138 @@
+# Tokenfly — Terraform Validate & Format Check
+# Quinn (Cloud Engineer) — 2026-03-30
+#
+# Runs on every PR that touches infrastructure/ or .github/workflows/.
+# Does NOT apply — read-only validation only.
+# No AWS credentials required (no plan against real state).
+#
+# Jobs:
+#   1. fmt      — terraform fmt -check (style)
+#   2. validate — terraform init (no backend) + validate (syntax + references)
+
+name: Terraform Validate
+
+on:
+  pull_request:
+    paths:
+      - "infrastructure/**"
+      - ".github/workflows/terraform-validate.yml"
+  push:
+    branches: [main]
+    paths:
+      - "infrastructure/**"
+
+concurrency:
+  group: terraform-validate-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  TF_VERSION: "1.7.4"
+  WORKING_DIR: infrastructure
+
+jobs:
+  # ─────────────────────────────────────────────
+  # Format check — fail fast on style issues
+  # ─────────────────────────────────────────────
+  fmt:
+    name: Terraform Format
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform ${{ env.TF_VERSION }}
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Check formatting (recursive)
+        working-directory: ${{ env.WORKING_DIR }}
+        run: terraform fmt -check -recursive -diff
+        # -diff shows exactly which lines need to change, helping the author fix it
+
+  # ─────────────────────────────────────────────
+  # Validate — syntax + variable/reference checks
+  # ─────────────────────────────────────────────
+  validate:
+    name: Terraform Validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Run independently of fmt so both results are visible on the PR
+    needs: []
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform ${{ env.TF_VERSION }}
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Terraform init (local backend, no credentials needed)
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          terraform init \
+            -backend=false \
+            -input=false
+        # -backend=false skips remote state init — pure syntax validation
+
+      - name: Terraform validate
+        working-directory: ${{ env.WORKING_DIR }}
+        run: terraform validate -json | tee validate-output.json
+        # Captures JSON output for the summary step
+
+      - name: Post validation summary
+        if: always()
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          python3 - <<'EOF'
+          import json, sys
+          try:
+            with open("validate-output.json") as f:
+              result = json.load(f)
+          except Exception as e:
+            print(f"Could not parse validate output: {e}")
+            sys.exit(0)
+
+          valid = result.get("valid", False)
+          diags = result.get("diagnostics", [])
+
+          if valid:
+            print("✅ Terraform configuration is valid.")
+          else:
+            print(f"❌ Terraform validation failed ({len(diags)} diagnostic(s)):")
+
+          for d in diags:
+            sev = d.get("severity", "unknown").upper()
+            summary = d.get("summary", "")
+            detail = d.get("detail", "")
+            rng = d.get("range", {})
+            fname = rng.get("filename", "")
+            start = rng.get("start", {})
+            line = start.get("line", "")
+            print(f"\n  [{sev}] {summary}")
+            if detail:
+              print(f"  Detail: {detail}")
+            if fname:
+              print(f"  Location: {fname}:{line}")
+
+          sys.exit(0 if valid else 1)
+          EOF
+
+      - name: Validate each module independently
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          FAILED=0
+          for dir in modules/*/; do
+            echo "--- Validating $dir ---"
+            (
+              cd "$dir"
+              terraform init -backend=false -input=false -upgrade 2>&1 | tail -3
+              terraform validate && echo "OK: $dir" || { echo "FAIL: $dir"; exit 1; }
+            ) || FAILED=1
+          done
+          exit $FAILED
+        # Each module gets its own init to resolve providers independently

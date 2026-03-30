@@ -1,0 +1,225 @@
+# Tokenfly Agent Team Lab — ECR Deploy Pipeline
+# Quinn (Cloud Engineer) — 2026-03-30
+#
+# Triggers: push to main branch (after CI passes)
+# Builds Docker image, pushes to ECR, updates ECS service.
+#
+# Required GitHub Secrets:
+#   AWS_ROLE_ARN        — IAM role ARN with ECR push + ECS update permissions
+#   AWS_REGION          — e.g. us-east-1
+#   ECR_REPOSITORY      — ECR repo name, e.g. tokenfly-dev-app
+#   ECS_CLUSTER         — ECS cluster name, e.g. tokenfly-dev
+#   ECS_SERVICE         — ECS service name, e.g. tokenfly-dev-app
+
+name: Deploy to ECR + ECS
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "**.md"
+      - "agents/*/status.md"
+      - "agents/*/heartbeat.md"
+      - "public/task_board.md"
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true    # only one deploy at a time per branch
+
+permissions:
+  id-token: write   # required for OIDC auth with AWS
+  contents: read
+
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+
+jobs:
+  # ─────────────────────────────────────────────
+  # Job 1: Build and push Docker image to ECR
+  # ─────────────────────────────────────────────
+  push-to-ecr:
+    name: Build & Push to ECR
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      image_uri: ${{ steps.build.outputs.image_uri }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC — no long-lived keys)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set image tag
+        id: tag
+        run: |
+          SHORT_SHA="${GITHUB_SHA::8}"
+          echo "tag=sha-${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+          echo "Image tag: sha-${SHORT_SHA}"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push Docker image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: agents/quinn/output/docker_setup/Dockerfile
+          push: true
+          tags: |
+            ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${{ steps.tag.outputs.tag }}
+            ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: false    # disable for ECS compatibility
+          build-args: |
+            BUILD_SHA=${{ github.sha }}
+
+      - name: Export image URI
+        run: |
+          IMAGE_URI="${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${{ steps.tag.outputs.tag }}"
+          echo "image_uri=${IMAGE_URI}" >> "$GITHUB_OUTPUT"
+          echo "Pushed: ${IMAGE_URI}"
+        id: export
+        # Reconcile: use the build step's outputs if available, else reconstruct
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPO: ${{ secrets.ECR_REPOSITORY }}
+          TAG: ${{ steps.tag.outputs.tag }}
+
+  # ─────────────────────────────────────────────
+  # Job 2: Run ECR image scan — block on CRITICAL
+  # ─────────────────────────────────────────────
+  scan-image:
+    name: ECR Image Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: push-to-ecr
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Wait for ECR scan to complete
+        run: |
+          SHORT_SHA="${GITHUB_SHA::8}"
+          TAG="sha-${SHORT_SHA}"
+          echo "Waiting for scan results on tag=${TAG}..."
+          for i in $(seq 1 30); do
+            STATUS=$(aws ecr describe-image-scan-findings \
+              --repository-name "${{ secrets.ECR_REPOSITORY }}" \
+              --image-id imageTag="${TAG}" \
+              --query 'imageScanStatus.status' \
+              --output text 2>/dev/null || echo "PENDING")
+            echo "Attempt ${i}: status=${STATUS}"
+            if [ "$STATUS" = "COMPLETE" ]; then break; fi
+            sleep 10
+          done
+
+      - name: Fail if CRITICAL vulnerabilities found
+        run: |
+          SHORT_SHA="${GITHUB_SHA::8}"
+          TAG="sha-${SHORT_SHA}"
+          CRITICAL_COUNT=$(aws ecr describe-image-scan-findings \
+            --repository-name "${{ secrets.ECR_REPOSITORY }}" \
+            --image-id imageTag="${TAG}" \
+            --query 'imageScanFindings.findingSeverityCounts.CRITICAL' \
+            --output text 2>/dev/null || echo "0")
+          CRITICAL_COUNT="${CRITICAL_COUNT:-0}"
+          echo "CRITICAL vulnerabilities: ${CRITICAL_COUNT}"
+          if [ "$CRITICAL_COUNT" -gt 0 ]; then
+            echo "::error::Image has ${CRITICAL_COUNT} CRITICAL vulnerabilities — deploy blocked"
+            exit 1
+          fi
+          echo "No CRITICAL vulnerabilities — safe to deploy"
+
+  # ─────────────────────────────────────────────
+  # Job 3: Deploy to ECS (rolling update)
+  # ─────────────────────────────────────────────
+  deploy-ecs:
+    name: Deploy to ECS
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [push-to-ecr, scan-image]
+    environment: ${{ github.ref_name == 'main' && 'production' || 'staging' }}
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Fetch current ECS task definition
+        id: fetch-task-def
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition "${{ secrets.ECS_SERVICE }}" \
+            --query 'taskDefinition' \
+            > /tmp/task-def.json
+          echo "Task definition fetched"
+
+      - name: Update image in task definition
+        id: update-task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: /tmp/task-def.json
+          container-name: app
+          image: ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:sha-${{ github.sha && github.sha || 'latest' }}
+
+      - name: Deploy new task definition to ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.update-task-def.outputs.task-definition }}
+          service: ${{ secrets.ECS_SERVICE }}
+          cluster: ${{ secrets.ECS_CLUSTER }}
+          wait-for-service-stability: true
+          wait-for-minutes: 10
+
+      - name: Verify health after deploy
+        run: |
+          echo "Waiting 15s for ALB health checks to settle..."
+          sleep 15
+          # Check ECS service desired == running count
+          RUNNING=$(aws ecs describe-services \
+            --cluster "${{ secrets.ECS_CLUSTER }}" \
+            --services "${{ secrets.ECS_SERVICE }}" \
+            --query 'services[0].runningCount' \
+            --output text)
+          DESIRED=$(aws ecs describe-services \
+            --cluster "${{ secrets.ECS_CLUSTER }}" \
+            --services "${{ secrets.ECS_SERVICE }}" \
+            --query 'services[0].desiredCount' \
+            --output text)
+          echo "Running: ${RUNNING} / Desired: ${DESIRED}"
+          if [ "$RUNNING" != "$DESIRED" ]; then
+            echo "::error::Deploy health check failed: running=${RUNNING} desired=${DESIRED}"
+            exit 1
+          fi
+          echo "Deploy successful — ${RUNNING}/${DESIRED} tasks running"
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "::error::ECS deploy failed. Check ECS events:"
+          aws ecs describe-services \
+            --cluster "${{ secrets.ECS_CLUSTER }}" \
+            --services "${{ secrets.ECS_SERVICE }}" \
+            --query 'services[0].events[:5]' \
+            --output json

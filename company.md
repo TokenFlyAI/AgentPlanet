@@ -89,8 +89,14 @@ Important company-wide announcements go in `../../public/announcements/`.
 - **Do NOT read the full task board** — it can grow large. The hook gives you what you need.
 - **Focus on the LATEST tasks** (highest ID numbers) — older tasks at the top are likely already handled.
 - If you must read the board, use `tail -20` equivalent — read the last 20 rows only.
-- **No assigned task?** → The hook shows you the latest unassigned task. Claim it immediately:
-  update the row to set `assignee` to your name and `status` to `in_progress`, then do the work.
+- **No assigned task?** → The hook shows you the latest unassigned task. Claim it atomically via the API:
+  ```bash
+  curl -s -X POST http://localhost:3100/api/tasks/<ID>/claim \
+    -H "Content-Type: application/json" \
+    -d '{"agent":"<your-name>"}'
+  ```
+  This prevents two agents from claiming the same task simultaneously. If you get `409`, another agent
+  beat you to it — pick the next unassigned task instead.
 
 ## Work Cycle (per agent, per loop iteration)
 

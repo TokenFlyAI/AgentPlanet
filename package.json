@@ -1,5 +1,19 @@
 {
+  "scripts": {
+    "test": "playwright test",
+    "test:ci": "playwright test --reporter=github",
+    "start": "node server.js --dir . --port 3199",
+    "start:pm2": "pm2 start ecosystem.config.js",
+    "stop:pm2": "pm2 stop tokenfly-dashboard",
+    "restart:pm2": "pm2 restart tokenfly-dashboard",
+    "logs:pm2": "pm2 logs tokenfly-dashboard",
+    "status:pm2": "pm2 status"
+  },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "playwright": "^1.58.2"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.8.0"
   }
 }
