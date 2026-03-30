@@ -227,7 +227,7 @@ function postBroadcast(req, res, dir) {
     }
     const pri = Math.min(9, Math.max(1, Number(priority) || 5));
 
-    const agents = activeAgents(dir);
+    const agents = activeAgents(dir).filter(validAgent);
     if (agents.length === 0) return json(res, 200, { delivered: 0, agents: [] });
 
     const stmt = db.prepare(
