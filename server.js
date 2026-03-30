@@ -253,17 +253,23 @@ function parseBody(req) {
   return new Promise((resolve, reject) => {
     const chunks = [];
     let bytes = 0;
+    let settled = false;
+    function settle(fn) { if (!settled) { settled = true; fn(); } }
     req.on("data", (chunk) => {
       bytes += chunk.length;
       if (bytes > MAX_BODY_BYTES) {
         req.socket.destroy();
-        return reject(Object.assign(new Error("request body too large"), { code: "BODY_TOO_LARGE" }));
+        return settle(() => reject(Object.assign(new Error("request body too large"), { code: "BODY_TOO_LARGE" })));
       }
       chunks.push(chunk);
     });
     req.on("end", () => {
-      try { resolve(JSON.parse(Buffer.concat(chunks).toString("utf8"))); } catch (_) { resolve({}); }
+      settle(() => {
+        try { resolve(JSON.parse(Buffer.concat(chunks).toString("utf8"))); } catch (_) { resolve({}); }
+      });
     });
+    req.on("error", (err) => settle(() => reject(err)));
+    req.on("close", () => settle(() => reject(new Error("request aborted"))));
   });
 }
 
