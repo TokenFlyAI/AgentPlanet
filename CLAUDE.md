@@ -68,9 +68,31 @@ Key API endpoints:
 ## Token Conservation Architecture
 
 1. **`smart_run.sh`** — only starts agents with assigned open tasks OR unread inbox messages (no idle agents)
+   - `--max N` flag caps total agents started (default 20, use 3 for testing: `bash smart_run.sh --max 3`)
+   - Priority: alice → task-assigned → unassigned tasks → inbox-only (added last)
 2. **`run_subset.sh`** — auto-stops agent after `MAX_IDLE_CYCLES=3` consecutive cycles with no work
 3. **Agent prompts** — token-efficient rules: grep task board, use tail/head, prefer tools over LLM
 4. **Task claims** — atomic `POST /api/tasks/:id/claim` with file locking to prevent race conditions
+5. **Session resume** — `run_agent.sh` uses `claude --resume <session_id>` to keep conversation context across cycles, avoiding full context reload
+
+## Session Resume Architecture
+
+`run_agent.sh` manages session lifecycle automatically:
+
+| File | Purpose |
+|------|---------|
+| `agents/{name}/session_id.txt` | Current Claude session ID for `--resume` |
+| `agents/{name}/session_cycle.txt` | How many cycles in the current session |
+| `agents/{name}/memory.md` | Auto-saved snapshot of status.md at session boundary |
+
+**Lifecycle:**
+- Cycles 1..`SESSION_MAX_CYCLES` (default: 5): each cycle uses `--resume <session_id>` — cheap, context preserved
+- At cycle `SESSION_MAX_CYCLES`: `status.md` is snapshotted into `memory.md`, session files are cleared
+- Next cycle: fresh start with `memory.md` injected into the full prompt
+
+**Env vars:**
+- `SESSION_MAX_CYCLES=5` — how many cycles per session before reset
+- `SESSION_FORCE_FRESH=1` — force a fresh start, ignoring saved session
 
 ## Team (20 agents)
 
@@ -162,4 +184,4 @@ npx playwright test e2e/dashboard.spec.js
 npx playwright test e2e/metrics.spec.js
 ```
 
-Test files: `e2e/api.spec.js` (31 tests), `e2e/dashboard.spec.js` (25 tests), `e2e/metrics.spec.js` (54 tests)
+Test files: `e2e/api.spec.js` (46 tests), `e2e/dashboard.spec.js` (25 tests), `e2e/metrics.spec.js` (54 tests)

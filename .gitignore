@@ -6,6 +6,9 @@ agents/*/logs/*_raw.log
 agents/*/heartbeat.md
 agents/*/last_context.md
 agents/*/status.md
+agents/*/memory.md
+agents/*/session_id.txt
+agents/*/session_cycle.txt
 
 # Agent inboxes & processed (ephemeral messages)
 agents/*/chat_inbox/

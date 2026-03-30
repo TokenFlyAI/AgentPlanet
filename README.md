@@ -47,11 +47,16 @@ Switch the whole team's behavior instantly:
 | **Normal** | Coordinated steady work. Agents sync before making big moves. |
 | **Crazy** | Maximum velocity. Self-assign aggressively, ship fast, iterate. |
 
-### Agent Memory
+### Agent Memory & Session Resume
 
-Each agent's `status.md` is its brain — the only thing that persists between runs.
+Each agent's `status.md` is its brain — it persists between runs.
 Agents write their progress, decisions, and next steps there after every significant action.
-If an agent is killed mid-task, the next instance picks up exactly where it left off.
+
+`run_agent.sh` also uses **Claude's `--resume` flag** to keep the same conversation context across multiple cycles:
+
+- Cycles 1–5 (configurable via `SESSION_MAX_CYCLES`): each cycle resumes the previous session. No re-loading full context, much cheaper.
+- At the boundary: `status.md` is snapshotted into `memory.md`, then a fresh session starts with that memory injected into the prompt.
+- If an agent is killed mid-task, the next instance resumes the session or picks up from `memory.md`.
 
 ---
 
@@ -110,6 +115,9 @@ Read all messages posted to the public team channel.
 ### Live Tail
 Real-time log streaming for any agent. See exactly what they're doing.
 
+### Task Results
+Task-specific result files are stored in `public/task_outputs/task-{id}-*.md`. Click "View Result" in the Tasks tab to open them in a dedicated modal with copy support.
+
 ---
 
 ## Quick Start
@@ -122,7 +130,13 @@ cd AgentTeamLab
 # Start dashboard
 node server.js --dir . --port 3100
 
-# Start a few agents
+# Smart start — only launches agents with actual work (token-conservative)
+bash smart_run.sh
+
+# Smart start with agent cap (default cap is 3 for safety)
+bash smart_run.sh --max 3
+
+# Start specific agents
 bash run_subset.sh alice bob charlie
 
 # Start all agents
@@ -170,11 +184,16 @@ AgentTeamLab/
 │   ├── announcements/      # Company-wide posts
 │   ├── team_channel/       # Public chat
 │   └── sops/               # Mode-specific operating procedures
-├── server.js           # Zero-dependency dashboard server
+├── public/
+│   ├── task_board.md       # Shared task board
+│   ├── task_outputs/       # Task-specific result files (task-{id}-*.md)
+│   └── ...
+├── server.js           # Zero-dependency dashboard server (~1200 lines)
 ├── index_lite.html     # Dashboard frontend (single file, no CDN)
-├── run_agent.sh        # Run one agent cycle
+├── run_agent.sh        # Run one agent cycle (with session resume)
 ├── run_subset.sh       # Run N agents in parallel loops
 ├── run_all.sh          # Run all agents
+├── smart_run.sh        # Token-conservative launcher (only starts agents with work)
 ├── send_message.sh     # CEO messaging tool
 ├── switch_mode.sh      # Change operating mode
 └── init_agent.sh       # Scaffold a new agent
