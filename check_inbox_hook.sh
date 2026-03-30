@@ -6,6 +6,8 @@ shopt -s nullglob
 UNREAD=""
 for msg in "$INBOX_DIR"/*.md; do
     [ -f "$msg" ] || continue
+    # Skip already-read messages (prefixed with read_)
+    [[ "$(basename "$msg")" == read_* ]] && continue
     UNREAD="$UNREAD $msg"
 done
 shopt -u nullglob

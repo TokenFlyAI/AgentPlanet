@@ -74,7 +74,8 @@ INBOX_AGENTS=""  # agents with unread inbox messages
 for ag in $ALL_AGENTS; do
     inbox_dir="${COMPANY_DIR}/agents/${ag}/chat_inbox"
     if [ -d "$inbox_dir" ]; then
-        count=$(ls "$inbox_dir"/*.md 2>/dev/null | wc -l | tr -d ' ')
+        # Only count UNREAD messages (not read_ prefixed files)
+        count=$(ls "$inbox_dir"/*.md 2>/dev/null | grep -v '/read_' | wc -l | tr -d ' ')
         [ "${count:-0}" -gt 0 ] && INBOX_AGENTS="$INBOX_AGENTS $ag"
     fi
 done

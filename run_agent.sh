@@ -74,8 +74,8 @@ PROMPT_FILE="${AGENT_DIR}/prompt.md"
 if [ $USE_RESUME -eq 1 ]; then
     # Resuming: short continuation — full context already in Claude's memory
     PROMPT_TEXT="New work cycle. Check inbox for new messages, scan task board for assigned open tasks, then continue your work. Update status.md when done."
-    # Append any urgent inbox summary so agent doesn't miss new messages
-    INBOX_COUNT=$(ls "${AGENT_DIR}/chat_inbox/"*.md 2>/dev/null | wc -l | tr -d ' ')
+    # Append any urgent inbox summary so agent doesn't miss new messages (skip read_ files)
+    INBOX_COUNT=$(ls "${AGENT_DIR}/chat_inbox/"*.md 2>/dev/null | grep -v '/read_' | wc -l | tr -d ' ')
     if [ "${INBOX_COUNT:-0}" -gt 0 ]; then
         PROMPT_TEXT="${PROMPT_TEXT} You have ${INBOX_COUNT} unread inbox message(s) — read them first."
     fi
