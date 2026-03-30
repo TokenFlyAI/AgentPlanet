@@ -112,15 +112,15 @@ function activeAgents(dir) {
 
 function parseBody(req) {
   return new Promise((resolve, reject) => {
-    let raw = "";
+    const chunks = [];
     let size = 0;
     req.on("data", (chunk) => {
       size += chunk.length;
       if (size > 64 * 1024) { reject(new Error("body too large")); return; }
-      raw += chunk;
+      chunks.push(chunk);
     });
     req.on("end", () => {
-      try { resolve(JSON.parse(raw)); } catch (_) { reject(new Error("invalid JSON")); }
+      try { resolve(JSON.parse(Buffer.concat(chunks).toString("utf8"))); } catch (_) { reject(new Error("invalid JSON")); }
     });
     req.on("error", reject);
   });
