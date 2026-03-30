@@ -3697,7 +3697,7 @@ async function refreshAgentModal() {
             '<span style="color:#00ff88;">' + esc(f.name) + '</span>' +
             '<span style="color:#555;font-size:0.75rem;">' + kb + ' KB · ' + (f.mtime ? f.mtime.slice(0,16).replace('T',' ') : '') + '</span>' +
             '</div>' +
-            '<div id="output-file-' + esc(f.name).replace(/[^a-z0-9]/gi,'_') + '" style="display:none;margin-top:8px;"></div>' +
+            '<div id="output-file-' + f.name.replace(/[^a-z0-9]/gi,'_') + '" style="display:none;margin-top:8px;"></div>' +
             '</div>';
         }).join('');
     }
