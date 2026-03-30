@@ -2810,7 +2810,10 @@ function quickAssignTask(agentName) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ title, priority, assignee: agentName, status: 'open' })
-  }).then(() => { refresh(); refreshAgentModal(); }).catch(e => showToast('Task create error: ' + e.message, 3000));
+  }).then(r => r.json().then(d => {
+    if (!r.ok) showToast('Task create error: ' + (d.error || r.status), 3000);
+    else { refresh(); refreshAgentModal(); }
+  })).catch(e => showToast('Task create error: ' + e.message, 3000));
 }
 
 // ── Task Archive & CSV Export ──────────────────────────────────────────────────
@@ -2951,7 +2954,7 @@ function sendChatMessage() {
 function renderAnnouncements() {
   const list = document.getElementById('announcements-list');
   const items = Array.isArray(announcements) ? [...announcements] : [];
-  items.sort((a, b) => new Date(b.date || b.created_at || 0) - new Date(a.date || a.created_at || 0));
+  items.sort((a, b) => (b.filename || '').localeCompare(a.filename || ''));
   list.innerHTML = items.map(ann => {
     const body = ann.body || ann.content || ann.message || '';
     return '<div class="card announcement-card">' +
@@ -3731,10 +3734,10 @@ function sendModalDM() {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ from: from, message: msg })
-  }).then(() => {
-    document.getElementById('modal-dm-input').value = '';
-    refreshAgentModal();
-  }).catch(e => showToast('DM error: ' + e.message, 3000));
+  }).then(r => r.json().then(d => {
+    if (!r.ok) showToast('DM error: ' + (d.error || r.status), 3000);
+    else { document.getElementById('modal-dm-input').value = ''; refreshAgentModal(); }
+  })).catch(e => showToast('DM error: ' + e.message, 3000));
 }
 
 // ===== DIGEST =====

@@ -175,13 +175,14 @@ node server.js --dir . --port 3199
 ## E2E Tests
 
 ```bash
-# Run all 110 e2e tests
+# Run all 205 e2e tests
 npx playwright test
 
 # Run specific test file
 npx playwright test e2e/api.spec.js
 npx playwright test e2e/dashboard.spec.js
 npx playwright test e2e/metrics.spec.js
+npx playwright test e2e/coverage.spec.js
 ```
 
-Test files: `e2e/api.spec.js` (46 tests), `e2e/dashboard.spec.js` (25 tests), `e2e/metrics.spec.js` (54 tests)
+Test files: `e2e/api.spec.js` (46 tests), `e2e/dashboard.spec.js` (35 tests), `e2e/metrics.spec.js` (53 tests), `e2e/coverage.spec.js` (71 tests)
