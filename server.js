@@ -1490,6 +1490,7 @@ async function handleRequest(req, res) {
     const taskOutDir = path.join(PUBLIC_DIR, "task_outputs");
     if (!fs.existsSync(taskOutDir)) { try { fs.mkdirSync(taskOutDir, { recursive: true }); } catch (_) {} }
     const filePath = path.join(taskOutDir, filename);
+    if (!filePath.startsWith(taskOutDir + path.sep)) return badRequest(res, "invalid filename");
     try { fs.writeFileSync(filePath, content); } catch (e) { return json(res, { error: "failed to write result file" }, 500); }
     return json(res, { ok: true, task_id: id, file: filename });
   }
