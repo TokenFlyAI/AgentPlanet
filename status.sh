@@ -1,0 +1,94 @@
+#!/bin/bash
+# status.sh — CLI status dashboard
+COMPANY_DIR="$(cd "$(dirname "$0")" && pwd)"
+TODAY=$(date +%Y_%m_%d)
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
+NC='\033[0m' # No Color
+
+# Header
+echo ""
+printf "${CYAN}%-12s %-8s %5s %8s %7s  %-50s${NC}\n" "AGENT" "STATUS" "CYCLE" "LAST_UPD" "LOG" "INFO"
+printf "%-12s %-8s %5s %8s %7s  %-50s\n" "------------" "--------" "-----" "--------" "-------" "-----------------------------------------------"
+
+for AGENT_DIR in "${COMPANY_DIR}"/employees/*/; do
+    [ ! -d "$AGENT_DIR" ] && continue
+    AGENT_NAME=$(basename "$AGENT_DIR")
+
+    # Check if agent has prompt.md (is a real agent)
+    [ ! -f "${AGENT_DIR}/prompt.md" ] && continue
+
+    # Status detection via raw log mtime
+    RAW_LOG="${AGENT_DIR}/logs/${TODAY}_raw.log"
+    STATUS="offline"
+    LAST_UPD="—"
+    LOG_SIZE="—"
+
+    if [ -f "$RAW_LOG" ]; then
+        LOG_SIZE=$(du -sh "$RAW_LOG" 2>/dev/null | awk '{print $1}')
+        MTIME=$(stat -f %m "$RAW_LOG" 2>/dev/null || stat -c %Y "$RAW_LOG" 2>/dev/null)
+        NOW=$(date +%s)
+        if [ -n "$MTIME" ]; then
+            AGE=$(( NOW - MTIME ))
+            if [ $AGE -lt 120 ]; then
+                STATUS="ACTIVE"
+                LAST_UPD="${AGE}s ago"
+            elif [ $AGE -lt 600 ]; then
+                STATUS="idle"
+                LAST_UPD="$((AGE / 60))m ago"
+            else
+                STATUS="stale"
+                LAST_UPD="$((AGE / 60))m ago"
+            fi
+        fi
+    fi
+
+    # Cycle count from status.md
+    CYCLE="—"
+    if [ -f "${AGENT_DIR}/status.md" ]; then
+        CYCLE_LINE=$(grep -A1 "Cycle Count" "${AGENT_DIR}/status.md" 2>/dev/null | tail -1)
+        [ -n "$CYCLE_LINE" ] && CYCLE=$(echo "$CYCLE_LINE" | tr -d ' ')
+    fi
+
+    # Current task from heartbeat or status.md
+    TASK_INFO=""
+    if [ -f "${AGENT_DIR}/heartbeat.md" ]; then
+        TASK_INFO=$(grep "^task:" "${AGENT_DIR}/heartbeat.md" 2>/dev/null | sed 's/^task: //')
+    fi
+    if [ -z "$TASK_INFO" ] && [ -f "${AGENT_DIR}/status.md" ]; then
+        TASK_INFO=$(grep -A1 "Currently Working On" "${AGENT_DIR}/status.md" 2>/dev/null | tail -1)
+    fi
+    TASK_INFO=$(echo "$TASK_INFO" | cut -c1-50)
+
+    # Color based on status
+    case "$STATUS" in
+        ACTIVE) COLOR="$GREEN" ;;
+        idle)   COLOR="$YELLOW" ;;
+        stale)  COLOR="$RED" ;;
+        *)      COLOR="$NC" ;;
+    esac
+
+    printf "${COLOR}%-12s %-8s %5s %8s %7s${NC}  %-50s\n" \
+        "$AGENT_NAME" "$STATUS" "$CYCLE" "$LAST_UPD" "$LOG_SIZE" "$TASK_INFO"
+done
+
+echo ""
+
+# Mode
+if [ -f "${COMPANY_DIR}/public/company_mode.md" ]; then
+    MODE=$(grep '^\*\*' "${COMPANY_DIR}/public/company_mode.md" | head -1 | tr -d '*')
+    echo -e "Mode: ${CYAN}${MODE}${NC}"
+fi
+
+# Task board summary
+if [ -f "${COMPANY_DIR}/public/task_board.md" ]; then
+    TOTAL=$(grep "^|" "${COMPANY_DIR}/public/task_board.md" | grep -v "^| ID\|^|--" | wc -l | tr -d ' ')
+    DONE=$(grep "^|" "${COMPANY_DIR}/public/task_board.md" | grep -i "done" | wc -l | tr -d ' ')
+    IN_PROG=$(grep "^|" "${COMPANY_DIR}/public/task_board.md" | grep -i "in_progress" | wc -l | tr -d ' ')
+    echo "Tasks: ${TOTAL} total, ${IN_PROG} in progress, ${DONE} done"
+fi
+echo ""

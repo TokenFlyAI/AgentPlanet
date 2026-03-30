@@ -1,0 +1,15 @@
+# Agent logs (can be large)
+employees/*/logs/*.log
+employees/*/logs/*_raw.log
+
+# Temp config dirs
+/tmp/aicompany_config/
+
+# Node
+node_modules/
+
+# macOS
+.DS_Store
+
+# Archive (optional - remove if you want to track)
+public/task_board_archive.md
