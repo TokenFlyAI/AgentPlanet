@@ -1145,7 +1145,8 @@ async function handleRequest(req, res) {
     if (!fs.existsSync(d)) return notFound(res, "agent not found");
     if (sub === "inbox") {
       const inboxDir = path.join(d, "chat_inbox");
-      const unread = listDir(inboxDir).filter((f) => f.endsWith(".md")).map((f) => ({
+      // Filter out read_* prefixed files (legacy marker) — same as /api/agents list endpoint
+      const unread = listDir(inboxDir).filter((f) => !f.startsWith("read_") && f.endsWith(".md")).map((f) => ({
         filename: f, content: safeRead(path.join(inboxDir, f)) || "", unread: true,
       }));
       const processed = listDir(path.join(inboxDir, "processed")).filter((f) => f.endsWith(".md")).slice(-20).map((f) => ({
