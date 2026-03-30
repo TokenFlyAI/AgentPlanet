@@ -2194,11 +2194,12 @@ function agentAction(name, action) {
           showToast(name + ' is already running');
         } else {
           showToast('Starting ' + name + '…');
-          // Poll ping after 3s and 8s to confirm process started
+          // Poll ping after 3s to confirm process started
           setTimeout(() => {
             fetch('/api/agents/' + encodeURIComponent(name) + '/ping')
               .then(r => r.json())
-              .then(p => { if (p.running) showToast(name + ' is running ✓'); });
+              .then(p => { if (p.running) showToast(name + ' is running ✓'); })
+              .catch(() => {});
           }, 3000);
         }
       }
@@ -3516,7 +3517,6 @@ async function refreshAgentModal() {
   const results = await Promise.allSettled([
     safeFetch('/api/agents/' + encodeURIComponent(name)),
     safeFetch('/api/agents/' + encodeURIComponent(name) + '/inbox'),
-    safeFetch('/api/agents/' + encodeURIComponent(name) + '/activity'),
     safeFetch('/api/agents/' + encodeURIComponent(name) + '/status'),
     safeFetch('/api/agents/' + encodeURIComponent(name) + '/todo'),
     safeFetch('/api/agents/' + encodeURIComponent(name) + '/persona'),
@@ -3527,13 +3527,12 @@ async function refreshAgentModal() {
 
   const agentDetail = results[0].status === 'fulfilled' ? results[0].value : null;
   const inbox = results[1].status === 'fulfilled' ? results[1].value : null;
-  const activity = results[2].status === 'fulfilled' ? results[2].value : null;
-  const statusMd = results[3].status === 'fulfilled' ? results[3].value : null;
-  const todo = results[4].status === 'fulfilled' ? results[4].value : null;
-  const persona = results[5].status === 'fulfilled' ? results[5].value : null;
-  const lastCtx = results[6].status === 'fulfilled' ? results[6].value : null;
-  const cyclesData = results[7].status === 'fulfilled' ? results[7].value : null;
-  const outputData = results[8].status === 'fulfilled' ? results[8].value : null;
+  const statusMd = results[2].status === 'fulfilled' ? results[2].value : null;
+  const todo = results[3].status === 'fulfilled' ? results[3].value : null;
+  const persona = results[4].status === 'fulfilled' ? results[4].value : null;
+  const lastCtx = results[5].status === 'fulfilled' ? results[5].value : null;
+  const cyclesData = results[6].status === 'fulfilled' ? results[6].value : null;
+  const outputData = results[7].status === 'fulfilled' ? results[7].value : null;
 
   // Overview
   const overview = document.getElementById('mtab-overview');
@@ -3544,8 +3543,9 @@ async function refreshAgentModal() {
     const progress = a.progress || a.progress_bullets || [];
     const blockers = a.blockers || [];
     const completed = a.completed_tasks || a.completed || [];
+    const safeStatus = /^[a-z_-]+$/.test(status) ? status : 'unknown';
     overview.innerHTML =
-      '<div class="mb-16"><strong>Status:</strong> <span class="status-dot dot-' + status + '" style="display:inline-block;vertical-align:middle;"></span> ' + status + '</div>' +
+      '<div class="mb-16"><strong>Status:</strong> <span class="status-dot dot-' + safeStatus + '" style="display:inline-block;vertical-align:middle;"></span> ' + esc(status) + '</div>' +
       '<div class="mb-16"><strong>Current Task:</strong> ' + esc(task) + '</div>' +
       (progress.length ? '<div class="mb-16"><strong>Progress:</strong><ul style="margin-left:20px;margin-top:4px;">' + progress.map(p => '<li style="font-size:0.85rem;">' + esc(typeof p === 'string' ? p : p.text || JSON.stringify(p)) + '</li>').join('') + '</ul></div>' : '') +
       (blockers.length ? '<div class="mb-16"><strong>Blockers:</strong><ul style="margin-left:20px;margin-top:4px;color:#ff4444;">' + blockers.map(b => '<li style="font-size:0.85rem;">' + esc(typeof b === 'string' ? b : b.text || JSON.stringify(b)) + '</li>').join('') + '</ul></div>' : '') +
@@ -3586,20 +3586,23 @@ async function refreshAgentModal() {
       '</div>';
   }
 
-  // Activity
+  // Activity — uses cyclesData from /cycles (the /activity endpoint does not exist)
   const activityEl = document.getElementById('mtab-activity');
-  if (activity) {
-    const cycles = Array.isArray(activity) ? activity : (activity.cycles || activity.entries || []);
+  {
+    const cycles = (cyclesData && cyclesData.cycles) || [];
     activityEl.innerHTML = cycles.length ?
-      cycles.slice(-30).reverse().map(c => {
-        const cycleNum = c.cycle || c.cycle_number || '';
-        const turns = c.turns || c.turn_count || '';
-        const cost = c.cost || c.total_cost || '';
-        const duration = c.duration || '';
-        const summary = c.summary || c.description || '';
+      cycles.map(c => {
+        const turns = c.turns != null ? c.turns : '';
+        const cost = c.cost_usd != null ? c.cost_usd : '';
+        const duration = c.duration_s != null ? c.duration_s + 's' : '';
+        const preview = c.preview || '';
         return '<div class="activity-cycle">' +
-          '<div class="cycle-header"><span>Cycle ' + cycleNum + '</span><span>Turns: ' + turns + ' | Cost: $' + Number(cost || 0).toFixed(4) + (duration ? ' | ' + duration : '') + '</span></div>' +
-          (summary ? '<div class="cycle-summary">' + esc(summary) + '</div>' : '') +
+          '<div class="cycle-header"><span>Cycle #' + Number(c.n) + '</span><span>' +
+            (turns !== '' ? 'Turns: ' + turns : '') +
+            (cost !== '' ? ' | Cost: $' + Number(cost).toFixed(4) : '') +
+            (duration ? ' | ' + duration : '') +
+          '</span></div>' +
+          (preview ? '<div class="cycle-summary">' + esc(preview) + '</div>' : '') +
         '</div>';
       }).join('') :
       '<p class="text-muted">No activity data available.</p>';

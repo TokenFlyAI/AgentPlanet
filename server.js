@@ -251,7 +251,7 @@ function nowStamp() {
 
 function parseBody(req) {
   return new Promise((resolve, reject) => {
-    let body = "";
+    const chunks = [];
     let bytes = 0;
     req.on("data", (chunk) => {
       bytes += chunk.length;
@@ -259,10 +259,10 @@ function parseBody(req) {
         req.socket.destroy();
         return reject(Object.assign(new Error("request body too large"), { code: "BODY_TOO_LARGE" }));
       }
-      body += chunk;
+      chunks.push(chunk);
     });
     req.on("end", () => {
-      try { resolve(JSON.parse(body)); } catch (_) { resolve({}); }
+      try { resolve(JSON.parse(Buffer.concat(chunks).toString("utf8"))); } catch (_) { resolve({}); }
     });
   });
 }
