@@ -3020,12 +3020,12 @@ function renderResearch() {
   let files = Array.isArray(researchFiles) ? researchFiles : [];
   if (search) {
     files = files.filter(f => {
-      const name = typeof f === 'string' ? f : (f.name || f.filename || '');
+      const name = typeof f === 'string' ? f : (f.file || f.name || f.filename || '');
       return name.toLowerCase().includes(search);
     });
   }
   list.innerHTML = files.map((f, i) => {
-    const name = typeof f === 'string' ? f : (f.name || f.filename || 'file');
+    const name = typeof f === 'string' ? f : (f.file || f.name || f.filename || 'file');
     return '<li class="research-item" data-research-name="' + encodeURIComponent(name) + '">' +
       '<span>' + esc(name) + '</span><span style="color:#555;font-size:0.75rem;">View &rarr;</span>' +
     '</li>';
