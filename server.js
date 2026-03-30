@@ -1867,11 +1867,22 @@ async function handleRequest(req, res) {
   const researchFileMatch = pathname.match(/^\/api\/research\/(.+)$/);
   if (method === "GET" && researchFileMatch) {
     const file = decodeURIComponent(researchFileMatch[1]);
+    // Prevent path traversal: resolve and check against allowed dirs
+    const plansDir = path.join(PUBLIC_DIR, "plans");
+    const reportsDir = path.join(PUBLIC_DIR, "reports");
+    const fullPlans = path.resolve(path.join(plansDir, file));
+    const fullReports = path.resolve(path.join(reportsDir, file));
+    if (!fullPlans.startsWith(plansDir) && !fullReports.startsWith(reportsDir)) {
+      return badRequest(res, "invalid path");
+    }
     // Search in plans then reports
-    let content = safeRead(path.join(PUBLIC_DIR, "plans", file));
+    let content = null;
     let dir = "plans";
-    if (content === null) {
-      content = safeRead(path.join(PUBLIC_DIR, "reports", file));
+    if (fullPlans.startsWith(plansDir)) {
+      content = safeRead(fullPlans);
+    }
+    if (content === null && fullReports.startsWith(reportsDir)) {
+      content = safeRead(fullReports);
       dir = "reports";
     }
     if (content === null) return notFound(res, "file not found");

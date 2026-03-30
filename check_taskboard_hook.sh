@@ -7,7 +7,7 @@ AGENT_NAME=$(basename "$(pwd)")
 [ ! -f "$TASKBOARD" ] && exit 0
 
 # Extract only open/in_progress rows (skip done/blocked/header/separator)
-ACTIVE=$(grep "^|" "$TASKBOARD" | grep -iv "^| id\|^|--\|^| ---" | grep -iv "| *done *|")
+ACTIVE=$(grep "^|" "$TASKBOARD" | grep -iv "^| id\|^|--\|^| ---" | grep -iv "| *done *|\|| *cancelled *|")
 
 [ -z "$ACTIVE" ] && exit 0
 
