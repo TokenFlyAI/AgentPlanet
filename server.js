@@ -1992,9 +1992,10 @@ async function handleRequest(req, res) {
     const VALID_MODES = new Set(["plan", "normal", "crazy", "autonomous"]);
     if (!VALID_MODES.has(body.mode)) return badRequest(res, `invalid mode '${body.mode}': must be plan, normal, crazy, or autonomous`);
     if (!body.who || !body.reason) return badRequest(res, "Missing required fields: who, reason");
-    // Sanitize who/reason: strip shell metacharacters to prevent command injection in switch_mode.sh heredoc
-    const safeWho    = String(body.who).replace(/[`$(){}\\;<>|&]/g, "").slice(0, 64).trim() || "ceo";
-    const safeReason = String(body.reason).replace(/[`$(){}\\;<>|&]/g, "").slice(0, 256).trim() || "no reason";
+    // Sanitize who/reason: strip shell metacharacters and newlines to prevent
+    // command injection and markdown table corruption in switch_mode.sh heredoc
+    const safeWho    = String(body.who).replace(/[`$(){}\\;<>|&\r\n\t]/g, "").slice(0, 64).trim() || "ceo";
+    const safeReason = String(body.reason).replace(/[`$(){}\\;<>|&\r\n\t]/g, "").slice(0, 256).trim() || "no reason";
     const script = path.join(DIR, "switch_mode.sh");
     if (!fs.existsSync(script)) return notFound(res, "switch_mode.sh not found");
     const args = [script, body.mode, safeWho, safeReason];
