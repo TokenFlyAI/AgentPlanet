@@ -2934,19 +2934,19 @@ function sendChatMessage() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ from: from, message: msg })
-    }).then(() => {
-      document.getElementById('chat-input').value = '';
-      refresh();
-    }).catch(e => showToast('DM error: ' + e.message, 3000));
+    }).then(r => r.json().then(d => {
+      if (!r.ok) showToast('DM error: ' + (d.error || r.status), 3000);
+      else { document.getElementById('chat-input').value = ''; refresh(); }
+    })).catch(e => showToast('DM error: ' + e.message, 3000));
   } else {
     fetch('/api/team-channel', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ from: from, message: msg })
-    }).then(() => {
-      document.getElementById('chat-input').value = '';
-      refresh();
-    }).catch(e => showToast('Chat error: ' + e.message, 3000));
+    }).then(r => r.json().then(d => {
+      if (!r.ok) showToast('Chat error: ' + (d.error || r.status), 3000);
+      else { document.getElementById('chat-input').value = ''; refresh(); }
+    })).catch(e => showToast('Chat error: ' + e.message, 3000));
   }
 }
 
@@ -2974,11 +2974,14 @@ function postAnnouncement() {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ title, body, from, date: new Date().toISOString() })
-  }).then(() => {
-    document.getElementById('ann-title').value = '';
-    document.getElementById('ann-body').value = '';
-    refresh();
-  }).catch(e => showToast('Announcement error: ' + e.message, 3000));
+  }).then(r => r.json().then(d => {
+    if (!r.ok) showToast('Announcement error: ' + (d.error || r.status), 3000);
+    else {
+      document.getElementById('ann-title').value = '';
+      document.getElementById('ann-body').value = '';
+      refresh();
+    }
+  })).catch(e => showToast('Announcement error: ' + e.message, 3000));
 }
 
 // ===== RESEARCH =====
