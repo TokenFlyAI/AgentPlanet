@@ -210,7 +210,7 @@ function getSystemHealth(companyDir) {
   const modeRaw = safeRead(path.join(companyDir, "public", "company_mode.md"));
   let mode = "unknown";
   if (modeRaw) {
-    const m = modeRaw.match(/\*\*(\w+)\*\*/);
+    const m = modeRaw.match(/##\s*Current Mode\s*\n\*\*(\w+)\*\*/i);
     if (m) mode = m[1].toLowerCase();
   }
 
