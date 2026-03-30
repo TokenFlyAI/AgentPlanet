@@ -2524,7 +2524,7 @@ function renderTasks() {
       '<td class="text-muted task-col-created">' + formatTime(t.created_at || t.created || '') + '</td>' +
       '<td style="white-space:nowrap;">' +
         (t.assignee && t.status === 'done' ?
-          '<button onclick="viewTaskResult(' + id + ', \'' + esc(t.title || '') + '\')" style="background:#1a3a1a;border:1px solid #1a5a1a;color:#00ff88;cursor:pointer;font-size:0.7rem;padding:2px 7px;border-radius:3px;margin-right:4px;" title="View task-specific result file">📄 Result</button>' : '') +
+          '<button onclick="viewTaskResult(' + id + ')" style="background:#1a3a1a;border:1px solid #1a5a1a;color:#00ff88;cursor:pointer;font-size:0.7rem;padding:2px 7px;border-radius:3px;margin-right:4px;" title="View task-specific result file">📄 Result</button>' : '') +
         (t.assignee && t.status === 'in_progress' ?
           '<button onclick="openAgentModal(\'' + esc(t.assignee) + '\'); setTimeout(()=>{ document.querySelector(\'[data-mtab=cycles]\')&&document.querySelector(\'[data-mtab=cycles]\').click(); }, 400);" style="background:#1a2a0a;border:1px solid #3a5a1a;color:#aaff44;cursor:pointer;font-size:0.7rem;padding:2px 7px;border-radius:3px;margin-right:4px;" title="View cycle progress for ' + esc(t.assignee) + '">⏳ Progress</button>' : '') +
         '<button onclick="deleteTask(\'' + id + '\')" style="background:none;border:none;color:#555;cursor:pointer;font-size:0.9rem;padding:2px 6px;" title="Delete task">✕</button>' +
@@ -2666,6 +2666,10 @@ function copyTaskResult() {
 }
 
 async function viewTaskResult(taskId, taskTitle) {
+  if (taskTitle === undefined) {
+    const t = (Array.isArray(tasks) ? tasks : []).find(x => String(x.id) === String(taskId));
+    taskTitle = t ? (t.title || '') : '';
+  }
   const overlay = document.getElementById('task-result-modal-overlay');
   const titleEl = document.getElementById('task-result-title');
   const metaEl = document.getElementById('task-result-meta');
@@ -3076,11 +3080,15 @@ function renderKnowledge() {
       '<div class="knowledge-items">' +
         fileList.map(item => {
           const name = typeof item === 'string' ? item : (item.name || item.filename || 'file');
-          return '<div class="knowledge-item" onclick="viewKnowledge(\'' + esc(cat) + '\', \'' + esc(name) + '\')">' + esc(name) + '</div>';
+          return '<div class="knowledge-item" data-k-cat="' + encodeURIComponent(cat) + '" data-k-name="' + encodeURIComponent(name) + '">' + esc(name) + '</div>';
         }).join('') +
       '</div>' +
     '</div>';
   }).join('');
+  container.addEventListener('click', e => {
+    const item = e.target.closest('.knowledge-item');
+    if (item) viewKnowledge(decodeURIComponent(item.dataset.kCat), decodeURIComponent(item.dataset.kName));
+  });
 }
 
 function toggleKnowledgeCat(header) {
@@ -3704,13 +3712,17 @@ async function refreshAgentModal() {
         files.map(f => {
           const kb = (f.size / 1024).toFixed(1);
           return '<div style="border:1px solid #1a2a3a;border-radius:4px;margin-bottom:6px;padding:8px;">' +
-            '<div style="display:flex;justify-content:space-between;cursor:pointer;" onclick="loadOutputFile(\'' + esc(name) + '\', \'' + esc(f.name) + '\', this)">' +
+            '<div style="display:flex;justify-content:space-between;cursor:pointer;" data-agent-name="' + encodeURIComponent(name) + '" data-file-name="' + encodeURIComponent(f.name) + '">' +
             '<span style="color:#00ff88;">' + esc(f.name) + '</span>' +
             '<span style="color:#555;font-size:0.75rem;">' + kb + ' KB · ' + (f.mtime ? f.mtime.slice(0,16).replace('T',' ') : '') + '</span>' +
             '</div>' +
             '<div id="output-file-' + f.name.replace(/[^a-z0-9]/gi,'_') + '" style="display:none;margin-top:8px;"></div>' +
             '</div>';
         }).join('');
+      outputEl.addEventListener('click', e => {
+        const row = e.target.closest('[data-agent-name]');
+        if (row) loadOutputFile(decodeURIComponent(row.dataset.agentName), decodeURIComponent(row.dataset.fileName), row);
+      });
     }
   } else {
     outputEl.innerHTML = '<div class="text-muted" style="padding:16px;">No output files.</div>';
