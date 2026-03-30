@@ -2502,8 +2502,8 @@ function renderTasks() {
   // Group by status for collapsible sections (only when no status filter active)
   function buildTaskRow(t, i) {
     const id = t.id || i;
-    const statusClass = 'status-' + (t.status || 'open').replace(/ /g, '_');
-    const prioClass = 'priority-' + (t.priority || 'medium');
+    const statusClass = 'status-' + (t.status || 'open').replace(/[^a-z0-9_-]/gi, '_');
+    const prioClass = 'priority-' + (t.priority || 'medium').replace(/[^a-z0-9_-]/gi, '_');
     const agentNames = (Array.isArray(agents) ? agents : []).map(a => a.name || a.agent).filter(Boolean);
     const assigneeOpts = ['', ...agentNames].map(n =>
       '<option value="' + esc(n) + '"' + ((t.assignee || '') === n ? ' selected' : '') + '>' + esc(n || '—') + '</option>'
@@ -2607,12 +2607,12 @@ function openTaskDetail(id) {
   document.getElementById('td-status').textContent = (t.status || 'open').replace('_', ' ');
   const prioEl = document.getElementById('td-priority');
   prioEl.textContent = t.priority || 'medium';
-  prioEl.className = 'task-detail-value priority-' + (t.priority || 'medium');
+  prioEl.className = 'task-detail-value priority-' + (t.priority || 'medium').replace(/[^a-z0-9_-]/gi, '_');
   document.getElementById('td-assignee').textContent = t.assignee || '—';
   document.getElementById('td-created').textContent = formatTime(t.created_at || t.created || '');
   const sel = document.getElementById('td-status-select');
   sel.value = t.status || 'open';
-  sel.className = 'task-status-select status-' + (t.status || 'open');
+  sel.className = 'task-status-select status-' + (t.status || 'open').replace(/[^a-z0-9_-]/gi, '_');
   // Render notes
   const notesEl = document.getElementById('td-notes-list');
   const notesList = Array.isArray(t.notesList) ? t.notesList : (t.notes ? t.notes.split(' ;; ').filter(Boolean) : []);
