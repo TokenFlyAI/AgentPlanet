@@ -4211,7 +4211,7 @@ function formatTime(ts) {
       normalized = normalized.replace(/_/g, '-');
     }
     const d = new Date(normalized);
-    if (isNaN(d.getTime())) return String(ts);
+    if (isNaN(d.getTime())) return esc(String(ts));
     const now = new Date();
     const diffMs = now - d;
     const diffMin = Math.floor(diffMs / 60000);
@@ -4223,7 +4223,7 @@ function formatTime(ts) {
 
     return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   } catch (e) {
-    return String(ts);
+    return esc(String(ts));
   }
 }
 </script>
