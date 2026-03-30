@@ -1833,7 +1833,9 @@ function renderCeoInbox() {
 }
 
 async function markCeoInboxRead(filename) {
-  await fetch('/api/ceo-inbox/' + encodeURIComponent(filename) + '/read', { method: 'POST' });
+  try {
+    await fetch('/api/ceo-inbox/' + encodeURIComponent(filename) + '/read', { method: 'POST' });
+  } catch (e) { showToast('Mark-read error: ' + e.message, 3000); }
   refresh();
 }
 
