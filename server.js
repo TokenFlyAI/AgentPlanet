@@ -42,8 +42,9 @@ let _taskLockHolder = null;
 
 function withTaskLock(fn) {
   // Returns a Promise that resolves after fn() runs (holding the lock) or after timeout.
+  // Rejects if fn() throws so callers can detect write failures.
   // Spin-wait up to 2s for lock, 50ms intervals.
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const deadline = Date.now() + 2000;
     function tryAcquire() {
       let acquired = false;
@@ -71,13 +72,14 @@ function withTaskLock(fn) {
           }
           // Lock held >2s by live process — proceed without lock to avoid deadlock
           console.error("[withTaskLock] timeout waiting for lock, proceeding without it");
-          try { fn(); } catch (_) {}
+          try { fn(); resolve(); } catch (fnErr) { reject(fnErr); }
         } else if (!acquired) {
           // Unexpected error acquiring lock — proceed without lock
-          try { fn(); } catch (_) {}
+          try { fn(); resolve(); } catch (fnErr) { reject(fnErr); }
+        } else {
+          // fn() threw while holding the lock (released by finally above)
+          reject(e);
         }
-        // acquired=true: fn() threw, lock already released by finally above
-        resolve();
       }
     }
     tryAcquire();
