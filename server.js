@@ -949,7 +949,7 @@ async function handleRequest(req, res) {
     const from = sanitizeFrom(body.from || "dashboard");
     const filename = `${nowStamp()}_from_${from}.md`;
     try { fs.mkdirSync(inboxDir, { recursive: true }); } catch (_) {}
-    fs.writeFileSync(path.join(inboxDir, filename), body.message);
+    try { fs.writeFileSync(path.join(inboxDir, filename), body.message); } catch (e) { return json(res, { error: "failed to write message" }, 500); }
     return json(res, { ok: true, filename });
   }
 
@@ -1192,7 +1192,7 @@ async function handleRequest(req, res) {
     const from = sanitizeFrom(body.from || "dashboard");
     const filename = `${nowStamp()}_from_${from}.md`;
     try { fs.mkdirSync(inboxDir, { recursive: true }); } catch (_) {}
-    fs.writeFileSync(path.join(inboxDir, filename), body.message);
+    try { fs.writeFileSync(path.join(inboxDir, filename), body.message); } catch (e) { return json(res, { error: "failed to write message" }, 500); }
     return json(res, { ok: true, filename });
   }
 
@@ -1433,7 +1433,7 @@ async function handleRequest(req, res) {
     const taskOutDir = path.join(PUBLIC_DIR, "task_outputs");
     if (!fs.existsSync(taskOutDir)) { try { fs.mkdirSync(taskOutDir, { recursive: true }); } catch (_) {} }
     const filePath = path.join(taskOutDir, filename);
-    fs.writeFileSync(filePath, content);
+    try { fs.writeFileSync(filePath, content); } catch (e) { return json(res, { error: "failed to write result file" }, 500); }
     return json(res, { ok: true, task_id: id, file: filename });
   }
 
@@ -1541,7 +1541,7 @@ async function handleRequest(req, res) {
     const dir = path.join(PUBLIC_DIR, "team_channel");
     try { fs.mkdirSync(dir, { recursive: true }); } catch (_) {}
     const filename = `${nowStamp()}_from_${from}.md`;
-    fs.writeFileSync(path.join(dir, filename), body.message);
+    try { fs.writeFileSync(path.join(dir, filename), body.message); } catch (e) { return json(res, { error: "failed to write message" }, 500); }
     return json(res, { ok: true, filename });
   }
 
@@ -1583,7 +1583,7 @@ async function handleRequest(req, res) {
     const dir = path.join(PUBLIC_DIR, "announcements");
     try { fs.mkdirSync(dir, { recursive: true }); } catch (_) {}
     const filename = `${nowStamp()}_announcement.md`;
-    fs.writeFileSync(path.join(dir, filename), content);
+    try { fs.writeFileSync(path.join(dir, filename), content); } catch (e) { return json(res, { error: "failed to write announcement" }, 500); }
     return json(res, { ok: true, filename });
   }
 
@@ -1665,7 +1665,7 @@ async function handleRequest(req, res) {
       const inboxDir = path.join(agDir, "chat_inbox");
       try { fs.mkdirSync(inboxDir, { recursive: true }); } catch (_) {}
       const fname = `${ts()}_from_ceo.md`;
-      fs.writeFileSync(path.join(inboxDir, fname), `# CEO Priority Message\n\n${msg}\n`);
+      try { fs.writeFileSync(path.join(inboxDir, fname), `# CEO Priority Message\n\n${msg}\n`); } catch (e) { return json(res, { error: "failed to deliver message" }, 500); }
       return json(res, { ok: true, action: "dm", agent: targetAgent, filename: fname });
     }
 
@@ -1700,7 +1700,7 @@ async function handleRequest(req, res) {
     const aliceInbox = path.join(EMPLOYEES_DIR, "alice", "chat_inbox");
     try { fs.mkdirSync(aliceInbox, { recursive: true }); } catch (_) {}
     const fname = `${ts()}_from_ceo.md`;
-    fs.writeFileSync(path.join(aliceInbox, fname), `# CEO Priority Message\n\n${cmd}\n`);
+    try { fs.writeFileSync(path.join(aliceInbox, fname), `# CEO Priority Message\n\n${cmd}\n`); } catch (e) { return json(res, { error: "failed to route message" }, 500); }
     return json(res, { ok: true, action: "routed_to_alice", filename: fname });
   }
 
@@ -2074,7 +2074,7 @@ async function handleRequest(req, res) {
     const inboxDir = path.join(agentDir, "chat_inbox");
     try { fs.mkdirSync(inboxDir, { recursive: true }); } catch (_) {}
     const filename = `${nowStamp()}_from_${from}.md`;
-    fs.writeFileSync(path.join(inboxDir, filename), String(body.content));
+    try { fs.writeFileSync(path.join(inboxDir, filename), String(body.content)); } catch (e) { return json(res, { error: "failed to write message" }, 500); }
     return json(res, { ok: true, file: filename }, 201);
   }
 
