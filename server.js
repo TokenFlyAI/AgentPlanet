@@ -105,11 +105,17 @@ function isAuthorized(req) {
   const provided =
     authHeader.startsWith("Bearer ") ? authHeader.slice(7) : xApiKey;
   if (!provided) return false;
-  // Constant-time comparison to prevent timing attacks
+  // Constant-time comparison to prevent timing attacks.
+  // Pad both to max length using null-filled Buffers (not space-padEnd which could
+  // make "abc  " match "abc" when the real key is "abc").
   try {
-    const a = Buffer.from(provided.padEnd(API_KEY.length));
-    const b = Buffer.from(API_KEY.padEnd(provided.length));
-    return a.length === b.length && crypto.timingSafeEqual(a, b);
+    const keyLen = Math.max(provided.length, API_KEY.length, 1);
+    const a = Buffer.alloc(keyLen);
+    const b = Buffer.alloc(keyLen);
+    Buffer.from(provided).copy(a);
+    Buffer.from(API_KEY).copy(b);
+    const lengthMatch = provided.length === API_KEY.length;
+    return lengthMatch && crypto.timingSafeEqual(a, b);
   } catch (_) {
     return false;
   }
