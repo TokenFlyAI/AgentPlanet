@@ -769,8 +769,10 @@ async function handleRequest(req, res) {
     const html = safeRead(path.join(DIR, "index_lite.html"));
     if (!html) return notFound(res, "index_lite.html not found");
     res.writeHead(200, {
-      "Content-Type": "text/html",
+      "Content-Type": "text/html; charset=utf-8",
       "Access-Control-Allow-Origin": "*",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "SAMEORIGIN",
     });
     return res.end(html);
   }
