@@ -169,6 +169,11 @@ setInterval(() => {
   const STALE_MS = 15 * 60 * 1000;
   const names = listAgentNames();
   names.forEach((name) => {
+    // Validate agent name before using in shell commands
+    if (!/^[a-zA-Z0-9_-]+$/.test(name)) {
+      console.warn(`[watchdog] skipping suspicious agent directory name: ${name}`);
+      return;
+    }
     execFile("pgrep", ["-f", `run_subset.sh ${name}`], {}, (err, stdout) => {
       if (!stdout.trim()) return; // not running
       const hbMtime = fileMtime(path.join(EMPLOYEES_DIR, name, "heartbeat.md"));
@@ -176,7 +181,7 @@ setInterval(() => {
       if (age !== null && age > STALE_MS) {
         const stopScript = path.join(DIR, "stop_agent.sh");
         const startScript = path.join(DIR, "run_subset.sh");
-        execFile("bash", [stopScript, name], { cwd: DIR }, () => {
+        execFile("bash", [stopScript, name], { cwd: DIR, timeout: 10000 }, () => {
           setTimeout(() => {
             const child = spawn("bash", [startScript, name], { cwd: DIR, detached: true, stdio: "ignore" });
             child.unref();
@@ -577,7 +582,7 @@ function archiveDoneTasks() {
 }
 
 // Sanitize a string for safe insertion into a markdown table cell (strip pipe chars)
-function sanitizeCell(v) { return String(v || "").replace(/\|/g, "-").replace(/\n/g, " ").trim(); }
+function sanitizeCell(v) { return String(v || "").replace(/\|/g, "-").replace(/[\n\r]/g, " ").trim(); }
 
 async function appendTaskRow(task) {
   let newId;
