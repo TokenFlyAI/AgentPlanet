@@ -168,8 +168,10 @@ function getAgentMetrics(name, companyDir) {
   };
 }
 
+const SAFE_AGENT_NAME_RE = /^[a-zA-Z0-9_-]+$/;
+
 function getAllAgentsMetrics(companyDir) {
-  const names = listDirs(path.join(companyDir, "agents"));
+  const names = listDirs(path.join(companyDir, "agents")).filter((n) => SAFE_AGENT_NAME_RE.test(n) && n.length <= 64);
   return names.map((name) => getAgentMetrics(name, companyDir));
 }
 
