@@ -4,7 +4,7 @@ set -e
 
 AGENT_NAME="$1"
 COMPANY_DIR="$(cd "$(dirname "$0")" && pwd)"
-AGENT_DIR="${COMPANY_DIR}/employees/${AGENT_NAME}"
+AGENT_DIR="${COMPANY_DIR}/agents/${AGENT_NAME}"
 
 # Validate
 [ -z "$AGENT_NAME" ] && echo "Usage: $0 <agent_name>" && exit 1

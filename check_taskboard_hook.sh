@@ -1,6 +1,6 @@
 #!/bin/bash
 # check_taskboard_hook.sh — PreToolUse hook: show agent their latest relevant tasks
-# Runs from agent's working directory (employees/{name}/)
+# Runs from agent's working directory (agents/{name}/)
 TASKBOARD="../../public/task_board.md"
 AGENT_NAME=$(basename "$(pwd)")
 

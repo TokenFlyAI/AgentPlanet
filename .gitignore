@@ -1,6 +1,6 @@
 # Agent logs (can be large)
-employees/*/logs/*.log
-employees/*/logs/*_raw.log
+agents/*/logs/*.log
+agents/*/logs/*_raw.log
 
 # Temp config dirs
 /tmp/aicompany_config/

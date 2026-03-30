@@ -1,6 +1,6 @@
 #!/bin/bash
 # check_inbox_hook.sh — PreToolUse hook for message delivery
-# Runs from agent's working directory (employees/{name}/)
+# Runs from agent's working directory (agents/{name}/)
 INBOX_DIR="chat_inbox"
 shopt -s nullglob
 UNREAD=""

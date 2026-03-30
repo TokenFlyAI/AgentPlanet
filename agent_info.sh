@@ -2,7 +2,7 @@
 # agent_info.sh — Deep status for a single agent
 AGENT_NAME="$1"
 COMPANY_DIR="$(cd "$(dirname "$0")" && pwd)"
-AGENT_DIR="${COMPANY_DIR}/employees/${AGENT_NAME}"
+AGENT_DIR="${COMPANY_DIR}/agents/${AGENT_NAME}"
 
 [ -z "$AGENT_NAME" ] && echo "Usage: $0 <agent_name>" && exit 1
 [ ! -d "$AGENT_DIR" ] && echo "Error: Agent '$AGENT_NAME' not found" && exit 1

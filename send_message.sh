@@ -31,7 +31,7 @@ case "$TARGET" in
     all)
         COUNT=0
         for agent in "${AGENTS[@]}"; do
-            INBOX="${COMPANY_DIR}/employees/${agent}/chat_inbox"
+            INBOX="${COMPANY_DIR}/agents/${agent}/chat_inbox"
             mkdir -p "$INBOX"
             echo "$MESSAGE" > "${INBOX}/${TS}_from_${FROM}.md"
             COUNT=$((COUNT + 1))
@@ -52,7 +52,7 @@ case "$TARGET" in
         ;;
     *)
         # Single agent DM
-        AGENT_DIR="${COMPANY_DIR}/employees/${TARGET}"
+        AGENT_DIR="${COMPANY_DIR}/agents/${TARGET}"
         if [ ! -d "$AGENT_DIR" ]; then
             echo "Error: Unknown agent '$TARGET'"
             echo "Valid agents: ${AGENTS[*]}"

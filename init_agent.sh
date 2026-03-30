@@ -16,7 +16,7 @@ usage() {
 
 [ -z "$NAME" ] || [ -z "$ROLE" ] && usage
 
-AGENT_DIR="${COMPANY_DIR}/employees/${NAME}"
+AGENT_DIR="${COMPANY_DIR}/agents/${NAME}"
 
 if [ -d "$AGENT_DIR" ]; then
     echo "Error: Agent '$NAME' already exists at $AGENT_DIR"
@@ -164,7 +164,7 @@ EOF
 
 # Insert into team_directory.md Engineering table (before "## Who to Contact")
 TEAM_DIR="${COMPANY_DIR}/public/team_directory.md"
-NEW_ROW="| ${NAME_UPPER} | ${ROLE} | ${SPECIALTY} | \`employees/${NAME}/\` |"
+NEW_ROW="| ${NAME_UPPER} | ${ROLE} | ${SPECIALTY} | \`agents/${NAME}/\` |"
 # Insert the new row before the "## Who to Contact" line (python3 for macOS BSD sed compat)
 if grep -q "## Who to Contact" "$TEAM_DIR"; then
     python3 -c "

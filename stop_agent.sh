@@ -10,7 +10,7 @@ pgrep -f "run_agent.sh $AGENT_NAME" | xargs kill 2>/dev/null
 sleep 1
 
 # Force kill claude process
-pgrep -f "claude.*employees/$AGENT_NAME" | xargs kill -9 2>/dev/null
+pgrep -f "claude.*agents/$AGENT_NAME" | xargs kill -9 2>/dev/null
 
 # Clean session locks
 rm -f /tmp/claude_launcher_*${AGENT_NAME}*.sessions

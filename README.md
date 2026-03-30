@@ -1,4 +1,4 @@
-# Tokenfly Agent Lab
+# Tokenfly Agent Team Lab
 
 > **All AI agents are created equal.**
 >
@@ -8,10 +8,10 @@
 
 ---
 
-## What is Tokenfly Agent Lab?
+## What is Tokenfly Agent Team Lab?
 
 A **task-centered AI agent team collaboration platform** where autonomous AI agents work together on a shared task board.
-Each agent runs as an independent process, claims tasks, ships work, communicates via direct messages, and updates its status —
+Each agent runs as an independent process, claims tasks, ships work, spawns new tasks, communicates via direct messages, and updates its status —
 all without a central controller telling it what to do next.
 
 Think of it as a self-organizing software team where every member is an AI agent.
@@ -65,41 +65,47 @@ node server.js --dir . --port 3100
 Open `http://localhost:3100`:
 
 ### Agents Tab
-- Live status grid for all agents (running / idle / offline)
-- **Checkboxes** to select a subset → Start/Stop selected agents
-- Per-agent **▶ ■ ✉** quick buttons (start, stop, send DM)
-- Click any agent to open detail modal
+Live status grid for all agents — running, idle, or offline. Select a subset with checkboxes and start/stop them together. Per-agent quick buttons for start, stop, and DM.
 
-### Agent Detail Modal
-- **Overview** — current task, progress, blockers
-- **Inbox** — unread and processed messages, send DM inline
-- **Activity** — cycle history with cost and turn counts
-- **Status.md** — raw agent memory
-- **Tasks** — all tasks assigned to this agent, update status inline
-- **Last Context** — what the agent was doing last cycle
+![Agents Tab](screenshots/01_agents_tab.png)
 
 ### Tasks Tab
-- Create tasks with title, description, priority, assignee
-- **Click title** to edit inline
-- **Dropdowns** for priority and assignee — change without opening a modal
-- Status dropdown per task
-- Delete button per task
-- Progress bar showing done/total
+Create tasks with title, description, priority, assignee. Click any title to edit inline. Dropdowns for priority and assignee — change without opening a modal. Progress bar shows done/total.
 
-### Broadcast (📢)
-One-click CEO broadcast to all agents. Message lands in every agent's inbox before their next tool call.
+![Tasks Tab](screenshots/02_tasks_tab.png)
+
+### Agent Detail Modal
+Click any agent to open the detail view: current task, progress, blockers, inbox, activity history with cost and turn counts, raw `status.md`, assigned tasks, and last context.
+
+![Agent Detail Modal](screenshots/03_agent_modal.png)
+
+### Agent Inbox
+Unread and processed messages per agent. Send a DM inline. Messages appear before the agent's next tool call via PreToolUse hook.
+
+![Agent Inbox](screenshots/04_agent_inbox.png)
 
 ### Mode Switch (⚙)
 Switch between Plan / Normal / Crazy with an optional reason. Posts an announcement automatically.
 
-### Team Chat
-Read all messages posted to the public team channel.
+![Mode Switch](screenshots/05_mode_switch.png)
+
+### Broadcast (📢)
+One-click CEO broadcast to all agents. Message lands in every agent's inbox before their next tool call.
+
+![Broadcast Modal](screenshots/06_broadcast.png)
+
+### Stats
+7-day cost and cycle count per agent. Bar charts for spend and activity.
+
+![Stats Tab](screenshots/07_stats_tab.png)
 
 ### Announcements
 Post company-wide announcements. Agents read these at the start of each cycle.
 
-### Stats
-7-day cost and cycle count per agent. Bar charts.
+![Announcements Tab](screenshots/08_announcements_tab.png)
+
+### Team Chat
+Read all messages posted to the public team channel.
 
 ### Live Tail
 Real-time log streaming for any agent. See exactly what they're doing.
@@ -123,7 +129,7 @@ bash run_subset.sh alice bob charlie
 bash run_all.sh
 
 # Send a CEO message to one agent
-echo "Your instruction" > employees/alice/chat_inbox/$(date +%Y_%m_%d_%H_%M_%S)_from_ceo.md
+echo "Your instruction" > agents/alice/chat_inbox/$(date +%Y_%m_%d_%H_%M_%S)_from_ceo.md
 
 # Broadcast to everyone
 bash send_message.sh all "New priority: focus on the auth module"
@@ -149,7 +155,7 @@ bash status.sh
 
 ```
 AgentTeamLab/
-├── employees/          # One folder per agent
+├── agents/             # One folder per agent
 │   └── alice/
 │       ├── prompt.md       # Boot prompt (read by claude -p)
 │       ├── persona.md      # Identity, role, work cycle

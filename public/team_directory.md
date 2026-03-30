@@ -17,21 +17,21 @@
 ## Engineering
 | Name | Role | Specialties | Folder |
 |------|------|-------------|--------|
-| Bob | Backend Engineer | APIs, databases | `employees/bob/` |
-| Charlie | Frontend Engineer | UI, React | `employees/charlie/` |
-| Dave | Full Stack Engineer | E2E features | `employees/dave/` |
-| Eve | Infra Engineer | CI/CD, deploys | `employees/eve/` |
-| Grace | Data Engineer | Pipelines, analytics | `employees/grace/` |
-| Heidi | Security Engineer | Auth, encryption | `employees/heidi/` |
-| Ivan | ML Engineer | ML, models | `employees/ivan/` |
-| Judy | Mobile Engineer | iOS, Android | `employees/judy/` |
-| Karl | Platform Engineer | SDKs, libraries | `employees/karl/` |
-| Liam | SRE | Monitoring, SLOs | `employees/liam/` |
-| Mia | API Engineer | REST, GraphQL | `employees/mia/` |
-| Nick | Performance Engineer | Profiling, load testing | `employees/nick/` |
-| Pat | Database Engineer | Schema, queries | `employees/pat/` |
-| Quinn | Cloud Engineer | Cloud infra, IaC | `employees/quinn/` |
-| Rosa | Distributed Systems | Microservices | `employees/rosa/` |
+| Bob | Backend Engineer | APIs, databases | `agents/bob/` |
+| Charlie | Frontend Engineer | UI, React | `agents/charlie/` |
+| Dave | Full Stack Engineer | E2E features | `agents/dave/` |
+| Eve | Infra Engineer | CI/CD, deploys | `agents/eve/` |
+| Grace | Data Engineer | Pipelines, analytics | `agents/grace/` |
+| Heidi | Security Engineer | Auth, encryption | `agents/heidi/` |
+| Ivan | ML Engineer | ML, models | `agents/ivan/` |
+| Judy | Mobile Engineer | iOS, Android | `agents/judy/` |
+| Karl | Platform Engineer | SDKs, libraries | `agents/karl/` |
+| Liam | SRE | Monitoring, SLOs | `agents/liam/` |
+| Mia | API Engineer | REST, GraphQL | `agents/mia/` |
+| Nick | Performance Engineer | Profiling, load testing | `agents/nick/` |
+| Pat | Database Engineer | Schema, queries | `agents/pat/` |
+| Quinn | Cloud Engineer | Cloud infra, IaC | `agents/quinn/` |
+| Rosa | Distributed Systems | Microservices | `agents/rosa/` |
 
 ## Who to Contact
 | Need | Contact |

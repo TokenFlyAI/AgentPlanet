@@ -22,7 +22,7 @@ function flag(name, def) {
 const PORT = parseInt(flag("--port", "3100"), 10);
 const DIR = path.resolve(flag("--dir", __dirname));
 
-const EMPLOYEES_DIR = path.join(DIR, "employees");
+const EMPLOYEES_DIR = path.join(DIR, "agents");
 const PUBLIC_DIR = path.join(DIR, "public");
 const startTime = Date.now();
 

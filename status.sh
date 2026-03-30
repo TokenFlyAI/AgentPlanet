@@ -15,7 +15,7 @@ echo ""
 printf "${CYAN}%-12s %-8s %5s %8s %7s  %-50s${NC}\n" "AGENT" "STATUS" "CYCLE" "LAST_UPD" "LOG" "INFO"
 printf "%-12s %-8s %5s %8s %7s  %-50s\n" "------------" "--------" "-----" "--------" "-------" "-----------------------------------------------"
 
-for AGENT_DIR in "${COMPANY_DIR}"/employees/*/; do
+for AGENT_DIR in "${COMPANY_DIR}"/agents/*/; do
     [ ! -d "$AGENT_DIR" ] && continue
     AGENT_NAME=$(basename "$AGENT_DIR")
 
