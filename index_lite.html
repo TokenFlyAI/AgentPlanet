@@ -1632,9 +1632,6 @@ function connectSSE() {
   try {
     es = new EventSource('/api/events');
     es.addEventListener('refresh', () => refresh());
-    es.addEventListener('open', () => {
-      setConnected(true);
-    });
     es.onopen = () => setConnected(true);
     es.onerror = () => {
       setConnected(false);
@@ -3383,6 +3380,7 @@ function openAgentModal(name) {
   document.querySelectorAll('.modal-tab-content').forEach(c => c.classList.remove('visible'));
   document.getElementById('mtab-overview').classList.add('visible');
 
+  if (modalRefreshInterval) { clearInterval(modalRefreshInterval); modalRefreshInterval = null; }
   refreshAgentModal();
   modalRefreshInterval = setInterval(refreshAgentModal, 5000);
 }
