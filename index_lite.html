@@ -3090,10 +3090,12 @@ function renderKnowledge() {
       '</div>' +
     '</div>';
   }).join('');
-  container.addEventListener('click', e => {
+  if (container._clickHandler) container.removeEventListener('click', container._clickHandler);
+  container._clickHandler = e => {
     const item = e.target.closest('.knowledge-item');
     if (item) viewKnowledge(decodeURIComponent(item.dataset.kCat), decodeURIComponent(item.dataset.kName));
-  });
+  };
+  container.addEventListener('click', container._clickHandler);
 }
 
 function toggleKnowledgeCat(header) {
@@ -3724,10 +3726,12 @@ async function refreshAgentModal() {
             '<div id="output-file-' + f.name.replace(/[^a-z0-9]/gi,'_') + '" style="display:none;margin-top:8px;"></div>' +
             '</div>';
         }).join('');
-      outputEl.addEventListener('click', e => {
+      if (outputEl._clickHandler) outputEl.removeEventListener('click', outputEl._clickHandler);
+      outputEl._clickHandler = e => {
         const row = e.target.closest('[data-agent-name]');
         if (row) loadOutputFile(decodeURIComponent(row.dataset.agentName), decodeURIComponent(row.dataset.fileName), row);
-      });
+      };
+      outputEl.addEventListener('click', outputEl._clickHandler);
     }
   } else {
     outputEl.innerHTML = '<div class="text-muted" style="padding:16px;">No output files.</div>';

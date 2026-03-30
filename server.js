@@ -1888,16 +1888,18 @@ async function handleRequest(req, res) {
     const reportsDir = path.join(PUBLIC_DIR, "reports");
     const fullPlans = path.resolve(path.join(plansDir, file));
     const fullReports = path.resolve(path.join(reportsDir, file));
-    if (!fullPlans.startsWith(plansDir) && !fullReports.startsWith(reportsDir)) {
+    const inPlans = fullPlans.startsWith(plansDir + path.sep);
+    const inReports = fullReports.startsWith(reportsDir + path.sep);
+    if (!inPlans && !inReports) {
       return badRequest(res, "invalid path");
     }
     // Search in plans then reports
     let content = null;
     let dir = "plans";
-    if (fullPlans.startsWith(plansDir)) {
+    if (inPlans) {
       content = safeRead(fullPlans);
     }
-    if (content === null && fullReports.startsWith(reportsDir)) {
+    if (content === null && inReports) {
       content = safeRead(fullReports);
       dir = "reports";
     }
@@ -1914,8 +1916,9 @@ async function handleRequest(req, res) {
   if (method === "GET" && knowledgeMatch) {
     const p = decodeURIComponent(knowledgeMatch[1]);
     // Prevent path traversal
-    const full = path.resolve(path.join(PUBLIC_DIR, "knowledge", p));
-    if (!full.startsWith(path.join(PUBLIC_DIR, "knowledge"))) return badRequest(res, "invalid path");
+    const knowledgeDir = path.join(PUBLIC_DIR, "knowledge");
+    const full = path.resolve(path.join(knowledgeDir, p));
+    if (!full.startsWith(knowledgeDir + path.sep)) return badRequest(res, "invalid path");
     const content = safeRead(full);
     if (content === null) return notFound(res, "file not found");
     return json(res, { path: p, content });
