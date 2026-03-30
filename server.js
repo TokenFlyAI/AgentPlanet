@@ -610,6 +610,8 @@ async function updateTaskRow(id, updates) {
       const cols = lines[i].split("|").slice(1, -1).map((c) => c.trim());
       if (cols.length < 2) continue;
       if (String(cols[0]).trim() === String(id)) {
+        // Pad to full 9-column schema so sparse writes don't produce undefined in joined output
+        while (cols.length < 9) cols.push("");
         // Rebuild the row preserving columns order: id, title, description, priority, assignee, status, created, updated
         if (updates.status !== undefined) cols[5] = String(updates.status).toLowerCase();
         if (updates.assignee !== undefined) cols[4] = sanitizeCell(String(updates.assignee).toLowerCase());
@@ -1102,7 +1104,8 @@ async function handleRequest(req, res) {
     const script = path.join(DIR, "smart_run.sh");
     if (!fs.existsSync(script)) return notFound(res, "smart_run.sh not found");
     const body = await parseBody(req);
-    const maxAgents = body.max ? String(parseInt(body.max, 10) || 20) : "20";
+    const parsedMax = parseInt(body.max, 10);
+    const maxAgents = (!isNaN(parsedMax) && parsedMax > 0 && parsedMax <= 100) ? String(parsedMax) : "20";
     const extraArgs = ["--max", maxAgents];
     // Run smart_run.sh and capture its decision summary before it launches agents
     execFile("bash", [script, "--dry-run", ...extraArgs], { cwd: DIR }, (err, stdout, stderr) => {
@@ -1550,6 +1553,8 @@ async function handleRequest(req, res) {
         if (!lines[i].trim().startsWith("|")) continue;
         const cols = lines[i].split("|").slice(1, -1).map((c) => c.trim());
         if (cols.length < 2 || String(cols[0]) !== String(id)) continue;
+        // Pad to full 9-column schema so sparse writes don't produce undefined in joined output
+        while (cols.length < 9) cols.push("");
         cols[4] = claimant;  // assignee
         cols[5] = "in_progress";  // status
         cols[7] = new Date().toISOString().slice(0, 10);  // updated
