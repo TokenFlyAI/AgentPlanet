@@ -284,6 +284,13 @@ test.describe("POST /api/agents/:name/persona/note", () => {
     expect(typeof body.timestamp).toBe("string");
     expect(body.type).toBe("Note");
   });
+
+  test("returns 400 when note exceeds 10000 characters", async () => {
+    const { status } = await apiPost("/api/agents/alice/persona/note", {
+      note: "x".repeat(10001),
+    });
+    expect(status).toBe(400);
+  });
 });
 
 // ── Agent persona patch (evolution) ──────────────────────────────────────────
@@ -309,6 +316,13 @@ test.describe("PATCH /api/agents/:name/persona", () => {
     expect(body.ok).toBe(true);
     expect(typeof body.timestamp).toBe("string");
     expect(body.type).toBe("Evolution");
+  });
+
+  test("returns 400 when observation exceeds 10000 characters", async () => {
+    const { status } = await apiPatch("/api/agents/alice/persona", {
+      observation: "x".repeat(10001),
+    });
+    expect(status).toBe(400);
   });
 });
 
