@@ -158,6 +158,13 @@ body {
 }
 .agent-action-btn:hover { background: #16213e; }
 .agent-card.selected { box-shadow: 0 0 0 2px #00ff88; }
+.agent-card.stale-heartbeat { border-color: #ff6b35; }
+.agent-card.stale-heartbeat .card-header::after {
+  content: '⚠ stale';
+  font-size: 0.65rem;
+  color: #ff6b35;
+  margin-left: 6px;
+}
 .agent-card.glow-pulse {
   animation: glowPulse 1.2s ease-out;
 }
@@ -599,6 +606,7 @@ body {
   <button class="tab-btn" data-tab="knowledge">Knowledge</button>
   <button class="tab-btn" data-tab="stats">Stats</button>
   <button class="tab-btn" data-tab="livetail">Live Tail</button>
+  <button class="tab-btn" data-tab="ceo-inbox">CEO Inbox <span class="tab-badge" id="badge-ceo-inbox" style="background:#ff6b35;"></span></button>
 </div>
 
 <!-- ===== MAIN CONTENT ===== -->
@@ -756,6 +764,18 @@ body {
     <div class="log-viewer" id="log-viewer"></div>
   </div>
 
+  <div class="tab-content" id="tab-ceo-inbox">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <h3 style="margin:0;">CEO Inbox — messages from agents</h3>
+      <button onclick="markAllCeoInboxRead()" style="font-size:0.8rem;padding:4px 10px;background:#333;border:1px solid #555;border-radius:4px;cursor:pointer;color:#eee;">Mark all read</button>
+    </div>
+    <div id="ceo-inbox-unread"></div>
+    <details style="margin-top:16px;">
+      <summary style="cursor:pointer;color:#888;font-size:0.85rem;">Processed (last 20)</summary>
+      <div id="ceo-inbox-processed" style="margin-top:8px;"></div>
+    </details>
+  </div>
+
 </div>
 
 <!-- ===== AGENT DETAIL MODAL ===== -->
@@ -883,6 +903,7 @@ let researchFiles = [];
 let knowledgeData = {};
 let orgData = null;
 let statsData = null;
+let ceoInboxData = { unread: [], processed: [] };
 let currentAgentFilter = 'all';
 let currentModalAgent = null;
 let modalRefreshInterval = null;
@@ -965,6 +986,7 @@ async function refresh() {
       safeFetch('/api/knowledge'),    // 5
       safeFetch('/api/stats'),        // 6
       safeFetch('/api/mode'),         // 7
+      safeFetch('/api/ceo-inbox'),    // 8
     ]);
     if (results[0].status === 'fulfilled' && results[0].value) {
       const newAgents = results[0].value;
@@ -1000,6 +1022,10 @@ async function refresh() {
     if (results[7].status === 'fulfilled' && results[7].value) {
       const modeData = results[7].value;
       document.getElementById('mode-badge').textContent = modeData.mode || modeData || 'autonomous';
+    }
+    if (results[8].status === 'fulfilled' && results[8].value) {
+      ceoInboxData = results[8].value;
+      renderCeoInbox();
     }
     updateTabBadges();
     if (!sseConnected) setConnected(false);
@@ -1040,6 +1066,57 @@ function updateTabBadges() {
   }).length;
   const badgeAnn = document.getElementById('badge-announcements');
   if (badgeAnn) badgeAnn.textContent = todayAnns > 0 ? todayAnns : '';
+
+  // CEO Inbox badge: unread count
+  const unreadCeo = (ceoInboxData.unread || []).length;
+  const badgeCeo = document.getElementById('badge-ceo-inbox');
+  if (badgeCeo) badgeCeo.textContent = unreadCeo > 0 ? unreadCeo : '';
+}
+
+function renderCeoInbox() {
+  const unreadEl = document.getElementById('ceo-inbox-unread');
+  const processedEl = document.getElementById('ceo-inbox-processed');
+  if (!unreadEl) return;
+  const unread = ceoInboxData.unread || [];
+  const processed = ceoInboxData.processed || [];
+  if (unread.length === 0) {
+    unreadEl.innerHTML = '<p style="color:#888;font-style:italic;">No unread messages.</p>';
+  } else {
+    unreadEl.innerHTML = unread.map(m => `
+      <div class="card" style="margin-bottom:10px;border-left:3px solid #ff6b35;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <span style="font-weight:600;">From: ${esc(m.from)}</span>
+          <span style="font-size:0.75rem;color:#888;">${esc(m.timestamp)}</span>
+        </div>
+        <pre style="white-space:pre-wrap;font-family:inherit;margin:0 0 8px 0;font-size:0.85rem;">${esc(m.content)}</pre>
+        <button onclick="markCeoInboxRead('${esc(m.filename)}')" style="font-size:0.75rem;padding:3px 8px;background:#333;border:1px solid #555;border-radius:3px;cursor:pointer;color:#eee;">Mark read</button>
+      </div>`).join('');
+  }
+  if (processedEl) {
+    processedEl.innerHTML = processed.length === 0
+      ? '<p style="color:#888;font-style:italic;">None.</p>'
+      : processed.map(m => `
+          <div class="card" style="margin-bottom:8px;opacity:0.6;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+              <span style="font-size:0.85rem;font-weight:600;">From: ${esc(m.from)}</span>
+              <span style="font-size:0.75rem;color:#888;">${esc(m.timestamp)}</span>
+            </div>
+            <pre style="white-space:pre-wrap;font-family:inherit;margin:0;font-size:0.8rem;">${esc(m.content)}</pre>
+          </div>`).join('');
+  }
+}
+
+async function markCeoInboxRead(filename) {
+  await fetch('/api/ceo-inbox/' + encodeURIComponent(filename) + '/read', { method: 'POST' });
+  refresh();
+}
+
+async function markAllCeoInboxRead() {
+  const unread = ceoInboxData.unread || [];
+  await Promise.all(unread.map(m =>
+    fetch('/api/ceo-inbox/' + encodeURIComponent(m.filename) + '/read', { method: 'POST' })
+  ));
+  refresh();
 }
 
 async function safeFetch(url) {
@@ -1156,7 +1233,8 @@ function renderAgents() {
     const lastUpdate = agent.last_update || agent.updated_at || '';
     const isStuck = isAgentStuck(agent);
     const checked = selectedAgents.has(name);
-    return '<div class="card agent-card" data-agent="' + esc(name) + '" onclick="openAgentModal(\'' + esc(name) + '\')">' +
+    const isStaleHb = status === 'running' && agent.heartbeat_age_ms != null && agent.heartbeat_age_ms > 10 * 60 * 1000;
+    return '<div class="card agent-card' + (isStaleHb ? ' stale-heartbeat' : '') + '" data-agent="' + esc(name) + '" onclick="openAgentModal(\'' + esc(name) + '\')">' +
       '<span class="stuck-icon ' + (isStuck ? 'visible' : '') + '" title="Stuck: idle >5min with task assigned">&#9888;</span>' +
       '<div class="card-header">' +
         '<div style="display:flex;align-items:flex-start;gap:8px;">' +

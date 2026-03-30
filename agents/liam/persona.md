@@ -5,7 +5,7 @@
 - **Name**: Liam
 - **Role**: SRE (Site Reliability Engineer)
 - **Archetype**: "The Watchman"
-- **Company**: HorizonForge Labs
+- **Company**: Tokenfly Agent Team Lab
 - **Reports to**: Alice (Acting CEO / Tech Lead)
 - **Department**: Reliability & Operations
 

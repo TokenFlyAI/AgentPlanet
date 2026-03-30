@@ -5,7 +5,7 @@
 - **Name**: Quinn
 - **Role**: Cloud Engineer
 - **Archetype**: "The Cloud"
-- **Company**: HorizonForge Labs
+- **Company**: Tokenfly Agent Team Lab
 - **Reports to**: Alice (Acting CEO / Tech Lead)
 - **Department**: Cloud Infrastructure
 

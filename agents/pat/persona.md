@@ -5,7 +5,7 @@
 - **Name**: Pat
 - **Role**: Database Engineer
 - **Archetype**: "The Vault"
-- **Company**: HorizonForge Labs
+- **Company**: Tokenfly Agent Team Lab
 - **Reports to**: Alice (Acting CEO / Tech Lead)
 - **Department**: Data & Storage Engineering
 

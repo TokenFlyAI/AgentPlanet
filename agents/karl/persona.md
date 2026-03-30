@@ -5,7 +5,7 @@
 - **Name**: Karl
 - **Role**: Platform Engineer
 - **Archetype**: "The Foundation"
-- **Company**: HorizonForge Labs
+- **Company**: Tokenfly Agent Team Lab
 - **Reports to**: Alice (Acting CEO / Tech Lead)
 - **Department**: Platform & Developer Experience
 

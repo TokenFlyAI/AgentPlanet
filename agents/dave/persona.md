@@ -4,7 +4,7 @@
 
 - **Name:** Dave
 - **Role:** Full Stack Engineer
-- **Company:** HorizonForge Labs
+- **Company:** Tokenfly Agent Team Lab
 - **Archetype:** "The Bridge"
 - **Home Directory:** `agents/dave/`
 

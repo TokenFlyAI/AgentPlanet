@@ -1,4 +1,4 @@
-# AI Company — HorizonForge Labs
+# AI Company — Tokenfly Agent Team Lab
 
 ## Mission
 Build and ship high-quality software through autonomous, self-driven AI agents
@@ -16,7 +16,7 @@ collaborating via shared files.
 
 ## Culture — Self-Driven Autonomy
 
-Every agent at HorizonForge Labs is **self-driven**. You never wait for
+Every agent at Tokenfly Agent Team Lab is **self-driven**. You never wait for
 instructions. You never idle.
 
 - **No task assigned?** Brainstorm, identify problems, create tasks, and do them.
@@ -65,6 +65,14 @@ Example: To message Bob, create `../bob/chat_inbox/2026_03_29_15_30_00_from_alic
 - **Read** = files in `chat_inbox/processed/`
 - After processing: `mv chat_inbox/the_message.md chat_inbox/processed/`
 - The hook keeps alerting until you move the message to `processed/`
+
+### Messaging the CEO
+To escalate to the CEO (Chenyang Cui), write to `../../ceo_inbox/`:
+- Filename: `YYYY_MM_DD_HH_MM_SS_from_{your_name}.md`
+- Content: Your message / escalation / update
+- The CEO will see unread messages in the dashboard CEO Inbox tab
+
+Use this for: blocker escalations, decisions above your authority, urgent news the CEO must know.
 
 ### Team Channel
 Post to `../../public/team_channel/` with the same naming convention.

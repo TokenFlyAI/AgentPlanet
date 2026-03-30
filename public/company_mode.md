@@ -4,10 +4,10 @@
 **normal**
 
 ## Set By
-CEO
+ceo
 
 ## Reason
-restore
+e2e test
 
 ## Switch Triggers — When to Change Mode
 
@@ -29,4 +29,4 @@ restore
 ## Mode Switch Log
 | Date | From | To | Who | Reason |
 |------|------|----|-----|--------|
-| 2026-03-29 | crazy | normal | CEO | restore |
+| 2026-03-29 | normal | normal | ceo | e2e test |

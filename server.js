@@ -128,7 +128,7 @@ function json(res, data, status) {
   res.writeHead(status, {
     "Content-Type": "application/json",
     "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET,POST,PATCH,OPTIONS",
+    "Access-Control-Allow-Methods": "GET,POST,PATCH,DELETE,OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
   });
   res.end(JSON.stringify(data));
@@ -145,7 +145,7 @@ function badRequest(res, msg) {
 function cors(res) {
   res.writeHead(204, {
     "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET,POST,PATCH,OPTIONS",
+    "Access-Control-Allow-Methods": "GET,POST,PATCH,DELETE,OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
   });
   res.end();
@@ -159,6 +159,7 @@ function getAgentStatus(name) {
   const hbRaw = safeRead(path.join(d, "heartbeat.md"));
   let status = "unknown";
   let heartbeat = null;
+  let heartbeat_age_ms = null;
   if (hbRaw) {
     heartbeat = {};
     for (const line of hbRaw.split("\n")) {
@@ -167,6 +168,8 @@ function getAgentStatus(name) {
       if (m) heartbeat[m[1].trim().toLowerCase().replace(/\s+/g, "_")] = m[2].trim();
     }
     status = heartbeat.status || "unknown";
+    const hbMtime = fileMtime(path.join(d, "heartbeat.md"));
+    if (hbMtime) heartbeat_age_ms = Date.now() - hbMtime;
   }
   if (status !== "running") {
     const today = todayStr();
@@ -176,12 +179,12 @@ function getAgentStatus(name) {
       status = "running";
     }
   }
-  return { status, heartbeat };
+  return { status, heartbeat, heartbeat_age_ms };
 }
 
 function getAgentSummary(name) {
   const d = path.join(EMPLOYEES_DIR, name);
-  const { status, heartbeat } = getAgentStatus(name);
+  const { status, heartbeat, heartbeat_age_ms } = getAgentStatus(name);
   const statusMd = safeRead(path.join(d, "status.md"));
   const todoMd = safeRead(path.join(d, "todo.md"));
 
@@ -207,7 +210,7 @@ function getAgentSummary(name) {
   const rawLogMtime = fileMtime(path.join(d, "logs", `${today}_raw.log`));
   const lastSeenSecs = rawLogMtime ? Math.floor((Date.now() - rawLogMtime) / 1000) : null;
 
-  return { name, status, currentTask, cycles, lastSeenSecs };
+  return { name, status, currentTask, cycles, lastSeenSecs, heartbeat_age_ms };
 }
 
 // ---------------------------------------------------------------------------
@@ -535,7 +538,7 @@ async function handleRequest(req, res) {
     const statusMd = safeRead(path.join(d, "status.md"));
     const persona = safeRead(path.join(d, "persona.md"));
     const todo = safeRead(path.join(d, "todo.md"));
-    const inbox = listDir(path.join(d, "chat_inbox")).map((f) => ({
+    const inbox = listDir(path.join(d, "chat_inbox")).filter((f) => f.endsWith(".md")).map((f) => ({
       filename: f,
       content: safeRead(path.join(d, "chat_inbox", f)),
     }));
@@ -747,6 +750,17 @@ async function handleRequest(req, res) {
     return json(res, files);
   }
 
+  if (method === "POST" && pathname === "/api/team-channel") {
+    const body = await parseBody(req);
+    if (!body.message) return badRequest(res, "missing message");
+    const from = body.from || "ceo";
+    const dir = path.join(PUBLIC_DIR, "team_channel");
+    try { fs.mkdirSync(dir, { recursive: true }); } catch (_) {}
+    const filename = `${nowStamp()}_from_${from}.md`;
+    fs.writeFileSync(path.join(dir, filename), body.message);
+    return json(res, { ok: true, filename });
+  }
+
   if (method === "GET" && pathname === "/api/announcements") {
     const dir = path.join(PUBLIC_DIR, "announcements");
     const files = listDir(dir)
@@ -801,6 +815,41 @@ async function handleRequest(req, res) {
       try { fs.writeFileSync(path.join(inboxDir, filename), body.message); } catch (_) {}
     }
     return json(res, { ok: true, agents: agents.length, filename });
+  }
+
+  // ---- CEO Inbox ----
+  const CEO_INBOX = path.join(DIR, "ceo_inbox");
+  if (method === "GET" && pathname === "/api/ceo-inbox") {
+    try { fs.mkdirSync(path.join(CEO_INBOX, "processed"), { recursive: true }); } catch (_) {}
+    const unread = listDir(CEO_INBOX).filter((f) => f.endsWith(".md")).map((f) => {
+      const content = safeRead(path.join(CEO_INBOX, f)) || "";
+      const fromMatch = f.match(/_from_([^.]+)\.md$/i);
+      const tsMatch = f.match(/^(\d{4})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{2})/);
+      const ts = tsMatch ? `${tsMatch[1]}-${tsMatch[2]}-${tsMatch[3]} ${tsMatch[4]}:${tsMatch[5]}:${tsMatch[6]}` : "";
+      return { filename: f, from: fromMatch ? fromMatch[1] : "unknown", timestamp: ts, content };
+    }).sort((a, b) => b.filename.localeCompare(a.filename));
+    const processed = listDir(path.join(CEO_INBOX, "processed")).filter((f) => f.endsWith(".md")).slice(-20).map((f) => {
+      const content = safeRead(path.join(CEO_INBOX, "processed", f)) || "";
+      const fromMatch = f.match(/_from_([^.]+)\.md$/i);
+      const tsMatch = f.match(/^(\d{4})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{2})/);
+      const ts = tsMatch ? `${tsMatch[1]}-${tsMatch[2]}-${tsMatch[3]} ${tsMatch[4]}:${tsMatch[5]}:${tsMatch[6]}` : "";
+      return { filename: f, from: fromMatch ? fromMatch[1] : "unknown", timestamp: ts, content };
+    }).sort((a, b) => b.filename.localeCompare(a.filename));
+    return json(res, { unread, processed });
+  }
+
+  const ceoInboxReadMatch = pathname.match(/^\/api\/ceo-inbox\/([^/]+)\/read$/);
+  if (method === "POST" && ceoInboxReadMatch) {
+    const filename = decodeURIComponent(ceoInboxReadMatch[1]);
+    const src = path.join(CEO_INBOX, filename);
+    const dst = path.join(CEO_INBOX, "processed", filename);
+    try {
+      fs.mkdirSync(path.join(CEO_INBOX, "processed"), { recursive: true });
+      fs.renameSync(src, dst);
+      return json(res, { ok: true });
+    } catch (e) {
+      return json(res, { error: e.message }, 500);
+    }
   }
 
   // ---- Knowledge & Research ----
@@ -964,7 +1013,7 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`AI Company Dashboard server running on http://localhost:${PORT}`);
-  console.log(`Company directory: ${DIR}`);
-  console.log(`Employees: ${listAgentNames().join(", ")}`);
+  console.log(`Tokenfly Agent Team Lab — dashboard on http://localhost:${PORT}`);
+  console.log(`Directory: ${DIR}`);
+  console.log(`Agents: ${listAgentNames().join(", ")}`);
 });
