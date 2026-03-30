@@ -159,13 +159,7 @@ setInterval(() => {
 const watchdogLog = [];
 setInterval(() => {
   const STALE_MS = 15 * 60 * 1000;
-  const names = [];
-  try {
-    const d = fs.readdirSync(EMPLOYEES_DIR).filter((n) =>
-      fs.statSync(path.join(EMPLOYEES_DIR, n)).isDirectory()
-    );
-    names.push(...d);
-  } catch (_) { return; }
+  const names = listAgentNames();
   names.forEach((name) => {
     execFile("pgrep", ["-f", `run_subset.sh ${name}`], {}, (err, stdout) => {
       if (!stdout.trim()) return; // not running
@@ -1015,6 +1009,7 @@ async function handleRequest(req, res) {
   if (method === "POST" && agentStopMatch) {
     const name = agentName(agentStopMatch[1]);
     if (!name) return badRequest(res, "invalid agent name");
+    if (!fs.existsSync(path.join(EMPLOYEES_DIR, name))) return notFound(res, "agent not found");
     const script = path.join(DIR, "stop_agent.sh");
     if (!fs.existsSync(script)) return notFound(res, "stop_agent.sh not found");
     execFile("bash", [script, name], { cwd: DIR }, (err, stdout, stderr) => {
@@ -1046,6 +1041,7 @@ async function handleRequest(req, res) {
   if (method === "POST" && agentStartMatch) {
     const name = agentName(agentStartMatch[1]);
     if (!name) return badRequest(res, "invalid agent name");
+    if (!fs.existsSync(path.join(EMPLOYEES_DIR, name))) return notFound(res, "agent not found");
     const script = path.join(DIR, "run_subset.sh");
     if (!fs.existsSync(script)) return notFound(res, "run_subset.sh not found");
     // Check if already running to avoid duplicates

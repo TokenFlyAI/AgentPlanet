@@ -3525,6 +3525,9 @@ async function refreshAgentModal() {
     safeFetch('/api/agents/' + encodeURIComponent(name) + '/output'),
   ]);
 
+  // Stale check: user may have closed/switched modal while fetches were in flight
+  if (currentModalAgent !== name) return;
+
   const agentDetail = results[0].status === 'fulfilled' ? results[0].value : null;
   const inbox = results[1].status === 'fulfilled' ? results[1].value : null;
   const statusMd = results[2].status === 'fulfilled' ? results[2].value : null;
