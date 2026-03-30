@@ -970,6 +970,7 @@ async function handleRequest(req, res) {
   if (method === "GET" && agentPingMatch) {
     const name = agentName(agentPingMatch[1]);
     if (!name) return badRequest(res, "invalid agent name");
+    if (!fs.existsSync(path.join(EMPLOYEES_DIR, name))) return notFound(res, "agent not found");
     // Check for run_subset.sh (loop process) OR run_agent.sh (active cycle)
     execFile("pgrep", ["-f", `run_subset.sh ${name}`], {}, (err1, stdout1) => {
       execFile("pgrep", ["-f", `run_agent.sh ${name}`], {}, (err2, stdout2) => {
