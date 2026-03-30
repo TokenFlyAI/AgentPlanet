@@ -547,6 +547,9 @@ function archiveDoneTasks() {
   return done.length;
 }
 
+// Sanitize a string for safe insertion into a markdown table cell (strip pipe chars)
+function sanitizeCell(v) { return String(v || "").replace(/\|/g, "-").replace(/\n/g, " ").trim(); }
+
 function appendTaskRow(task) {
   let newId;
   withTaskLock(() => {
@@ -558,7 +561,7 @@ function appendTaskRow(task) {
     const maxId = all.reduce((m, t) => Math.max(m, parseInt(t.id || t["#"] || "0", 10) || 0), 0);
     newId = maxId + 1;
     const now = new Date().toISOString().slice(0, 10);
-    const row = `| ${newId} | ${task.title || ""} | ${task.description || ""} | ${task.priority || "medium"} | ${task.assignee || ""} | open | ${now} | ${now} | ${task.notes || ""} |`;
+    const row = `| ${newId} | ${sanitizeCell(task.title)} | ${sanitizeCell(task.description)} | ${sanitizeCell(task.priority || "medium")} | ${sanitizeCell(task.assignee)} | open | ${now} | ${now} | ${sanitizeCell(task.notes)} |`;
     const existing_raw = safeRead(tbPath) || "";
     const sep = existing_raw.endsWith("\n") ? "" : "\n";
     fs.appendFileSync(tbPath, sep + row + "\n");
@@ -582,10 +585,10 @@ function updateTaskRow(id, updates) {
         if (updates.status !== undefined) cols[5] = String(updates.status).toLowerCase();
         if (updates.assignee !== undefined) cols[4] = String(updates.assignee).toLowerCase();
         if (updates.priority !== undefined) cols[3] = String(updates.priority).toLowerCase();
-        if (updates.title !== undefined) cols[1] = updates.title;
+        if (updates.title !== undefined) cols[1] = sanitizeCell(updates.title);
         if (updates.notes !== undefined) {
           // Append note (timestamped), never replace
-          const newNote = "[" + new Date().toISOString().slice(0, 10) + "] " + String(updates.notes).trim().replace(/;;/g, "--").replace(/\|/g, "-");
+          const newNote = "[" + new Date().toISOString().slice(0, 10) + "] " + String(updates.notes).trim().replace(/;;/g, "--").replace(/\|/g, "-").replace(/\n/g, " ");
           cols[8] = cols[8] ? cols[8] + " ;; " + newNote : newNote;
         }
         cols[7] = new Date().toISOString().slice(0, 10); // updated

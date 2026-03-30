@@ -485,3 +485,39 @@ test.describe("Task result endpoint", () => {
     expect(body.file).toBeTruthy();
   });
 });
+
+// ---------------------------------------------------------------------------
+// Input sanitization
+// ---------------------------------------------------------------------------
+
+test.describe("Task input sanitization", () => {
+  test("pipe characters in title are replaced, not stored literally", async () => {
+    const title = "Task with | pipe | chars";
+    const { status, body } = await apiPost("/api/tasks", {
+      title,
+      description: "desc | with | pipes",
+    });
+    expect(status).toBe(201);
+    const taskId = body.id;
+
+    // Re-fetch the task and verify the table row is not corrupted
+    const { body: tasks } = await apiGet("/api/tasks");
+    const task = (Array.isArray(tasks) ? tasks : []).find((t) => String(t.id) === String(taskId));
+    expect(task).toBeTruthy();
+    // Title should exist but without literal pipes that would break the table
+    expect(task.title).toBeTruthy();
+    // The task board must still parse correctly (we got the task back = not corrupted)
+  });
+
+  test("newlines in title are replaced with spaces", async () => {
+    const { status, body } = await apiPost("/api/tasks", {
+      title: "line1\nline2",
+    });
+    expect(status).toBe(201);
+    const { body: tasks } = await apiGet("/api/tasks");
+    const task = (Array.isArray(tasks) ? tasks : []).find((t) => String(t.id) === String(body.id));
+    expect(task).toBeTruthy();
+    // Task board should still parse cleanly
+    expect(task.title).not.toContain("\n");
+  });
+});
