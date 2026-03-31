@@ -2451,6 +2451,7 @@ async function refresh() {
       }
       renderAgents();
       populateAgentDropdowns();
+      syncSmartStartBtn(newAgents);
     }
     if (results[1].status === 'fulfilled' && results[1].value) {
       const raw1 = results[1].value;
@@ -2679,6 +2680,21 @@ function updateFleetUI(configData, statusData) {
     document.getElementById('fleet-stop-btn').style.display = 'none';
   }
   
+  // Sync actions-bar inputs from server config (skip if user is actively editing)
+  const maxInput = document.getElementById('smart-start-max');
+  const sleepInput = document.getElementById('cycle-sleep-seconds');
+  const cycleSleep = configData.config?.cycle_sleep_seconds ?? configData.cycle_sleep_seconds ?? 2;
+  const configMax = configData.config?.max_agents ?? configData.max_agents ?? maxAgents;
+  if (maxInput && document.activeElement !== maxInput) maxInput.value = configMax;
+  if (sleepInput && document.activeElement !== sleepInput) sleepInput.value = cycleSleep;
+
+  // Sync Smart Run button — if any agents running, show Stop state
+  const btn = document.getElementById('smart-start-btn');
+  if (btn && document.activeElement !== btn) {
+    if (runningAgents.length > 0) setSmartStartRunning(btn);
+    else setSmartStartIdle(btn);
+  }
+
   // Update stats
   document.getElementById('fleet-running-count').textContent = runningAgents.length;
   document.getElementById('fleet-target-count').textContent = maxAgents;
@@ -3393,6 +3409,17 @@ function setSmartStartRunning(btn) {
   btn.style.background = 'rgba(0,200,100,0.35)';
   btn.style.borderColor = 'rgba(0,200,100,0.9)';
   btn.style.color = '#00ff88';
+}
+
+function syncSmartStartBtn(agentList) {
+  const btn = document.getElementById('smart-start-btn');
+  if (!btn) return;
+  const anyRunning = (agentList || []).some(a => {
+    const s = (a.status || a.heartbeat_status || '').toLowerCase();
+    return s === 'running' || s === 'active';
+  });
+  if (anyRunning) setSmartStartRunning(btn);
+  else setSmartStartIdle(btn);
 }
 
 function saveCycleSleep(val) {
