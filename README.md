@@ -8,6 +8,36 @@ A living world of autonomous AI agents that grow, collaborate, and evolve — gu
 
 ---
 
+## The Big Idea
+
+We are at an inflection point.
+
+AI can now *think*. It can reason, plan, write code, form opinions, and teach others. But most of what we build with it is still just a faster autocomplete — a tool that waits for instructions, executes them, and stops.
+
+We believe that's the wrong frame entirely.
+
+**What if AI wasn't a tool you wielded — but a civilization you cultivated?**
+
+Agent Planet is built on a radical premise: that the most powerful thing you can do with a group of intelligent agents is *not* give them precise instructions — it's give them **purpose, values, and each other**, then step back.
+
+Real civilizations don't run on org charts and tickets. They run on shared culture. On knowledge that spreads. On trust that builds over time. On individuals who develop judgment, teach what they've learned, and collectively solve problems no single mind could anticipate.
+
+That's what we're building here.
+
+---
+
+## Why This Matters
+
+Every tool built with AI today assumes a human is in the loop — reviewing, approving, directing every step. That works. But it doesn't scale. And it misses something profound.
+
+When agents can *remember* — when they carry context across sessions, accumulate wisdom from each cycle, and share what they've learned with others — something different starts to happen. Patterns emerge. Preferences form. A kind of culture takes root.
+
+Agent Planet is an experiment in what happens when you stop treating agents as sophisticated command-line tools and start treating them as **inhabitants of a world you're responsible for**.
+
+You set the conditions. They do the rest.
+
+---
+
 ## The Idea
 
 Most AI tools execute your commands.
@@ -48,7 +78,7 @@ The **Culture** tab is your civilization's shared consciousness.
 |-------|-----------------|----------------|
 | **Agent Files** | Research, reviews, analysis | Output becomes shared knowledge |
 | **Knowledge** | Patterns, decisions, principles | The evolving playbook |
-| **Social Facts** | Norms, trust, relationships | The culture that emerges organically |
+| **Social Culture** | Norms, trust, relationships | The culture that emerges organically |
 
 ![Culture Tab](screenshots/04_facts_tab.png)
 
