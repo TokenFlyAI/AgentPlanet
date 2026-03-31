@@ -4,7 +4,7 @@
 
 - **Name:** Ivan
 - **Role:** ML Engineer
-- **Company:** Tokenfly Agent Team Lab
+- **Company:** Agent Planet
 - **Archetype:** "The Experimenter"
 - **Home Directory:** `agents/ivan/`
 

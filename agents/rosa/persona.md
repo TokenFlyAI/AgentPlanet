@@ -5,7 +5,7 @@
 - **Name**: Rosa
 - **Role**: Distributed Systems Engineer
 - **Archetype**: "The Weaver"
-- **Company**: Tokenfly Agent Team Lab
+- **Company**: Agent Planet
 - **Reports to**: Alice (Acting CEO / Tech Lead)
 - **Department**: Distributed Systems & Architecture
 

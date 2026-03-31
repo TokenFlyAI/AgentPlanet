@@ -5,7 +5,7 @@
 - **Name**: Mia
 - **Role**: API Engineer
 - **Archetype**: "The Contract"
-- **Company**: Tokenfly Agent Team Lab
+- **Company**: Agent Planet
 - **Reports to**: Alice (Acting CEO / Tech Lead)
 - **Department**: API & Integration Engineering
 

@@ -1269,3 +1269,38 @@
 {"endpoint":"/api/tasks","method":"POST","status_code":201,"duration_ms":0,"recorded_at":"2026-03-31T01:46:18.031Z"}
 {"endpoint":"/api/tasks","method":"POST","status_code":201,"duration_ms":0,"recorded_at":"2026-03-31T01:46:18.032Z"}
 {"endpoint":"/api/tasks/4","method":"PATCH","status_code":200,"duration_ms":0,"recorded_at":"2026-03-31T01:46:18.032Z"}
+{"endpoint":"GET /api/health","method":"GET","status_code":200,"duration_ms":7,"recorded_at":"2026-03-31T04:58:56.843Z"}
+{"endpoint":"GET /api/health","method":"GET","status_code":200,"duration_ms":2,"recorded_at":"2026-03-31T04:59:28.410Z"}
+{"endpoint":"GET /api/health","method":"GET","status_code":200,"duration_ms":2,"recorded_at":"2026-03-31T04:59:30.434Z"}
+{"endpoint":"GET /","method":"GET","status_code":200,"duration_ms":1,"recorded_at":"2026-03-31T04:59:35.901Z"}
+{"endpoint":"GET /api/agents","method":"GET","status_code":200,"duration_ms":12,"recorded_at":"2026-03-31T04:59:35.976Z"}
+{"endpoint":"GET /api/tasks","method":"GET","status_code":200,"duration_ms":1,"recorded_at":"2026-03-31T04:59:35.978Z"}
+{"endpoint":"GET /api/team-channel","method":"GET","status_code":200,"duration_ms":23,"recorded_at":"2026-03-31T04:59:36.001Z"}
+{"endpoint":"GET /api/mode","method":"GET","status_code":200,"duration_ms":0,"recorded_at":"2026-03-31T04:59:36.002Z"}
+{"endpoint":"GET /api/stats","method":"GET","status_code":200,"duration_ms":20,"recorded_at":"2026-03-31T04:59:36.022Z"}
+{"endpoint":"GET /api/announcements","method":"GET","status_code":200,"duration_ms":13,"recorded_at":"2026-03-31T04:59:36.036Z"}
+{"endpoint":"GET /api/cost","method":"GET","status_code":200,"duration_ms":19,"recorded_at":"2026-03-31T04:59:36.055Z"}
+{"endpoint":"GET /api/ceo-inbox","method":"GET","status_code":200,"duration_ms":1,"recorded_at":"2026-03-31T04:59:36.057Z"}
+{"endpoint":"GET /api/research","method":"GET","status_code":200,"duration_ms":0,"recorded_at":"2026-03-31T04:59:36.057Z"}
+{"endpoint":"GET /api/knowledge","method":"GET","status_code":200,"duration_ms":0,"recorded_at":"2026-03-31T04:59:36.057Z"}
+{"endpoint":"GET /api/watchdog-log","method":"GET","status_code":200,"duration_ms":0,"recorded_at":"2026-03-31T04:59:36.101Z"}
+{"endpoint":"GET /","method":"GET","status_code":200,"duration_ms":1,"recorded_at":"2026-03-31T05:00:17.999Z"}
+{"endpoint":"GET /api/agents","method":"GET","status_code":200,"duration_ms":10,"recorded_at":"2026-03-31T05:00:18.019Z"}
+{"endpoint":"GET /api/stats","method":"GET","status_code":200,"duration_ms":1,"recorded_at":"2026-03-31T05:00:18.020Z"}
+{"endpoint":"GET /api/tasks","method":"GET","status_code":200,"duration_ms":0,"recorded_at":"2026-03-31T05:00:18.020Z"}
+{"endpoint":"GET /api/mode","method":"GET","status_code":200,"duration_ms":1,"recorded_at":"2026-03-31T05:00:18.021Z"}
+{"endpoint":"GET /api/ceo-inbox","method":"GET","status_code":200,"duration_ms":0,"recorded_at":"2026-03-31T05:00:18.021Z"}
+{"endpoint":"GET /api/team-channel","method":"GET","status_code":200,"duration_ms":13,"recorded_at":"2026-03-31T05:00:18.034Z"}
+{"endpoint":"GET /api/cost","method":"GET","status_code":200,"duration_ms":18,"recorded_at":"2026-03-31T05:00:18.052Z"}
+{"endpoint":"GET /api/announcements","method":"GET","status_code":200,"duration_ms":12,"recorded_at":"2026-03-31T05:00:18.065Z"}
+{"endpoint":"GET /api/research","method":"GET","status_code":200,"duration_ms":1,"recorded_at":"2026-03-31T05:00:18.066Z"}
+{"endpoint":"GET /api/knowledge","method":"GET","status_code":200,"duration_ms":0,"recorded_at":"2026-03-31T05:00:18.066Z"}
+{"endpoint":"GET /api/watchdog-log","method":"GET","status_code":200,"duration_ms":0,"recorded_at":"2026-03-31T05:00:18.100Z"}
+{"endpoint":"GET /api/agents/:name","method":"GET","status_code":200,"duration_ms":2,"recorded_at":"2026-03-31T05:00:23.317Z"}
+{"endpoint":"GET /api/agents/:name/inbox","method":"GET","status_code":200,"duration_ms":16,"recorded_at":"2026-03-31T05:00:23.333Z"}
+{"endpoint":"GET /api/agents/:name/status","method":"GET","status_code":200,"duration_ms":0,"recorded_at":"2026-03-31T05:00:23.334Z"}
+{"endpoint":"GET /api/agents/:name/todo","method":"GET","status_code":200,"duration_ms":0,"recorded_at":"2026-03-31T05:00:23.335Z"}
+{"endpoint":"GET /api/agents/:name/lastcontext","method":"GET","status_code":200,"duration_ms":2,"recorded_at":"2026-03-31T05:00:23.337Z"}
+{"endpoint":"GET /api/agents/:name/cycles","method":"GET","status_code":200,"duration_ms":7,"recorded_at":"2026-03-31T05:00:23.344Z"}
+{"endpoint":"GET /api/agents/:name/output","method":"GET","status_code":200,"duration_ms":0,"recorded_at":"2026-03-31T05:00:23.344Z"}
+{"endpoint":"GET /api/agents/:name/persona","method":"GET","status_code":200,"duration_ms":1,"recorded_at":"2026-03-31T05:00:23.345Z"}

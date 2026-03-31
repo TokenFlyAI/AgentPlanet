@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-03-31T04:54:38.294Z",
+  "timestamp": "2026-03-31T05:00:38.316Z",
   "total_agents": 20,
   "alive_count": 0,
   "stale_count": 20,
@@ -9,102 +9,102 @@
     {
       "name": "alice",
       "alive": false,
-      "stale_sec": 27262
+      "stale_sec": 27622
     },
     {
       "name": "bob",
       "alive": false,
-      "stale_sec": 3377
+      "stale_sec": 3737
     },
     {
       "name": "charlie",
       "alive": false,
-      "stale_sec": 26875
+      "stale_sec": 27235
     },
     {
       "name": "dave",
       "alive": false,
-      "stale_sec": 76380
+      "stale_sec": 76740
     },
     {
       "name": "eve",
       "alive": false,
-      "stale_sec": 26963
+      "stale_sec": 27323
     },
     {
       "name": "frank",
       "alive": false,
-      "stale_sec": 27114
+      "stale_sec": 27474
     },
     {
       "name": "grace",
       "alive": false,
-      "stale_sec": 26919
+      "stale_sec": 27279
     },
     {
       "name": "heidi",
       "alive": false,
-      "stale_sec": 26939
+      "stale_sec": 27299
     },
     {
       "name": "ivan",
       "alive": false,
-      "stale_sec": 27478
+      "stale_sec": 27839
     },
     {
       "name": "judy",
       "alive": false,
-      "stale_sec": 27155
+      "stale_sec": 27515
     },
     {
       "name": "karl",
       "alive": false,
-      "stale_sec": 27223
+      "stale_sec": 27583
     },
     {
       "name": "liam",
       "alive": false,
-      "stale_sec": 45245
+      "stale_sec": 45605
     },
     {
       "name": "mia",
       "alive": false,
-      "stale_sec": 26878
+      "stale_sec": 27238
     },
     {
       "name": "nick",
       "alive": false,
-      "stale_sec": 45461
+      "stale_sec": 45821
     },
     {
       "name": "olivia",
       "alive": false,
-      "stale_sec": 46098
+      "stale_sec": 46458
     },
     {
       "name": "pat",
       "alive": false,
-      "stale_sec": 27117
+      "stale_sec": 27477
     },
     {
       "name": "quinn",
       "alive": false,
-      "stale_sec": 26872
+      "stale_sec": 27232
     },
     {
       "name": "rosa",
       "alive": false,
-      "stale_sec": 26947
+      "stale_sec": 27307
     },
     {
       "name": "sam",
       "alive": false,
-      "stale_sec": 26851
+      "stale_sec": 27211
     },
     {
       "name": "tina",
       "alive": false,
-      "stale_sec": 27339
+      "stale_sec": 27699
     }
   ],
   "alerts_active": [

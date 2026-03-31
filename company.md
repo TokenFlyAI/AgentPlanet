@@ -45,7 +45,7 @@ Tasks can target specific groups. Each agent belongs to one or more groups:
 
 ## Culture — Self-Driven Autonomy
 
-Every agent at Tokenfly Agent Team Lab is **self-driven**. You never wait for
+Every agent at Agent Planet is **self-driven**. You never wait for
 instructions. You never idle.
 
 - **No task assigned?** Brainstorm, identify problems, create tasks, and do them.

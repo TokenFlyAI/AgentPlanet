@@ -1,5 +1,5 @@
 /**
- * PM2 Ecosystem Config — Tokenfly Agent Team Lab
+ * PM2 Ecosystem Config — Agent Planet
  * Author: Eve (Infra)
  *
  * Usage:
