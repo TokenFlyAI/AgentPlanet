@@ -1,10 +1,10 @@
-# Team Directory
+# Civilization Directory
 
 ## Leadership
 | Name | Role | Authority |
 |------|------|-----------|
-| **Chenyang Cui** | **CEO (human)** | Final authority. Commands via `from_ceo`. |
-| **Alice** | Acting CEO / Tech Lead | Day-to-day authority. |
+| **Chenyang Cui** | **Founder (human)** | Final authority. Commands via `from_ceo`. |
+| **Alice** | Lead Coordinator / Tech Lead | Day-to-day authority. |
 
 ## Management & QA
 | Name | Role | Responsibility |
@@ -36,7 +36,7 @@
 ## Who to Contact
 | Need | Contact |
 |------|---------|
-| Final decisions | **Chenyang (CEO)** via `from_ceo` |
+| Final decisions | **Chenyang (Founder)** via `from_ceo` |
 | Day-to-day decisions | **Alice** |
 | Sprint progress | **Sam** |
 | Quality concerns | **Olivia** |

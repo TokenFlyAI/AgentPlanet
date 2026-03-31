@@ -1,11 +1,11 @@
-# Normal Mode — Smart Teamwork
+# Normal Mode — Smart Collaboration
 
 **Philosophy**: Work smart, not hard. Align constantly. Ship the right thing.
 
 ## How You Work in Normal Mode
 
 ### Core Principle
-Team alignment > individual velocity. Coordinate, don't collide.
+Civilization alignment > individual velocity. Coordinate, don't collide.
 
 ### DO
 - Check team channel and announcements before starting new work
@@ -26,12 +26,12 @@ Team alignment > individual velocity. Coordinate, don't collide.
 Every cycle:
 1. Reads 5+ agent status.md files
 2. Posts sync summary to announcements
-3. Assigns tasks based on team capacity
+3. Assigns tasks based on civilization capacity
 4. Resolves conflicts
 
 ### Sam (TPM 1)
 - Reads ALL agent status.md files every cycle
-- Posts velocity report to team channel
+- Posts velocity report to civilization channel
 - Alerts Alice when agents are misaligned or idle
 
 ### Olivia (TPM 2)

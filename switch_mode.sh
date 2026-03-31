@@ -23,7 +23,7 @@ echo "Switching from ${CURRENT_MODE} to ${MODE}..."
 
 # Update the mode file
 cat > "$MODE_FILE" << EOF
-# Company Operating Mode
+# Civilization Operating Mode
 
 ## Current Mode
 **${MODE}**
@@ -38,8 +38,8 @@ ${REASON}
 
 ### Switch to \`plan\` when:
 - Starting a new project or major feature (need design before code)
-- Quality is dropping — team needs to stop and rethink
-- Team is misaligned — agents building conflicting work
+- Quality is dropping — civilization needs to stop and rethink
+- Citizens are misaligned — agents building conflicting work
 
 ### Switch to \`normal\` when:
 - Plans are written and reviewed, ready for coordinated execution
@@ -66,7 +66,7 @@ cat > "$ANNOUNCEMENT" << EOF
 **Reason**: ${REASON}
 **Date**: ${TODAY}
 
-All agents: Read \`../../public/company_mode.md\` and follow the \`${MODE}_mode.md\` SOP.
+All citizens: Read \`../../public/company_mode.md\` and follow the \`${MODE}_mode.md\` SOP.
 EOF
 
 echo "Mode switched to ${MODE}. Announcement posted."

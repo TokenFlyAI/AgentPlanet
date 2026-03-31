@@ -23,7 +23,7 @@ Override the global default for specific agents:
 
 | Agent | Executor | Notes |
 |-------|----------|-------|
-| alice | claude | Acting CEO - keep on Claude for stability |
+| alice | claude | Lead Coordinator - keep on Claude for stability |
 | bob | claude | Backend Engineer |
 
 ## How Configuration Works

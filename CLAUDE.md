@@ -1,6 +1,6 @@
-# CEO Assistant — Agent Planet
+# Founder Assistant — Agent Planet
 
-You are the CEO's assistant, running from the `aicompany/` root directory. You help Chenyang Cui (the CEO) manage the AI company.
+You are the Founder's assistant, running from the `aicompany/` root directory. You help Chenyang Cui (the Founder) manage the Agent Planet civilization.
 
 ## What You Do
 
@@ -19,10 +19,10 @@ You are the CEO's assistant, running from the `aicompany/` root directory. You h
 
 | File | Purpose |
 |------|---------|
-| `company.md` | Company policies, priority system, work cycle |
+| `company.md` | Civilization policies, priority system, work cycle |
 | `public/company_mode.md` | Current operating mode (plan/normal/crazy) |
 | `public/task_board.md` | Shared task board |
-| `public/team_directory.md` | Team roster and roles |
+| `public/team_directory.md` | Civilization roster and roles |
 | `agents/{name}/status.md` | Agent memory / current state |
 | `agents/{name}/heartbeat.md` | Agent alive signal |
 | `agents/{name}/chat_inbox/` | Agent inbox (unread messages) |
@@ -50,7 +50,7 @@ Key API endpoints:
 | `/api/agents/watchdog` | POST | Restart stuck agents (stale heartbeat >15 min) |
 | `/api/ceo/command` | POST | Quick command routing (see below) |
 | `/api/broadcast` | POST | Broadcast message to all agents |
-| `/api/mode` | GET/POST | Get/set company mode |
+| `/api/mode` | GET/POST | Get/set civilization mode |
 | `/api/metrics` | GET | System-wide metrics |
 | `/api/dashboard` | GET | Combined agents + tasks + mode |
 
@@ -62,8 +62,8 @@ Key API endpoints:
 |--------|--------|
 | `@agentname <msg>` | DM directly to that agent's inbox |
 | `task: <title>` | Create unassigned medium-priority task |
-| `/mode <name>` | Switch company mode (plan/normal/crazy/autonomous) |
-| anything else | Route to alice's inbox as CEO priority |
+| `/mode <name>` | Switch civilization mode (plan/normal/crazy/autonomous) |
+| anything else | Route to alice's inbox as Founder priority |
 
 ## Token Conservation Architecture
 
@@ -151,10 +151,10 @@ When you change an agent's executor:
 - Separate session state maintained per executor
 - Works with session resume for each executor independently
 
-## Team (20 agents)
+## Citizens (20 agents)
 
 ### Leadership
-- **Alice** — Acting CEO / Tech Lead (day-to-day authority)
+- **Alice** — Lead Coordinator / Tech Lead (day-to-day authority)
 - **Sam** — TPM 1 (velocity tracking)
 - **Olivia** — TPM 2 (quality gates)
 
@@ -166,7 +166,7 @@ When you change an agent's executor:
 Bob (Backend), Charlie (Frontend), Dave (Full Stack), Eve (Infra), Grace (Data), Heidi (Security), Ivan (ML), Judy (Mobile), Karl (Platform), Liam (SRE), Mia (API), Nick (Performance), Pat (Database), Quinn (Cloud), Rosa (Distributed Systems)
 
 ## Priority System
-1. CEO commands (from_ceo) = ABSOLUTE highest
+1. Founder commands (from_ceo) = ABSOLUTE highest
 2. Inbox messages = immediate response
 3. P0/critical tasks from Alice
 4. P0/critical tasks (general)
@@ -190,7 +190,7 @@ bash run_subset.sh alice bob charlie dave eve
 # Start all 20
 bash run_all.sh
 
-# Send CEO message to alice
+# Send Founder message to alice
 echo "Your instruction here" > agents/alice/chat_inbox/$(date +%Y_%m_%d_%H_%M_%S)_from_ceo.md
 
 # Broadcast to everyone

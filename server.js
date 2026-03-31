@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
- * AI Company Dashboard Server
+ * Agent Planet Dashboard Server
  * Zero-dependency Node.js HTTP server.
- * Usage: node server.js [--port 3100] [--dir /path/to/company]
+ * Usage: node server.js [--port 3100] [--dir /path/to/civilization]
  */
 
 const http = require("http");
@@ -1033,7 +1033,7 @@ async function handleRequest(req, res) {
     const manifest = {
       name: "Agent Planet",
       short_name: "AgentPlanet",
-      description: "Real-time dashboard for the Agent Planet AI team",
+      description: "Real-time dashboard for the Agent Planet civilization",
       start_url: "/",
       display: "standalone",
       background_color: "#1a1a2e",
@@ -1063,7 +1063,7 @@ async function handleRequest(req, res) {
 
   if (method === "GET" && pathname === "/api/config") {
     const companyMd = safeRead(path.join(DIR, "company.md"));
-    let companyName = "AI Company";
+    let companyName = "Agent Planet";
     if (companyMd) {
       const m = companyMd.match(/^#\s+(.+)/m);
       if (m) companyName = m[1].trim();
@@ -2363,7 +2363,7 @@ async function handleRequest(req, res) {
   // Routing rules:
   //   @agentname <text>  → send text to that agent's inbox (Lord's priority)
   //   task: <title>      → create a task (auto-assigned unassigned, medium priority)
-  //   /mode <name>       → switch company mode
+  //   /mode <name>       → switch civilization mode
   //   anything else      → send to alice's inbox as Lord's priority
   if (method === "POST" && pathname === "/api/ceo/command") {
     const body = await parseBody(req);
@@ -2472,7 +2472,7 @@ async function handleRequest(req, res) {
       try {
         const today = new Date().toISOString().slice(0, 10);
         const modeContent = [
-          "# Company Operating Mode",
+          "# Civilization Operating Mode",
           "",
           "## Current Mode",
           `**${newMode}**`,

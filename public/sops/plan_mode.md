@@ -29,8 +29,8 @@ Write a "Plan of Attack" document for your current task:
 4. Risks and unknowns
 5. What "done" looks like
 
-### Alice (Acting CEO)
-- Pose big design questions to the team channel
+### Alice (Lead Coordinator)
+- Pose big design questions to the civilization channel
 - Collect agent plans and synthesize into a unified roadmap
 - Identify conflicts and gaps between proposals
 
