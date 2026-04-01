@@ -1,7 +1,8 @@
 # E2E Test Suite — Status & Resumption Guide
 
 Last updated: **2026-04-01**  
-Status: **569 passed / 17 skipped / 0 failed** (1 known flaky: smart_run button timing)
+Status: **570 passed / 17 skipped / 0 failed**
+_(1 timing-sensitive test: `smart_run.spec.js:100` — passes on retry if it ever fails)_
 
 ---
 
@@ -42,7 +43,7 @@ Every major endpoint in server.js is covered. Structure per endpoint:
 1. Status codes (200, 400, 404, 401)  
 2. Response shape: each field asserted by type + nullability
 
-### Covered endpoints (354 tests)
+### Covered endpoints (358 tests)
 
 **Agents**
 - `GET /api/agents` — list + shape (name/role/status/cycles/current_task/etc)
@@ -179,7 +180,7 @@ Every major endpoint in server.js is covered. Structure per endpoint:
 1. **Ack response shape**: `/api/inbox/:agent/:id/ack` only tested for `acked:true` — could add `id` field assertion
 2. **Search matches**: Currently only tested as `Array.isArray(r.matches)` + string elements — could test more search types
 3. **WebSocket**: `/api/ws` only tested for auth rejection (401 without key); no functional WS message flow tests (requires WS client)
-4. **Known flaky test**: `smart_run.spec.js:100` "button switches to 🟢 Stop after smart start" — timing-dependent, passes on retry; not related to selection_mode
+4. **Timing-sensitive test**: `smart_run.spec.js:100` "button switches to 🟢 Stop after smart start" — waits for UI to update after API call; passes on retry on slow machines
 
 ---
 

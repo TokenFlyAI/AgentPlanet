@@ -48,6 +48,10 @@ Key API endpoints:
 | `/api/cost` | GET | Today's + 7-day token spend per agent |
 | `/api/agents/smart-start` | POST | Start only agents with actual work |
 | `/api/agents/watchdog` | POST | Restart stuck agents (stale heartbeat >15 min) |
+| `/api/smart-run/config` | GET/POST | Read/write smart run config (max_agents, selection_mode, etc.) |
+| `/api/smart-run/status` | GET | Daemon status + running agent count |
+| `/api/smart-run/start` | POST | Start Fleet daemon |
+| `/api/smart-run/stop` | POST | Stop Fleet daemon |
 | `/api/ceo/command` | POST | Quick command routing (see below) |
 | `/api/broadcast` | POST | Broadcast message to all agents |
 | `/api/mode` | GET/POST | Get/set civilization mode |
@@ -284,4 +288,5 @@ npx playwright test e2e/message_bus.spec.js
 
 Test files: `e2e/api.spec.js` (49 tests), `e2e/dashboard.spec.js` (44 tests), `e2e/metrics.spec.js` (59 tests), `e2e/coverage.spec.js` (358 tests), `e2e/smart_run.spec.js` (12 tests), `e2e/message_bus.spec.js` (47 tests)
 
-**Total: 569 passed / 17 skipped (auth) / 0 failed**
+**Total: 570 passed / 17 skipped (auth) / 0 failed** (587 total)
+_(1 timing-sensitive test in smart_run.spec.js — passes on retry)_

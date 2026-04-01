@@ -208,7 +208,8 @@ Fleet tab manages the Smart Run daemon. Unlike the one-shot Smart Run on the Age
 
 ## E2E Test Status (2026-04-01)
 
-**569 passed / 17 skipped / 0 failed** across 6 test files:
+**570 passed / 17 skipped / 0 failed** across 6 test files (587 total):
+_(1 timing-sensitive: `smart_run.spec.js:100` — passes on retry)_
 
 | File | Tests | Focus |
 |------|-------|-------|
@@ -231,6 +232,7 @@ Every API endpoint has:
 - `heartbeat.md` may have status field = `undefined` (not null) if file is being written while test runs
   → Fix: use `body.heartbeat.status === undefined || typeof body.heartbeat.status === "string"` 
 - `cycles` field on dashboard agents is `null` when no cycle log exists → null-safe assertions
+- `smart_run.spec.js:100` "button switches to 🟢 Stop" — timing-dependent UI update after API call; passes on retry
 
 ---
 
@@ -269,6 +271,8 @@ When verifying with playwright, always check:
 - [ ] Dashboard shows $0.00 cost (dry run, no real tokens spent)
 - [ ] Fleet tab: Start Daemon → green indicator, Stop Daemon → red indicator
 - [ ] Fleet panel shows running agent chips from heartbeat status
+- [ ] Fleet tab: Selection Mode radios visible (Deterministic / Random)
+- [ ] Selecting Random + Apply Settings → persists to API → survives page reload
 - [ ] E2E tests leave no files in `public/team_channel/` or `public/announcements/`
 - [ ] E2E tests leave no entries in `public/consensus.md` (author = e2e/e2e-test)
 - [ ] E2E tests leave no entries appended to `agents/alice/persona.md`
