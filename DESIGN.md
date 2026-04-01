@@ -208,7 +208,7 @@ Fleet tab manages the Smart Run daemon. Unlike the one-shot Smart Run on the Age
 
 ## E2E Test Status (2026-04-01)
 
-**570 passed / 17 skipped / 0 failed** across 6 test files (587 total):
+**572 passed / 17 skipped / 0 failed** across 6 test files (589 total):
 _(1 timing-sensitive: `smart_run.spec.js:100` — passes on retry)_
 
 | File | Tests | Focus |
@@ -216,7 +216,7 @@ _(1 timing-sensitive: `smart_run.spec.js:100` — passes on retry)_
 | `e2e/api.spec.js` | 49 | Core API endpoints |
 | `e2e/dashboard.spec.js` | 44 | Dashboard UI E2E |
 | `e2e/metrics.spec.js` | 59 | Metrics/stats |
-| `e2e/coverage.spec.js` | 358 | Full API coverage + response shapes |
+| `e2e/coverage.spec.js` | 360 | Full API coverage + response shapes |
 | `e2e/smart_run.spec.js` | 12 | Smart Run UI + button state + selection mode E2E |
 | `e2e/message_bus.spec.js` | 47 | SQLite message bus |
 

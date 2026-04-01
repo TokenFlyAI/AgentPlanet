@@ -1,7 +1,7 @@
 # E2E Test Suite — Status & Resumption Guide
 
 Last updated: **2026-04-01**  
-Status: **570 passed / 17 skipped / 0 failed**
+Status: **572 passed / 17 skipped / 0 failed**
 _(1 timing-sensitive test: `smart_run.spec.js:100` — passes on retry if it ever fails)_
 
 ---
@@ -43,7 +43,7 @@ Every major endpoint in server.js is covered. Structure per endpoint:
 1. Status codes (200, 400, 404, 401)  
 2. Response shape: each field asserted by type + nullability
 
-### Covered endpoints (358 tests)
+### Covered endpoints (360 tests)
 
 **Agents**
 - `GET /api/agents` — list + shape (name/role/status/cycles/current_task/etc)
@@ -161,6 +161,8 @@ Every major endpoint in server.js is covered. Structure per endpoint:
 - `GET /api/smart-run/config` — selection_mode field (string, deterministic|random)
 - `POST /api/smart-run/config` — selection_mode: random, deterministic; 400 for invalid
 - Fleet tab E2E (smart_run.spec.js): radio buttons visible, sync from API, Apply persists, reload reflects saved state
+- `GET /api/agents/:name/inbox` — items have from and timestamp fields
+- `GET /api/stats` — agents items have dailyCosts/dailyCycles objects (date-keyed number maps)
 
 **Additional coverage added 2026-04-01 (session 2):**
 - `POST /api/agents/smart-start` — `decision` object field + 403 when disabled

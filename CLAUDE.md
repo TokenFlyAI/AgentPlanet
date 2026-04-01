@@ -286,7 +286,7 @@ npx playwright test e2e/smart_run.spec.js
 npx playwright test e2e/message_bus.spec.js
 ```
 
-Test files: `e2e/api.spec.js` (49 tests), `e2e/dashboard.spec.js` (44 tests), `e2e/metrics.spec.js` (59 tests), `e2e/coverage.spec.js` (358 tests), `e2e/smart_run.spec.js` (12 tests), `e2e/message_bus.spec.js` (47 tests)
+Test files: `e2e/api.spec.js` (49 tests), `e2e/dashboard.spec.js` (44 tests), `e2e/metrics.spec.js` (59 tests), `e2e/coverage.spec.js` (360 tests), `e2e/smart_run.spec.js` (12 tests), `e2e/message_bus.spec.js` (47 tests)
 
-**Total: 570 passed / 17 skipped (auth) / 0 failed** (587 total)
+**Total: 572 passed / 17 skipped (auth) / 0 failed** (589 total)
 _(1 timing-sensitive test in smart_run.spec.js — passes on retry)_
