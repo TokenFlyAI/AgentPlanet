@@ -727,6 +727,16 @@ test.describe("GET /api/tasks/archive", () => {
       expect(typeof task.assignee).toBe("string");
     }
   });
+
+  test("archived task items have description, group, created, updated fields", async () => {
+    const { body } = await apiGet("/api/tasks/archive");
+    for (const task of body || []) {
+      expect(typeof task.description).toBe("string");
+      expect(typeof task.group).toBe("string");
+      expect(typeof task.created).toBe("string");
+      expect(typeof task.updated).toBe("string");
+    }
+  });
 });
 
 test.describe("POST /api/tasks/archive", () => {
