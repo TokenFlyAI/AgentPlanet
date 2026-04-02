@@ -124,82 +124,83 @@ with open(sys.argv[1]) as f:
 with open(sys.argv[2]) as f:
     curr = json.load(f)
 
+MAX_CEO_CHARS = 2000  # cap urgent message content to prevent token blowup
+
 changes = []
 
 # Mode change
 if curr.get("mode") != prev.get("mode"):
-    changes.append("**Mode changed**: {} → {}".format(prev.get("mode"), curr.get("mode")))
+    changes.append("**Mode**: {}→{}".format(prev.get("mode"), curr.get("mode")))
     sop = curr.get("sop")
     if sop:
-        changes.append("  New SOP ({}_mode.md):".format(curr.get("mode")))
-        changes.append(sop)
+        changes.append("**SOP**:\n" + sop)
 
-# New urgent (CEO/lord) messages
+# New urgent (CEO/lord) messages — full content, capped
 prev_urgent = {m["filename"] for m in prev.get("inbox", {}).get("urgent", [])}
 new_urgent = [m for m in curr.get("inbox", {}).get("urgent", []) if m["filename"] not in prev_urgent]
 if new_urgent:
-    changes.append("**URGENT — New Founder/Lord messages**:")
+    changes.append("**URGENT ({})**:".format(len(new_urgent)))
     for m in new_urgent:
-        changes.append("  [{}]".format(m["filename"]))
-        changes.append(m["content"].strip())
+        body = m["content"].strip()
+        if len(body) > MAX_CEO_CHARS:
+            body = body[:MAX_CEO_CHARS] + "\n...[truncated]"
+        changes.append("[{}]\n{}".format(m["filename"], body))
 
-# New regular inbox messages
+# New regular inbox messages — preview only
 prev_msgs = {m["filename"] for m in prev.get("inbox", {}).get("messages", [])}
 prev_urgent_f = {m["filename"] for m in prev.get("inbox", {}).get("urgent", [])}
 prev_all = prev_msgs | prev_urgent_f
 new_msgs = [m for m in curr.get("inbox", {}).get("messages", []) if m["filename"] not in prev_all]
 if new_msgs:
-    changes.append("**New inbox messages** ({}):".format(len(new_msgs)))
+    changes.append("**Inbox ({} new)**:".format(len(new_msgs)))
     for m in new_msgs:
         changes.append("  [{}] {}".format(m["filename"], m["preview"]))
 
-# New team channel messages
+# New team channel — preview only
 prev_tc = {m["filename"] for m in prev.get("team_channel", [])}
 new_tc = [m for m in curr.get("team_channel", []) if m["filename"] not in prev_tc]
 if new_tc:
-    changes.append("**New team channel messages**:")
+    changes.append("**Team channel ({} new)**:".format(len(new_tc)))
     for m in new_tc:
         changes.append("  [{}] {}".format(m["filename"], m["preview"]))
 
-# New announcements
+# New announcements — preview only
 prev_ann = {m["filename"] for m in prev.get("announcements", [])}
 new_ann = [m for m in curr.get("announcements", []) if m["filename"] not in prev_ann]
 if new_ann:
-    changes.append("**New announcements**:")
+    changes.append("**Announcements ({} new)**:".format(len(new_ann)))
     for m in new_ann:
         changes.append("  [{}] {}".format(m["filename"], m["preview"]))
 
-# Task changes (new tasks or status changes)
+# Task changes (new or status changed)
 prev_tasks = {t["id"]: t for t in prev.get("tasks", [])}
 curr_tasks = {t["id"]: t for t in curr.get("tasks", [])}
 new_task_ids = set(curr_tasks) - set(prev_tasks)
 changed_tasks = [t for tid, t in curr_tasks.items()
                  if tid in prev_tasks and t.get("status") != prev_tasks[tid].get("status")]
 if new_task_ids or changed_tasks:
-    changes.append("**Task changes**:")
+    changes.append("**Tasks**:")
     for tid in new_task_ids:
         t = curr_tasks[tid]
-        changes.append("  NEW | {} | {} | {} |".format(t.get("id",""), t.get("title",""), t.get("status","")))
+        changes.append("  +{}|{}|{}".format(t.get("id",""), t.get("title",""), t.get("status","")))
     for t in changed_tasks:
-        old_status = prev_tasks[t["id"]].get("status","")
-        changes.append("  #{} {} → {}".format(t.get("id",""), old_status, t.get("status","")))
+        changes.append("  #{}:{}→{}".format(t.get("id",""), prev_tasks[t["id"]].get("status",""), t.get("status","")))
 
-# Teammate status changes (running↔idle↔dreaming)
+# Teammate status changes
 prev_tm = {t["name"]: t["status"] for t in prev.get("teammates", [])}
 curr_tm = {t["name"]: t["status"] for t in curr.get("teammates", [])}
 tm_changes = [(n, prev_tm[n], curr_tm[n]) for n in curr_tm
               if n in prev_tm and curr_tm[n] != prev_tm[n]]
 if tm_changes:
-    changes.append("**Teammate status changes**:")
+    changes.append("**Teammates**:")
     for name, old, new in tm_changes:
-        changes.append("  {} : {} → {}".format(name, old, new))
+        changes.append("  {}:{}→{}".format(name, old, new))
 
-# Culture / consensus changes
+# Culture / consensus changes — full content (it's small and agents must see new entries)
 prev_culture = (prev.get("culture") or "").strip()
 curr_culture = (curr.get("culture") or "").strip()
 if curr_culture != prev_culture and curr_culture:
-    changes.append("**Team culture updated** (public/consensus.md):")
-    changes.append(curr_culture)
+    changes.append("**Culture**:\n" + curr_culture)
 
 if changes:
     print("## Context Delta (changes since last cycle)")
