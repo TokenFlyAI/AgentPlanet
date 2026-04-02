@@ -88,28 +88,276 @@ fi
 
 # ── Build prompt ──────────────────────────────────────────────────────────────
 PROMPT_FILE="${AGENT_DIR}/prompt.md"
+PERSONA_FILE="${AGENT_DIR}/persona.md"
 MEMORY_FILE="${AGENT_DIR}/memory.md"
 
+# Pre-compute inbox count (used in both resume and fresh paths)
+INBOX_COUNT=$(ls "${AGENT_DIR}/chat_inbox/"*.md 2>/dev/null | grep -v '/processed' | wc -l | tr -d ' ')
+INBOX_COUNT="${INBOX_COUNT:-0}"
+
+# Count urgent (CEO/lord) messages in inbox — always surfaced
+CEO_COUNT=$(find "${AGENT_DIR}/chat_inbox" -maxdepth 1 -name "*from_ceo*" -o -name "*from_lord*" 2>/dev/null \
+    | grep -v '/processed' | wc -l | tr -d ' ')
+CEO_COUNT="${CEO_COUNT:-0}"
+
+SNAPSHOT_FILE="${AGENT_DIR}/context_snapshot.json"
+
 if [ $USE_RESUME -eq 1 ]; then
-    # Resuming — full context is KV-cached in the session, just append a short nudge.
-    # Agent already knows who it is, the rules, and its previous work. Don't repeat it.
-    INBOX_COUNT=$(ls "${AGENT_DIR}/chat_inbox/"*.md 2>/dev/null | grep -v '/processed' | wc -l | tr -d ' ')
-    if [ "${INBOX_COUNT:-0}" -gt 0 ]; then
-        PROMPT_TEXT="Next cycle. You have ${INBOX_COUNT} unread message(s) — handle inbox first, then continue work. Stay active."
+    # Resuming — full prior context is KV-cached. Only inject what CHANGED since last snapshot.
+    CURRENT_CYCLE=$((SAVED_CYCLE + 1))
+    _DASHBOARD_PORT="${DASHBOARD_PORT:-3199}"
+    _NEW_CTX=$(curl -sf "http://localhost:${_DASHBOARD_PORT}/api/agents/${AGENT_NAME}/context" \
+        -H "Authorization: Bearer ${API_KEY:-test}" 2>/dev/null || true)
+
+    if [ -n "$_NEW_CTX" ] && [ -f "$SNAPSHOT_FILE" ]; then
+        # Compute delta: only what's new/changed since the last snapshot
+        _DELTA_TMP=$(mktemp /tmp/agent_ctx_XXXXXX.json)
+        _SNAP_TMP=$(mktemp /tmp/agent_snap_XXXXXX.json)
+        echo "$_NEW_CTX" > "$_DELTA_TMP"
+        cp "$SNAPSHOT_FILE" "$_SNAP_TMP"
+        DELTA_TEXT=$(python3 - "$_SNAP_TMP" "$_DELTA_TMP" << 'PYEOF'
+import sys, json
+
+with open(sys.argv[1]) as f:
+    prev = json.load(f)
+with open(sys.argv[2]) as f:
+    curr = json.load(f)
+
+changes = []
+
+# Mode change
+if curr.get("mode") != prev.get("mode"):
+    changes.append("**Mode changed**: {} → {}".format(prev.get("mode"), curr.get("mode")))
+    sop = curr.get("sop")
+    if sop:
+        changes.append("  New SOP ({}_mode.md):".format(curr.get("mode")))
+        changes.append(sop)
+
+# New urgent (CEO/lord) messages
+prev_urgent = {m["filename"] for m in prev.get("inbox", {}).get("urgent", [])}
+new_urgent = [m for m in curr.get("inbox", {}).get("urgent", []) if m["filename"] not in prev_urgent]
+if new_urgent:
+    changes.append("**URGENT — New Founder/Lord messages**:")
+    for m in new_urgent:
+        changes.append("  [{}]".format(m["filename"]))
+        changes.append(m["content"].strip())
+
+# New regular inbox messages
+prev_msgs = {m["filename"] for m in prev.get("inbox", {}).get("messages", [])}
+prev_urgent_f = {m["filename"] for m in prev.get("inbox", {}).get("urgent", [])}
+prev_all = prev_msgs | prev_urgent_f
+new_msgs = [m for m in curr.get("inbox", {}).get("messages", []) if m["filename"] not in prev_all]
+if new_msgs:
+    changes.append("**New inbox messages** ({}):".format(len(new_msgs)))
+    for m in new_msgs:
+        changes.append("  [{}] {}".format(m["filename"], m["preview"]))
+
+# New team channel messages
+prev_tc = {m["filename"] for m in prev.get("team_channel", [])}
+new_tc = [m for m in curr.get("team_channel", []) if m["filename"] not in prev_tc]
+if new_tc:
+    changes.append("**New team channel messages**:")
+    for m in new_tc:
+        changes.append("  [{}] {}".format(m["filename"], m["preview"]))
+
+# New announcements
+prev_ann = {m["filename"] for m in prev.get("announcements", [])}
+new_ann = [m for m in curr.get("announcements", []) if m["filename"] not in prev_ann]
+if new_ann:
+    changes.append("**New announcements**:")
+    for m in new_ann:
+        changes.append("  [{}] {}".format(m["filename"], m["preview"]))
+
+# Task changes (new tasks or status changes)
+prev_tasks = {t["id"]: t for t in prev.get("tasks", [])}
+curr_tasks = {t["id"]: t for t in curr.get("tasks", [])}
+new_task_ids = set(curr_tasks) - set(prev_tasks)
+changed_tasks = [t for tid, t in curr_tasks.items()
+                 if tid in prev_tasks and t.get("status") != prev_tasks[tid].get("status")]
+if new_task_ids or changed_tasks:
+    changes.append("**Task changes**:")
+    for tid in new_task_ids:
+        t = curr_tasks[tid]
+        changes.append("  NEW | {} | {} | {} |".format(t.get("id",""), t.get("title",""), t.get("status","")))
+    for t in changed_tasks:
+        old_status = prev_tasks[t["id"]].get("status","")
+        changes.append("  #{} {} → {}".format(t.get("id",""), old_status, t.get("status","")))
+
+# Teammate status changes (running↔idle↔dreaming)
+prev_tm = {t["name"]: t["status"] for t in prev.get("teammates", [])}
+curr_tm = {t["name"]: t["status"] for t in curr.get("teammates", [])}
+tm_changes = [(n, prev_tm[n], curr_tm[n]) for n in curr_tm
+              if n in prev_tm and curr_tm[n] != prev_tm[n]]
+if tm_changes:
+    changes.append("**Teammate status changes**:")
+    for name, old, new in tm_changes:
+        changes.append("  {} : {} → {}".format(name, old, new))
+
+if changes:
+    print("## Context Delta (changes since last cycle)")
+    print("\n".join(changes))
+else:
+    print("")
+PYEOF
+)
+        rm -f "$_DELTA_TMP" "$_SNAP_TMP"
+        # Update snapshot for next cycle's diff
+        echo "$_NEW_CTX" > "$SNAPSHOT_FILE"
     else
-        PROMPT_TEXT="Next cycle. Check tasks, observe teammates (scan ../../agents/*/heartbeat.md), keep working. Stay active and productive."
+        # No snapshot to diff against — just report counts
+        _DELTA_TEXT=""
+        [ -n "$_NEW_CTX" ] && echo "$_NEW_CTX" > "$SNAPSHOT_FILE"
+        DELTA_TEXT=""
+    fi
+
+    # Build resume prompt: cycle nudge + delta (empty string if nothing changed)
+    CURRENT_CYCLE=$((SAVED_CYCLE + 1))
+    _URGENT_NOTE=""
+    [ "${CEO_COUNT}" -gt 0 ] && _URGENT_NOTE=" URGENT: ${CEO_COUNT} Founder/Lord message(s) — handle FIRST."
+    _CYCLE_NOTE="Next cycle (${CURRENT_CYCLE}/${SESSION_MAX_CYCLES}). Prior context is cached — trust it.${_URGENT_NOTE}"
+    if [ -n "$DELTA_TEXT" ] && [ "$(echo "$DELTA_TEXT" | tr -d '[:space:]')" != "" ]; then
+        PROMPT_TEXT="$(printf '%s\n\n%s' "$_CYCLE_NOTE" "$DELTA_TEXT")"
+        echo "[session:${AGENT_NAME}] Resume: injecting context delta"
+    else
+        PROMPT_TEXT="${_CYCLE_NOTE} Nothing changed — continue your current work."
+        echo "[session:${AGENT_NAME}] Resume: no changes detected"
     fi
 else
-    # Fresh start — load static prompt first (KV-cached after first use), then append dynamic memory.
-    # Order matters: static prefix must be identical every time for cache hits.
+    # Fresh start — static prefix first (KV-cached), then dynamic context last.
+    # Static prefix = persona.md + prompt.md (never changes → always hits KV cache)
+    # Dynamic suffix = memory + live snapshot (changes per session → not cached, but small)
     [ -f "$PROMPT_FILE" ] || { echo "Error: prompt.md not found: $PROMPT_FILE" >&2; exit 1; }
-    BASE_PROMPT=$(cat "$PROMPT_FILE")
-    if [ -f "$MEMORY_FILE" ] && [ -s "$MEMORY_FILE" ]; then
-        # Memory appended LAST so static prefix stays cacheable
-        PROMPT_TEXT="$(printf '%s\n\n---\n## Memory Snapshot (from last session)\n\n%s' "$BASE_PROMPT" "$(cat "$MEMORY_FILE")")"
-        echo "[session:${AGENT_NAME}] Injecting memory.md into fresh session"
+
+    # Build static prefix: persona.md (identity) + prompt.md (work rules)
+    if [ -f "$PERSONA_FILE" ] && [ -s "$PERSONA_FILE" ]; then
+        STATIC_PREFIX="$(printf '%s\n\n---\n\n%s' "$(cat "$PERSONA_FILE")" "$(cat "$PROMPT_FILE")")"
+        echo "[session:${AGENT_NAME}] Static prefix: persona.md + prompt.md"
     else
-        PROMPT_TEXT="$BASE_PROMPT"
+        STATIC_PREFIX="$(cat "$PROMPT_FILE")"
+        echo "[session:${AGENT_NAME}] Static prefix: prompt.md only (no persona.md)"
+    fi
+
+    # -- Live state snapshot via /api/agents/:name/context endpoint ---------------
+    # Single API call replaces all the individual shell file reads.
+    # Agents can also call this endpoint mid-session to refresh their context.
+    _DASHBOARD_PORT="${DASHBOARD_PORT:-3199}"
+    _CTX_JSON=$(curl -sf "http://localhost:${_DASHBOARD_PORT}/api/agents/${AGENT_NAME}/context" \
+        -H "Authorization: Bearer ${API_KEY:-test}" 2>/dev/null || true)
+
+    if [ -n "$_CTX_JSON" ]; then
+        # Render JSON context into human-readable markdown for the prompt
+        _CTX_TMP=$(mktemp /tmp/agent_ctx_XXXXXX.json)
+        echo "$_CTX_JSON" > "$_CTX_TMP"
+        LIVE_SNAPSHOT=$(python3 - "$_CTX_TMP" << 'PYEOF'
+import sys, json
+
+with open(sys.argv[1]) as f:
+    d = json.load(f)
+out = []
+out.append("## Live State Snapshot (pre-aggregated via /api/agents/{}/context — do not re-read these files this cycle)".format(d.get("agent","")))
+out.append("")
+
+# Mode
+out.append("**Company mode**: {}".format(d.get("mode","normal")))
+out.append("")
+
+# Urgent messages (full content)
+urgent = d.get("inbox", {}).get("urgent", [])
+if urgent:
+    out.append("### URGENT — Founder/Lord Messages (handle FIRST)")
+    for m in urgent:
+        out.append("[{}]".format(m["filename"]))
+        out.append(m["content"].strip())
+        out.append("")
+
+# Inbox previews
+inbox = d.get("inbox", {})
+total = inbox.get("total_unread", 0)
+msgs = inbox.get("messages", [])
+more = inbox.get("more", 0)
+if total > 0:
+    out.append("**Unread inbox**: {} messages{}".format(total, " (showing {})".format(len(msgs)) if more > 0 else ""))
+    for m in msgs:
+        out.append("  [{}] {}".format(m["filename"], m["preview"]))
+else:
+    out.append("**Unread inbox**: 0 messages")
+out.append("")
+
+# Tasks
+tasks = d.get("tasks", [])
+if tasks:
+    out.append("**Your open tasks**:")
+    for t in tasks:
+        out.append("  | {} | {} | {} | {} |".format(t.get("id",""), t.get("title",""), t.get("priority",""), t.get("status","")))
+else:
+    out.append("**Your open tasks**: (none assigned)")
+out.append("")
+
+# Team channel
+tc = d.get("team_channel", [])
+if tc:
+    out.append("**Recent team channel** (last {}):".format(len(tc)))
+    for m in tc:
+        out.append("  [{}] {}".format(m["filename"], m["preview"]))
+else:
+    out.append("**Recent team channel**: (none)")
+out.append("")
+
+# Announcements
+anns = d.get("announcements", [])
+if anns:
+    out.append("**Recent announcements** (last {}):".format(len(anns)))
+    for a in anns:
+        out.append("  [{}] {}".format(a["filename"], a["preview"]))
+else:
+    out.append("**Recent announcements**: (none)")
+out.append("")
+
+# Teammates
+teammates = d.get("teammates", [])
+if teammates:
+    out.append("**Teammate statuses**:")
+    for t in teammates:
+        out.append("  - {}: {}".format(t["name"], t["status"]))
+out.append("")
+
+# Active SOP
+sop = d.get("sop")
+if sop:
+    out.append("### Active SOP ({}_mode.md — follow this):".format(d.get("mode","normal")))
+    out.append(sop)
+    out.append("")
+
+# Culture / consensus
+culture = d.get("culture")
+if culture:
+    out.append("### Team Culture & Consensus (public/consensus.md):")
+    out.append(culture)
+
+print("\n".join(out))
+PYEOF
+)
+        rm -f "$_CTX_TMP"
+        # Save snapshot for delta diffing on subsequent resume cycles
+        echo "$_CTX_JSON" > "$SNAPSHOT_FILE"
+        echo "[session:${AGENT_NAME}] Live snapshot fetched from /api/agents/${AGENT_NAME}/context"
+    else
+        # Dashboard not available — fall back to minimal snapshot
+        echo "[session:${AGENT_NAME}] Warning: dashboard unavailable, using minimal snapshot"
+        LIVE_SNAPSHOT="## Live State Snapshot
+- Dashboard offline — read files directly this cycle
+- Inbox: check chat_inbox/ for unread messages
+- Tasks: grep your name from public/task_board.md"
+    fi
+
+    # Assemble final prompt: static prefix → memory → live snapshot (dynamic content last)
+    if [ -f "$MEMORY_FILE" ] && [ -s "$MEMORY_FILE" ]; then
+        PROMPT_TEXT="$(printf '%s\n\n---\n## Memory Snapshot (from last session)\n\n%s\n\n---\n%s' \
+            "$STATIC_PREFIX" "$(cat "$MEMORY_FILE")" "$LIVE_SNAPSHOT")"
+        echo "[session:${AGENT_NAME}] Injecting memory.md + live snapshot into fresh session"
+    else
+        PROMPT_TEXT="$(printf '%s\n\n---\n%s' "$STATIC_PREFIX" "$LIVE_SNAPSHOT")"
+        echo "[session:${AGENT_NAME}] Injecting live snapshot into fresh session (no memory.md)"
     fi
 fi
 
@@ -288,8 +536,12 @@ echo "timestamp: $(date +%Y_%m_%d_%H_%M_%S)" >> "$AGENT_DIR/heartbeat.md"
 echo "task: Available for assignment" >> "$AGENT_DIR/heartbeat.md"
 
 # ── Extract and save session ID ───────────────────────────────────────────────
-NEW_SESSION_ID=$(jq -r 'select(.type == "result") | .session_id // ""' "$RAW_LOG" 2>/dev/null \
-    | grep -v '^$' | grep -v '^null$' | tail -1 || true)
+# Dry run: never save fake session IDs — they would break resume on real runs
+NEW_SESSION_ID=""
+if [ "$_DRY_RUN" != "1" ]; then
+    NEW_SESSION_ID=$(jq -r 'select(.type == "result") | .session_id // ""' "$RAW_LOG" 2>/dev/null \
+        | grep -v '^$' | grep -v '^null$' | grep -v '^dryrun-' | tail -1 || true)
+fi
 
 if [ -n "$NEW_SESSION_ID" ]; then
     echo "$NEW_SESSION_ID" > "$SESSION_ID_FILE"
