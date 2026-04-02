@@ -1,0 +1,47 @@
+[18:59:46] Lowering dry_run_sleep: 120 → 3
+[18:59:46] Cleaning agents: alice bob charlie sam tina
+[clean] Cleaning agents: alice bob charlie sam tina
+[clean] alice — done
+[clean] bob — done
+[clean] charlie — done
+[clean] sam — done
+[clean] tina — done
+[clean] All done.
+[18:59:46] Saving starting state...
+[18:59:46] Starting event injector...
+[18:59:46] Injector PID: 12449
+[18:59:46] Starting 5 agents × 60 cycles...
+[18:59:46] Started alice loop (PID 12459)
+[18:59:46] Started bob loop (PID 12466)
+[18:59:46] Started charlie loop (PID 12473)
+[18:59:46] Started sam loop (PID 12482)
+[18:59:46] Started tina loop (PID 12495)
+[18:59:46] Waiting for all agents to complete...
+  alice:     1/60
+  bob:       1/60
+  charlie:   1/60
+  sam:       1/60
+  tina:      1/60
+[19:00:01] Progress: 5 / 300 cycles total
+[19:00:02] Collecting final state...
+[19:00:02] 
+[19:00:02] ========== RUN COMPLETE ==========
+[19:00:02] Output dir: /Users/chenyangcui/Documents/code/aicompany/e2e_dry_run/runs/20260401_185946
+[19:00:02] 
+[19:00:02] Cycle counts per agent:
+[19:00:02]   alice: 1 cycles (1 fresh starts, 0
+0 resume cycles)
+[19:00:02]   bob: 1 cycles (1 fresh starts, 0
+0 resume cycles)
+[19:00:02]   charlie: 1 cycles (1 fresh starts, 0
+0 resume cycles)
+[19:00:02]   sam: 1 cycles (1 fresh starts, 0
+0 resume cycles)
+[19:00:02]   tina: 1 cycles (1 fresh starts, 0
+0 resume cycles)
+[19:00:02] 
+[19:00:02] Delta injections (from injector log):
+  [18:59:58] [injector] === WAVE 1: Creating tasks ===
+[19:00:02] 
+[19:00:02] Files:
+[19:00:02] Restoring dry_run_sleep → 120

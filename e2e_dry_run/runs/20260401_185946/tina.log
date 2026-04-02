@@ -1,0 +1,6 @@
+[18:59:46] [tina] Starting 60 cycles
+
+>>> CYCLE 1 / 60 — 18:59:46 <<<
+[executor:tina] Using: kimi
+[session:tina] Static prefix: persona.md + prompt.md
+mktemp: mkstemp failed on /tmp/agent_ctx_XXXXXX.json: File exists

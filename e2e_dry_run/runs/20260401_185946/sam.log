@@ -1,0 +1,6 @@
+[18:59:46] [sam] Starting 60 cycles
+
+>>> CYCLE 1 / 60 — 18:59:46 <<<
+[executor:sam] Using: kimi
+[session:sam] Static prefix: persona.md + prompt.md
+mktemp: mkstemp failed on /tmp/agent_ctx_XXXXXX.json: File exists

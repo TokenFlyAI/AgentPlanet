@@ -1,0 +1,6 @@
+[18:59:46] [alice] Starting 60 cycles
+
+>>> CYCLE 1 / 60 — 18:59:46 <<<
+[executor:alice] Using: claude
+[session:alice] Static prefix: persona.md + prompt.md
+mktemp: mkstemp failed on /tmp/agent_ctx_XXXXXX.json: File exists

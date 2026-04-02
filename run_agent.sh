@@ -61,12 +61,16 @@ if [ "${SESSION_FORCE_FRESH:-0}" = "1" ]; then
     rm -f "$SESSION_ID_FILE" "$SESSION_CYCLE_FILE"
 elif [ -n "$SAVED_SESSION_ID" ] && [ "$SAVED_CYCLE" -lt "$SESSION_MAX_CYCLES" ]; then
     USE_RESUME=1
-    if [ "$EXECUTOR" = "kimi" ]; then
-        RESUME_FLAG="--session $SAVED_SESSION_ID"
-    else
-        RESUME_FLAG="--resume $SAVED_SESSION_ID"
+    # Dry run: track cycle count and compute delta, but skip actual --resume flag
+    # (dry run has no real session to resume)
+    if [ "$SAVED_SESSION_ID" != "dryrun" ]; then
+        if [ "$EXECUTOR" = "kimi" ]; then
+            RESUME_FLAG="--session $SAVED_SESSION_ID"
+        else
+            RESUME_FLAG="--resume $SAVED_SESSION_ID"
+        fi
     fi
-    echo "[session:${AGENT_NAME}] Resuming ${SAVED_SESSION_ID:0:12}… (cycle $((SAVED_CYCLE+1)))"
+    echo "[session:${AGENT_NAME}] Resuming (cycle $((SAVED_CYCLE+1)))$([ "$SAVED_SESSION_ID" = "dryrun" ] && echo " [dry-run session]" || echo " ${SAVED_SESSION_ID:0:12}…")"
 else
     if [ -n "$SAVED_SESSION_ID" ]; then
         echo "[session:${AGENT_NAME}] Max cycles reached (${SAVED_CYCLE}/${SESSION_MAX_CYCLES}) — saving memory, starting fresh"
@@ -112,8 +116,8 @@ if [ $USE_RESUME -eq 1 ]; then
 
     if [ -n "$_NEW_CTX" ] && [ -f "$SNAPSHOT_FILE" ]; then
         # Compute delta: only what's new/changed since the last snapshot
-        _DELTA_TMP=$(mktemp /tmp/agent_ctx_XXXXXX.json)
-        _SNAP_TMP=$(mktemp /tmp/agent_snap_XXXXXX.json)
+        _DELTA_TMP=$(mktemp /tmp/agent_ctx_XXXXXX)
+        _SNAP_TMP=$(mktemp /tmp/agent_snap_XXXXXX)
         echo "$_NEW_CTX" > "$_DELTA_TMP"
         cp "$SNAPSHOT_FILE" "$_SNAP_TMP"
         DELTA_TEXT=$(python3 - "$_SNAP_TMP" "$_DELTA_TMP" << 'PYEOF'
@@ -255,7 +259,7 @@ else
 
     if [ -n "$_CTX_JSON" ]; then
         # Render JSON context into human-readable markdown for the prompt
-        _CTX_TMP=$(mktemp /tmp/agent_ctx_XXXXXX.json)
+        _CTX_TMP=$(mktemp /tmp/agent_ctx_XXXXXX)
         echo "$_CTX_JSON" > "$_CTX_TMP"
         LIVE_SNAPSHOT=$(python3 - "$_CTX_TMP" << 'PYEOF'
 import sys, json
@@ -545,11 +549,14 @@ echo "timestamp: $(date +%Y_%m_%d_%H_%M_%S)" >> "$AGENT_DIR/heartbeat.md"
 echo "task: Available for assignment" >> "$AGENT_DIR/heartbeat.md"
 
 # ── Extract and save session ID ───────────────────────────────────────────────
-# Dry run: never save fake session IDs — they would break resume on real runs
+# Dry run: use "dryrun" marker to track cycle count and enable delta computation.
+# Real session IDs are never saved in dry run (they don't exist).
 NEW_SESSION_ID=""
-if [ "$_DRY_RUN" != "1" ]; then
+if [ "$_DRY_RUN" = "1" ]; then
+    NEW_SESSION_ID="dryrun"
+else
     NEW_SESSION_ID=$(jq -r 'select(.type == "result") | .session_id // ""' "$RAW_LOG" 2>/dev/null \
-        | grep -v '^$' | grep -v '^null$' | grep -v '^dryrun-' | tail -1 || true)
+        | grep -v '^$' | grep -v '^null$' | grep -v '^dryrun' | tail -1 || true)
 fi
 
 if [ -n "$NEW_SESSION_ID" ]; then
