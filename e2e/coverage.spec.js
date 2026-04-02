@@ -400,6 +400,28 @@ test.describe("GET /api/dashboard — activeCount field", () => {
       expect(agent.heartbeat_age_ms === null || typeof agent.heartbeat_age_ms === "number").toBe(true);
     }
   });
+
+  test("dashboard task items have id, title, status, priority, assignee fields", async () => {
+    const { body } = await apiGet("/api/dashboard");
+    for (const task of body.tasks || []) {
+      expect(typeof task.id === "number" || typeof task.id === "string").toBe(true);
+      expect(typeof task.title).toBe("string");
+      expect(typeof task.status).toBe("string");
+      expect(typeof task.priority).toBe("string");
+      expect(typeof task.assignee).toBe("string");
+    }
+  });
+
+  test("dashboard task items have description, group, task_type, created, updated fields", async () => {
+    const { body } = await apiGet("/api/dashboard");
+    for (const task of body.tasks || []) {
+      expect(typeof task.description).toBe("string");
+      expect(typeof task.group).toBe("string");
+      expect(typeof task.task_type).toBe("string");
+      expect(typeof task.created).toBe("string");
+      expect(typeof task.updated).toBe("string");
+    }
+  });
 });
 
 // ── Stats ─────────────────────────────────────────────────────────────────────
