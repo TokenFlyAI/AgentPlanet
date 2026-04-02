@@ -71,15 +71,16 @@ else
     if [ -n "$SAVED_SESSION_ID" ]; then
         echo "[session:${AGENT_NAME}] Max cycles reached (${SAVED_CYCLE}/${SESSION_MAX_CYCLES}) — saving memory, starting fresh"
         # Save memory snapshot from status.md before resetting
+        # Cap to last 150 lines to prevent unbounded growth (fresh prompts stay lean)
         if [ -f "${AGENT_DIR}/status.md" ] && [ -s "${AGENT_DIR}/status.md" ]; then
             {
                 echo "# Agent Memory Snapshot — ${AGENT_NAME} — $(date +%Y-%m-%dT%H:%M:%S)"
                 echo ""
                 echo "*(Auto-saved at session boundary. Injected into fresh sessions.)*"
                 echo ""
-                cat "${AGENT_DIR}/status.md"
+                tail -n 150 "${AGENT_DIR}/status.md"
             } > "$MEMORY_FILE"
-            echo "[session:${AGENT_NAME}] Memory saved to memory.md"
+            echo "[session:${AGENT_NAME}] Memory saved to memory.md (capped at 150 lines)"
         fi
     fi
     rm -f "$SESSION_ID_FILE" "$SESSION_CYCLE_FILE"
@@ -550,15 +551,16 @@ if [ -n "$NEW_SESSION_ID" ]; then
     echo "[session:${AGENT_NAME}] Saved session ${NEW_SESSION_ID:0:12}… (cycle ${NEW_CYCLE}/${SESSION_MAX_CYCLES}) [executor:${EXECUTOR}]"
 
     # Pre-emptively save memory if this was the last cycle of the session
+    # Cap to last 150 lines — fresh start prompts must stay lean for KV cache efficiency
     if [ "$NEW_CYCLE" -ge "$SESSION_MAX_CYCLES" ]; then
-        echo "[session:${AGENT_NAME}] Last cycle in session — saving memory now"
+        echo "[session:${AGENT_NAME}] Last cycle in session — saving memory now (capped at 150 lines)"
         if [ -f "${AGENT_DIR}/status.md" ] && [ -s "${AGENT_DIR}/status.md" ]; then
             {
                 echo "# Agent Memory Snapshot — ${AGENT_NAME} — $(date +%Y-%m-%dT%H:%M:%S)"
                 echo ""
                 echo "*(Auto-saved at session boundary. Will be injected into the next fresh session.)*"
                 echo ""
-                cat "${AGENT_DIR}/status.md"
+                tail -n 150 "${AGENT_DIR}/status.md"
             } > "$MEMORY_FILE"
         fi
     fi
