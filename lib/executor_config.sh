@@ -8,8 +8,16 @@
 get_executor() {
     local AGENT_NAME="$1"
     local COMPANY_DIR="${2:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
-    local AGENT_DIR="${COMPANY_DIR}/agents/${AGENT_NAME}"
-    local CONFIG_FILE="${COMPANY_DIR}/public/executor_config.md"
+    # Planet-aware paths (source paths.sh if available)
+    local _AGENTS="${AGENTS_DIR:-${COMPANY_DIR}/agents}"
+    local _SHARED="${SHARED_DIR:-${COMPANY_DIR}/public}"
+    if [ -f "${COMPANY_DIR}/lib/paths.sh" ] && [ -z "$AGENTS_DIR" ]; then
+        source "${COMPANY_DIR}/lib/paths.sh" 2>/dev/null || true
+        _AGENTS="${AGENTS_DIR:-${COMPANY_DIR}/agents}"
+        _SHARED="${SHARED_DIR:-${COMPANY_DIR}/public}"
+    fi
+    local AGENT_DIR="${_AGENTS}/${AGENT_NAME}"
+    local CONFIG_FILE="${_SHARED}/executor_config.md"
     
     # Priority 1: Per-agent executor.txt
     if [ -f "${AGENT_DIR}/executor.txt" ]; then
