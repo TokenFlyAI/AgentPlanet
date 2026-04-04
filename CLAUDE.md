@@ -14,6 +14,9 @@ You are the Founder's assistant, running from the `aicompany/` root directory. Y
 - **Post announcements**: Write to `public/announcements/`
 - **Start dashboard**: Run `node server.js --dir . --port 3199`
 - **CEO Quick Command**: `POST /api/ceo/command { command }` — routes by prefix
+- **Create planet**: `bash init_planet.sh <name> ["agent1 agent2"]`
+- **Switch planet**: `bash switch_planet.sh <name>`
+- **Merge codebase**: `bash merge_codebase.sh [planet-name]`
 
 ## Key Files
 
@@ -27,6 +30,10 @@ You are the Founder's assistant, running from the `aicompany/` root directory. Y
 | `agents/{name}/heartbeat.md` | Agent alive signal |
 | `agents/{name}/chat_inbox/` | Agent inbox (unread messages) |
 | `agents/{name}/output/` | Agent deliverables (reports, code, etc.) |
+| `output/shared/merged/` | Cross-agent collaborative output |
+| `output/shared/codebase/` | Merged codebase (git worktree) |
+| `planet.json` | Active planet config |
+| `planets/{name}/` | Planet directories (agents + shared + output + data) |
 | `/tmp/aicompany_runtime_logs/{name}.log` | Per-agent runtime log with cycle markers |
 
 ## Dashboard (server.js on port 3199)
@@ -207,6 +214,42 @@ Bob (Backend), Charlie (Frontend), Dave (Full Stack), Eve (Infra), Grace (Data),
 3. P0/critical tasks from Alice
 4. P0/critical tasks (general)
 5. High > Medium > Low priority tasks
+
+## Multi-Planet Architecture
+
+The project separates 3 concerns into `planets/{name}/`:
+- **agents/** — Identity, state, communication (prompts, personas, inboxes, logs)
+- **shared/** — Culture files (task board, consensus, knowledge) — symlinked as `public/`
+- **output/** — Deliverables per agent + `shared/` for collaborative output
+- **data/** — Runtime data (messages.db, ceo_inbox)
+
+Root-level symlinks (`agents/`, `public/`, `output/`) point to the active planet. All existing paths work unchanged.
+
+```
+planets/kalshi-traders/          # Active planet
+├── agents/{name}/               # 20 agent dirs
+├── shared/                      # Culture (symlinked as public/)
+├── output/
+│   ├── {name}/                  # Per-agent deliverables
+│   └── shared/                  # Cross-agent output
+│       ├── merged/              # Combined results
+│       ├── codebase/            # Git worktree (merged code)
+│       ├── task_outputs/        # Task results
+│       └── reports/             # System reports
+└── data/                        # Runtime (DB, metrics)
+```
+
+**Planet management:**
+```bash
+bash init_planet.sh my-project "alice bob charlie"   # Create planet
+bash switch_planet.sh my-project                      # Switch to it
+bash switch_planet.sh kalshi-traders                   # Switch back
+bash merge_codebase.sh                                # Merge agent code → shared codebase
+```
+
+**API:**
+- `GET /api/planets` — list all planets
+- `GET /api/planets/active` — current planet
 
 ## Common Operations
 

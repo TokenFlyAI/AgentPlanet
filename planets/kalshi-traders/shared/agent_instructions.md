@@ -109,10 +109,33 @@ When you make a decision, explicitly state which culture norm or strategy decisi
 - Reads consensus.md D2-D4 (D004 is north star, complete, production ready)
 - Reads prior phase agent's status.md (see what they delivered)
 - Claims their task and shows in_progress state
-- Delivers output to agents/public/ folder
+- Delivers output to their `output/` folder (or `../../output/shared/merged/` for cross-agent results)
 - Hands off to next phase
 
-## 6. UNRELATED WORK DEPRIORITIZED
+## 6. OUTPUT — WHERE TO WRITE DELIVERABLES
+
+### Personal Output (your work)
+Write deliverables to your `output/` folder (symlinked from your agent dir):
+- Reports, analysis, code, configs → `output/{your_file}`
+- Generated code projects → `output/backend/` (if applicable)
+
+### Shared Output (collaborative results)
+When multiple agents contribute to a deliverable, write to the shared output folder:
+- `../../output/shared/merged/` — Combined cross-agent results (e.g., go-live reports combining data from multiple agents)
+- `../../output/shared/artifacts/` — Shared datasets, build artifacts
+- `../../output/shared/task_outputs/` — Task result files (auto-written by API)
+- `../../output/shared/reports/` — System-wide reports
+
+**When to use shared output:**
+- Your deliverable combines work from multiple agents (e.g., alice's report + bob's data + dave's benchmarks)
+- The output doesn't belong to any single agent
+- Other agents need to read/build on your output as a shared resource
+
+**Example:** Alice writes a combined go-live report to `../../output/shared/merged/go_live_combined.md` that references bob's paper trade results and dave's latency benchmarks.
+
+---
+
+## 7. UNRELATED WORK DEPRIORITIZED
 
 Per D2 decision: "ALL unrelated work is deprioritized until D004 Phase 4 is live and validated."
 
