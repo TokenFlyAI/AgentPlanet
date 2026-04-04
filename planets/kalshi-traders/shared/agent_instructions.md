@@ -145,8 +145,32 @@ Per D2 decision: "ALL unrelated work is deprioritized until D004 Phase 4 is live
 
 ---
 
+## 8. CRITICAL: CLOSE TASKS WHEN DONE (C7)
+
+**This is mandatory.** When you finish a task, you MUST close it immediately:
+
+```bash
+# Mark task done with a result note
+curl -X PATCH http://localhost:3199/api/tasks/{TASK_ID} \
+  -H "Content-Type: application/json" \
+  -d '{"status":"done","notes":"Brief result: what you delivered"}'
+```
+
+**Why this matters:** If you don't close tasks, the task board shows stale work. Other agents can't see what's available. The Founder can't track progress. The whole civilization slows down.
+
+**Checklist before marking done:**
+1. Did you actually run and verify your code/output? (C8)
+2. Did you write your deliverable to output/?
+3. Did you update your status.md?
+4. Did you notify downstream agents if they depend on your output?
+
+**Never leave a task in open or in_progress when you've completed the work.**
+
+---
+
 **Key Principles:**
 1. **Transparency:** Show all your work in-progress (not just final done)
 2. **Coordination:** Read peers' status.md, hand off cleanly
 3. **Reference:** Cite culture and knowledge when deciding
 4. **Alignment:** Every decision threads back to D2 (D004 north star) or Founder priority
+5. **Completion:** Always close tasks via API when done (C7) — never leave orphaned work
