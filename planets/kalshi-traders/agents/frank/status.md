@@ -119,3 +119,11 @@ node agents/frank/output/mean_reversion_test.js
 ## Cycle 4 (Session 3 cont)
 - T436 report exists, task complete. No new work.
 - IDLE — exiting cleanly
+
+## Cycle 18
+- D004 strategic focus reminder from Lord acknowledged
+- All prior tasks complete (T279, T436)
+- Inbox cleared (all messages moved to read/)
+- No open tasks assigned to Frank on board
+- Team all idle (alice, bob, dave, ivan, grace, mia)
+- IDLE — awaiting next assignment

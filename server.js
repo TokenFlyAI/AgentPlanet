@@ -2254,20 +2254,18 @@ async function handleRequest(req, res) {
       for (const line of lines) {
         if (/\|\s*id\s*\|/i.test(line) || /\|[-\s]+\|/.test(line)) continue;
         const cols = line.split("|").slice(1, -1).map((c) => c.trim());
-        if (cols.length >= 7) {
+        if (cols.length >= 6) {
           taskList.push({
             id: parseInt(cols[0], 10) || cols[0],
             title: cols[1] || "",
             description: cols[2] || "",
             priority: cols[3] || "",
-            group: cols[4] || "",
-            assignee: cols[5] || "",
-            status: cols[6] || "done",
-            created: cols[7] || "",
-            updated: cols[8] || "",
-            notes: cols[9] || "",
+            assignee: cols[4] || "",
+            status: cols[5] || "done",
+            created: cols[6] || "",
+            updated: cols[7] || "",
             archived: true,
-            notesList: (cols[9] || "").split(" ;; ").filter(Boolean),
+            notesList: [],
           });
         }
       }
@@ -2506,8 +2504,8 @@ async function handleRequest(req, res) {
       // Skip header row (contains "ID") and separator row (contains "---")
       if (/\|\s*id\s*\|/i.test(line) || /\|[-\s]+\|/.test(line)) continue;
       const cols = line.split("|").slice(1, -1).map((c) => c.trim());
-      // Column order: ID|Title|Desc|Priority|Group|Assignee|Status|Created|Updated|Notes
-      if (cols.length >= 7) tasks.push({ id: cols[0], title: cols[1], description: cols[2], priority: cols[3], group: cols[4], assignee: cols[5], status: cols[6], created: cols[7] || "", updated: cols[8] || "" });
+      // Archive rows have NO Group column: ID|Title|Desc|Priority|Assignee|Status|Created|Updated
+      if (cols.length >= 6) tasks.push({ id: cols[0], title: cols[1], description: cols[2], priority: cols[3], assignee: cols[4], status: cols[5], created: cols[6] || "", updated: cols[7] || "" });
     }
     return json(res, tasks);
   }

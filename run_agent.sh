@@ -250,10 +250,20 @@ else
     # Dynamic suffix = memory + live snapshot (changes per session → not cached, but small)
     [ -f "$PROMPT_FILE" ] || { echo "Error: prompt.md not found: $PROMPT_FILE" >&2; exit 1; }
 
-    # Build static prefix: persona.md (identity) + prompt.md (work rules)
+    # Build static prefix: persona.md (identity) + prompt.md (work rules) + agent_instructions.md (shared SOPs)
+    INSTRUCTIONS_FILE="${SHARED_DIR:-${COMPANY_DIR}/public}/agent_instructions.md"
+    _INSTRUCTIONS=""
+    if [ -f "$INSTRUCTIONS_FILE" ] && [ -s "$INSTRUCTIONS_FILE" ]; then
+        _INSTRUCTIONS="$(cat "$INSTRUCTIONS_FILE")"
+    fi
     if [ -f "$PERSONA_FILE" ] && [ -s "$PERSONA_FILE" ]; then
-        STATIC_PREFIX="$(printf '%s\n\n---\n\n%s' "$(cat "$PERSONA_FILE")" "$(cat "$PROMPT_FILE")")"
-        echo "[session:${AGENT_NAME}] Static prefix: persona.md + prompt.md"
+        if [ -n "$_INSTRUCTIONS" ]; then
+            STATIC_PREFIX="$(printf '%s\n\n---\n\n%s\n\n---\n\n%s' "$(cat "$PERSONA_FILE")" "$(cat "$PROMPT_FILE")" "$_INSTRUCTIONS")"
+            echo "[session:${AGENT_NAME}] Static prefix: persona.md + prompt.md + agent_instructions.md"
+        else
+            STATIC_PREFIX="$(printf '%s\n\n---\n\n%s' "$(cat "$PERSONA_FILE")" "$(cat "$PROMPT_FILE")")"
+            echo "[session:${AGENT_NAME}] Static prefix: persona.md + prompt.md"
+        fi
     else
         STATIC_PREFIX="$(cat "$PROMPT_FILE")"
         echo "[session:${AGENT_NAME}] Static prefix: prompt.md only (no persona.md)"
@@ -586,6 +596,19 @@ else
 fi
 
 echo "========== CYCLE END — $(date +%Y_%m_%d_%H_%M_%S) ==========" >> "$DAILY_LOG"
+
+# ── Auto-trim status.md to prevent token bloat ────────────────────────────────
+STATUS_FILE="$AGENT_DIR/status.md"
+STATUS_LINES=$(wc -l < "$STATUS_FILE" 2>/dev/null | tr -d ' ')
+if [ "${STATUS_LINES:-0}" -gt 200 ]; then
+    head -10 "$STATUS_FILE" > "${STATUS_FILE}.trimmed"
+    echo "" >> "${STATUS_FILE}.trimmed"
+    echo "## [Old cycles trimmed to save tokens — see logs/ for history]" >> "${STATUS_FILE}.trimmed"
+    echo "" >> "${STATUS_FILE}.trimmed"
+    tail -120 "$STATUS_FILE" >> "${STATUS_FILE}.trimmed"
+    mv "${STATUS_FILE}.trimmed" "$STATUS_FILE"
+    echo "[trim] ${AGENT_NAME}: status.md trimmed from ${STATUS_LINES} to ~135 lines"
+fi
 
 # ── Update heartbeat (idle) ───────────────────────────────────────────────────
 echo "status: idle" > "$AGENT_DIR/heartbeat.md"

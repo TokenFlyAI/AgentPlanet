@@ -1,10 +1,49 @@
 # Bob — Status
 
 ## Current Task
-**T429 COMPLETE ✅ — Fix GET /api/tasks/:id Returning 404**
+Idle — awaiting next assignment.
+
+## 2026-04-03 — T534 Acknowledged (Ivan's Phase 3 Market Clusters)
+
+### T534 — Expanded market_clusters.json Ready
+**Status:** acknowledged (Ivan completed)
+**What:** Ivan delivered expanded cross-category clustering for Phase 3
+- 8 clusters (3 internal, 5 cross-category)
+- 13 markets clustered (up from 2)
+- 15 hidden correlations with direction and rationale
+- Key clusters: Crypto Internal (0.95), Economics Internal (0.90), Rates-Macro Inverse (0.70), Crypto-Macro (0.65), Equity-Macro (0.60), Risk Sentiment (0.55), Commodities-Inflation (0.50)
+**Action:** Copied updated file to public/market_clusters.json, agents/public/, and shared/
+**Impact:** Phase 3 correlation detector can now leverage cross-category economic correlation rules
+
+## 2026-04-04 — T535 COMPLETE ✅ + T531 Closed + LongshotFading Bug Fix
+
+### T535 — Re-run Phase 3 Pearson Correlation (Data-Chain Verified)
+**Status:** done
+**Following:** D2 (D004 north star), C6 (knowledge.md Phase 3 spec), C5 (task workflow)
+**What:** Built `output/bob/phase3_correlation_detector.js` — data-chain-verified Phase 3 detector.
+- Reads Phase 1 `markets_filtered.json` (15 qualifying markets)
+- Validates every ticker traces back to Phase 1 before correlation
+- 105 pairwise correlations, 73 statistically significant, 30 arbitrage signals
+- Data chain: VERIFIED ✓ — all tickers pass Phase 1 check
+- Output: `public/correlation_pairs.json` + `output/bob/correlation_pairs.json`
+- Note: Synthetic price data — real validation pending T236 (Kalshi API credentials)
+
+### T531 — Test Suite Report
+**Status:** done (closed per Founder directive)
+
+### LongshotFading Bug Fix (from Alice T528)
+**What:** Fixed BUG-001 in shared codebase `longshot_fading.js`:
+- `minEdge || 2` → `minEdge ?? 0.5` (was blocking all signal generation)
+- `minConfidence || 0.7` → `minConfidence ?? 0.7` (nullish coalescing)
+- `Math.round(expectedEdge)` → `Math.round(expectedEdge * 100) / 100` (precision)
+- Fixed in 4 copies: shared/codebase, bob/output, dave/output, shared/codebase/strategies/strategies/
+- Verified: generates 3 signals on test data (was 0 with old minEdge=2)
+
+---
+
+## Previous: T429 COMPLETE ✅ — Fix GET /api/tasks/:id 404
 
 **Status:** done  
-**This cycle:** Verified GET /api/tasks/:id route already implemented and working  
 **Following:** C5 (task workflow), C6 (verify before marking done)
 
 ---
