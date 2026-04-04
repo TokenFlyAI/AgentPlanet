@@ -1233,7 +1233,12 @@ async function handleRequest(req, res) {
     const modeMatch = modeMd.match(/##\s*Current Mode\s*\n\*\*(\w+)\*\*/i);
     const mode = modeMatch ? modeMatch[1].toLowerCase() : "normal";
     const activeCount = agents.filter((a) => a.status === "running").length;
-    return json(res, { agents, tasks, mode, activeCount });
+    // Include archive stats so dashboard can show real done count
+    const archivePath = path.join(PUBLIC_DIR, "task_board_archive.md");
+    const archiveRaw = safeRead(archivePath) || "";
+    const archiveLines = archiveRaw.split("\n").filter((l) => l.trim().startsWith("|") && !/\|\s*id\s*\|/i.test(l) && !/\|[-\s]+\|/.test(l));
+    const archivedDoneCount = archiveLines.length;
+    return json(res, { agents, tasks, mode, activeCount, archivedDoneCount });
   }
 
   if (method === "GET" && pathname === "/api/search") {
@@ -2238,14 +2243,43 @@ async function handleRequest(req, res) {
 
   // ---- Tasks ----
   if (method === "GET" && pathname === "/api/tasks") {
+    const includeArchive = query.include_archive === "true" || query.include_archive === "1";
     let taskList = parseTaskBoard().map((t) => ({ ...t, id: parseInt(t.id, 10) || t.id, notesList: (t.notes || "").split(" ;; ").filter(Boolean) }));
+
+    // Include archived done tasks if requested
+    if (includeArchive) {
+      const archivePath = path.join(PUBLIC_DIR, "task_board_archive.md");
+      const raw = safeRead(archivePath) || "";
+      const lines = raw.split("\n").filter((l) => l.trim().startsWith("|"));
+      for (const line of lines) {
+        if (/\|\s*id\s*\|/i.test(line) || /\|[-\s]+\|/.test(line)) continue;
+        const cols = line.split("|").slice(1, -1).map((c) => c.trim());
+        if (cols.length >= 7) {
+          taskList.push({
+            id: parseInt(cols[0], 10) || cols[0],
+            title: cols[1] || "",
+            description: cols[2] || "",
+            priority: cols[3] || "",
+            group: cols[4] || "",
+            assignee: cols[5] || "",
+            status: cols[6] || "done",
+            created: cols[7] || "",
+            updated: cols[8] || "",
+            notes: cols[9] || "",
+            archived: true,
+            notesList: (cols[9] || "").split(" ;; ").filter(Boolean),
+          });
+        }
+      }
+    }
+
     const assigneeFilter = query.assignee;
     const statusFilter = query.status;
     const priorityFilter = query.priority;
     const qFilter = query.q ? query.q.toLowerCase() : null;
-    if (assigneeFilter) taskList = taskList.filter((t) => t.assignee.toLowerCase() === assigneeFilter.toLowerCase());
-    if (statusFilter) taskList = taskList.filter((t) => t.status.toLowerCase() === statusFilter.toLowerCase());
-    if (priorityFilter) taskList = taskList.filter((t) => t.priority.toLowerCase() === priorityFilter.toLowerCase());
+    if (assigneeFilter) taskList = taskList.filter((t) => (t.assignee || "").toLowerCase() === assigneeFilter.toLowerCase());
+    if (statusFilter) taskList = taskList.filter((t) => (t.status || "").toLowerCase() === statusFilter.toLowerCase());
+    if (priorityFilter) taskList = taskList.filter((t) => (t.priority || "").toLowerCase() === priorityFilter.toLowerCase());
     if (qFilter) taskList = taskList.filter((t) =>
       (t.title || "").toLowerCase().includes(qFilter) ||
       (t.description || "").toLowerCase().includes(qFilter)

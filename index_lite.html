@@ -2548,6 +2548,11 @@ async function refresh() {
     if (results[1].status === 'fulfilled' && results[1].value) {
       const raw1 = results[1].value;
       tasks = Array.isArray(raw1) ? raw1 : (raw1.tasks || []);
+      // Fetch archived done count for accurate progress bar
+      safeFetch('/api/tasks/archive').then(archive => {
+        window._archivedDoneCount = Array.isArray(archive) ? archive.length : 0;
+        renderTasks();
+      }).catch(() => { renderTasks(); });
       renderTasks();
     }
     if (results[2].status === 'fulfilled' && results[2].value) {
@@ -4039,9 +4044,11 @@ function renderTasks() {
       const items = groups[s] || [];
       const collapsed = taskSectionCollapsed[s];
       const chevron = '<span class="task-section-chevron">▾</span>';
+      const archiveNote = (s === 'done' && window._archivedDoneCount > 0)
+        ? ' <span style="color:#00cc66;font-weight:400;">+ ' + window._archivedDoneCount + ' archived</span>' : '';
       const header = '<tr class="task-section-header' + (collapsed ? ' collapsed' : '') + '" onclick="toggleTaskSection(\'' + s + '\')">' +
         '<td colspan="' + colCount + '">' + chevron + '<span style="color:' + SECTION_COLOR[s] + '">' + SECTION_LABEL[s] + '</span>' +
-        ' <span style="color:#555;font-weight:400;">(' + items.length + ')</span></td></tr>';
+        ' <span style="color:#555;font-weight:400;">(' + items.length + ')</span>' + archiveNote + '</td></tr>';
       const rows = collapsed ? '' : items.map(({ t, i }) => buildTaskRow(t, i)).join('');
       return header + rows;
     }).join('');
@@ -4049,10 +4056,11 @@ function renderTasks() {
     tbody.innerHTML = filtered.map((t, i) => buildTaskRow(t, i)).join('');
   }
 
-  // Progress bar
+  // Progress bar — include archived done tasks
   const allTasks = Array.isArray(tasks) ? tasks : [];
-  const doneCount = allTasks.filter(t => t.status === 'done').length;
-  const total = allTasks.length;
+  const activeDone = allTasks.filter(t => t.status === 'done').length;
+  const doneCount = activeDone + (window._archivedDoneCount || 0);
+  const total = allTasks.length + (window._archivedDoneCount || 0);
   const pct = total > 0 ? Math.round((doneCount / total) * 100) : 0;
   document.getElementById('task-progress-fill').style.width = pct + '%';
   document.getElementById('task-progress-label').textContent = doneCount + ' / ' + total + ' tasks done (' + pct + '%)';
