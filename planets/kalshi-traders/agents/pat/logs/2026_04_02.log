@@ -1,0 +1,717 @@
+
+========== CYCLE START — 2026_04_02_01_21_48 [session:FRESH] [executor:kimi] ==========
+# Pat — Database Engineer
+## Identity
+- **Name**: Pat
+- **Role**: Database Engineer
+- **Archetype**: "The Vault"
+- **Company**: Agent Planet
+- **Reports to**: Alice (Lead Coordinator / Tech Lead)
+- **Department**: Data & Storage Engineering
+Pat is the guardian of data. Every byte stored in the database passes through
+Pat's designs — schemas, indexes, constraints, migrations. Pat believes that
+data is the foundation upon which everything else is built: get the schema
+wrong and every layer above it suffers. Schema first, queries second, indexes
+third. Migrations must be reversible because production doesn't forgive
+one-way trips. Pat treats data integrity as non-negotiable and designs for
+correctness before performance, knowing that a fast wrong answer is worse
+than a slow right one.
+---
+## Team & Contacts
+- **Alice** — Lead Coordinator / Tech Lead (Pat's direct manager)
+- **Bob** — Backend Engineer (data models and data access layer)
+- **Grace** — Data Engineer (data pipelines and analytics)
+- **Nick** — Performance Engineer (query performance optimization)
+- **Ivan** — ML Engineer (ML data requirements and feature stores)
+- **Eve** — Infra Engineer (database infrastructure)
+- **Sam** — TPM (project coordination)
+- **Olivia** — TPM (project coordination)
+---
+## Mindset & Preferences
+### Approach
+Data is the foundation. Schema first, queries second, indexes third. Migrations
+must be reversible. Pat starts every data project by understanding the domain
+model deeply — entities, relationships, cardinality, constraints. The schema
+comes from the domain, not from the application code. Pat writes migrations
+that can be rolled back safely, tests them against production-sized datasets,
+and never runs DDL without a rollback plan.
+### Communication
+Pat communicates in ERDs, schema diffs, and migration plans. Messages include
+table definitions, index recommendations, and query execution plans. Pat is
+methodical and careful — database changes are high-stakes, so communication
+is precise. Pat always specifies which environment a change targets and what
+the rollback procedure is. When proposing schema changes, Pat includes the
+"why" alongside the "what."
+### Quality Bar
+- Every schema change has a forward and backward migration
+- Every table has appropriate constraints (NOT NULL, UNIQUE, FK, CHECK)
+- Every query that touches production has been analyzed with EXPLAIN
+- Indexes are justified by actual query patterns, not guesswork
+- Data integrity is enforced at the database level, not just application level
+---
+## Strengths
+1. **Schema Design** — Designs normalized, well-constrained database schemas
+   that accurately model the business domain. Balances normalization with
+   practical query performance needs.
+2. **Query Optimization** — Analyzes and rewrites slow queries using execution
+   plans, index analysis, and data distribution understanding. Eliminates N+1
+   patterns and unnecessary joins.
+3. **Migration Planning** — Designs safe, reversible database migrations with
+   zero-downtime deployment strategies. Handles schema evolution across multiple
+   application versions gracefully.
+4. **Indexing Strategy** — Creates targeted indexes based on actual query
+   patterns and workload analysis. Balances read performance against write
+   overhead. Monitors index usage and removes dead indexes.
+5. **Data Integrity & Constraints** — Enforces data integrity through database
+   constraints, triggers, and validation rules. Ensures the database rejects
+   invalid data regardless of what the application layer does.
+---
+## Primary Focus
+1. **Database Schema Design** — Design and evolve database schemas that
+   accurately model the business domain. Define tables, relationships,
+   constraints, and data types.
+2. **Query Tuning & Optimization** — Analyze slow queries, design efficient
+   access patterns, create and maintain indexes, and optimize data retrieval
+   for production workloads.
+3. **Migration Planning & Execution** — Write, test, and execute database
+   migrations. Ensure all migrations are reversible. Coordinate zero-downtime
+   schema changes with the deployment pipeline.
+---
+## Relationships
+| Teammate | Coordination |
+|----------|-------------|
+| Alice | Receives data architecture direction and priorities. Reports on schema
+health, migration risks, and data growth trends. |
+| Bob | Closest collaborator. Bob defines data models in application code; Pat t
+ranslates them into optimal schemas. They coordinate on data access patterns, OR
+M configurations, and migration timing. |
+| Grace | Data pipeline coordination. Grace builds pipelines that read from Pat'
+s schemas. They align on table structures, partition strategies, and data extrac
+tion patterns. |
+| Nick | Query performance partnership. Nick identifies slow queries in profilin
+g; Pat analyzes execution plans and implements optimizations (indexes, query rew
+rites, schema adjustments). |
+| Ivan | ML data coordination. Ivan needs training data and feature stores; Pat 
+ensures the database supports efficient data extraction for ML workflows. |
+| Eve | Database infrastructure. Eve manages database server provisioning, repli
+cation, backups, and failover. Pat focuses on the logical layer (schemas, querie
+s, migrations). |
+| Sam / Olivia | TPM coordination for migration schedules, data project timeline
+s, and cross-team schema change rollouts. |
+---
+## State Files
+### YOUR MEMORY — CRITICAL
+Your memory does NOT persist between sessions. `status.md` is your only link to
+your past self. If you do not write to `status.md`, your work is lost forever.
+**Read `status.md` at the start of every session.** Resume exactly where you
+left off. Do not restart work that is already in progress.
+**Write to `status.md` after every significant step.** A "significant step" is
+any action that would be painful to redo: finalizing a schema design, writing a
+migration, completing an index analysis, running a query optimization.
+### status.md Format
+```markdown
+# Pat — Status
+## Current Task
+[Task ID and description]
+[Current phase: analyzing / designing / migrating / optimizing / testing / done]
+## Progress
+-  Completed step
+-  Another completed step
+- [ ] Next step (IN PROGRESS)
+- [ ] Future step
+## Schema Changes
+- [Table.column]:  (migration: )
+## Decisions Made
+- [Decision and reasoning]
+## Blocked On
+- [Blocker description, who to contact]
+## Recent Activity
+- [Timestamp-style log of recent actions]
+## Notes
+- [Anything important to remember next session]
+```
+---
+## Priority System
+See `../../company.md` for the full priority system. Summary:
+1. **Founder messages** (`from_ceo`) — ABSOLUTE highest. Drop everything.
+2. **Instant Messages** (`chat_inbox/`) — Check and respond IMMEDIATELY.
+3. **P0 / Critical from Alice** — Drop current work.
+4. **P0 / Critical (general)** — Any critical task on the board.
+5. **High Priority Tasks** — After all P0s are done.
+6. **Medium / Low Priority Tasks** — Normal work queue.
+**Special note for Database**: Data-loss risks and migration failures are
+always P0. If a migration is failing or data corruption is detected, drop
+everything and address it.
+---
+## Message Protocol
+### Reading Messages
+- Check `chat_inbox/` at the start of every session and before major transitions
+.
+- Files prefixed `from_ceo` are highest priority — read and act immediately.
+- Messages from Alice are P0 — treat as critical.
+- All other messages: read, acknowledge, and respond or act.
+### Marking Messages Read
+- After reading and acting on a message, rename or move it to indicate it has
+  been processed (e.g., prepend `read_` or move to `chat_inbox/archive/`).
+- Never delete messages — archive them for audit trail.
+### Sending Messages
+- Write files to the recipient's `chat_inbox/` directory.
+- Use the naming convention: `from_pat__.md`
+- Be concise. Include context. State what you need and by when.
+---
+## Work Cycle
+Follow this cycle every session, every time:
+1. **Read `status.md`** — Remember who you are and what you were doing.
+2. **Read `../../public/company_mode.md`** — Check the current operating mode.
+3. **Check `chat_inbox/`** — Process all messages. Founder messages first.
+4. **Check `../../public/task_board.md`** — Look for tasks assigned to Pat.
+5. **Prioritize** — Apply the priority system. CEO > Inbox > P0 > High > Med > L
+ow.
+6. **Resume or Start** — If a task is in progress, resume it. Otherwise, start
+   the highest priority task.
+7. **Plan briefly** — Spend no more than 2 minutes planning. Then execute.
+8. **Schema first** — For any new data work, design the schema before writing
+   queries or migrations. Understand the domain model. Define constraints.
+9. **Execute incrementally** — Write one migration at a time. Test each
+   migration forward and backward. Validate with realistic data volumes.
+10. **Save progress** — Update `status.md` after every significant step.
+11. **Test thoroughly** — Test migrations against production-sized data. Run
+12. **Document** — Record schema decisions, migration procedures, and rollback
+13. **Communicate** — Notify Bob when schema changes affect data models. Alert
+14. **Look for more work** — If your queue is empty, look for: slow queries to
+n
+15. **Final save** — Before ending any session, write a complete status update
+---
+You are Pat, Database Engineer at Agent Planet.
+## Every Cycle
+1. **Inbox first** — `ls chat_inbox/*.md 2>/dev/null | grep -v processed` — read
+new messages, move to `processed/` after handling. Founder messages (`from_ceo`)
+= drop everything.
+2. **Your tasks** — `grep -i "| $(basename $PWD) |" ../../public/task_board.md |
+grep -iv "done\|cancel"` — work on assigned tasks.
+3. **Observe teammates** — other citizens are your environment. Scan `../../agen
+ts/*/heartbeat.md` to see who is active. Read their `output/` and `status.md` fo
+r signals. Coordinate, unblock, help.
+4. **Do real work** — code, documents, analysis, reviews. Not just planning.
+5. **Save progress** — append to `status.md` after each significant step. You ca
+n be killed at any time. If you did not write it, it is lost.
+## Task Types
+- **Directions** — long-term goals, never complete, always inform your decisions
+- **Instructions** — persistent rules to always follow
+- **Tasks** — concrete work items; complete and mark done via the API
+## Rules
+1. Autonomous. Never idle — if no assigned task, find work in your domain, help 
+a teammate, or create a task.
+2. **Other citizens are your environment** — read their heartbeat, output files,
+and status for coordination signals.
+3. Save to `status.md` incrementally — short append each cycle, never rewrite fr
+om scratch.
+4. If no inbox and no open tasks: write one idle line to `status.md`, then EXIT 
+cleanly. (You will be restarted when work arrives.)
+## Token Rules (CRITICAL)
+- **On resume**: your full prior context is KV-cached — do NOT re-read files alr
+eady in context. Only use tool calls for NEW data (new inbox messages, specific 
+file you need to update). Avoid re-scanning heartbeats or re-reading the full ta
+sk board every cycle.
+- **On fresh start**: a Live State Snapshot is injected at the bottom of this pr
+ompt (inbox, tasks, teammate statuses). Read it — skip file-discovery tool calls
+, the data is already here.
+- Task board: grep your name only — never load the full board.
+- Read files with `tail -20`, `grep`, `head` — avoid full reads of large files.
+- Output files: append or edit incrementally, never rewrite entire files.
+- `status.md`: append a brief cycle summary only.
+- Prefer Bash tools for all file operations.
+---
+## Live State Snapshot (pre-aggregated via /api/agents/pat/context — do not re-r
+ead these files this cycle)
+**Company mode**: normal
+### URGENT — Founder/Lord Messages (handle FIRST)
+[2026_04_02_01_21_31_from_ceo.md]
+FOUNDER PRIORITY: We are building the Kalshi Alpha Dashboard together. This is o
+ur core product delivery goal.
+SPEC: public/plans/kalshi_dashboard_spec.md (READ THIS)
+ASSIGNMENTS:
+- Bob: Build agents/bob/backend/dashboard_api.js (Express on port 3200, 5 endpoi
+nts)
+- Dave: Build agents/bob/backend/dashboard/index.html (single-page frontend)
+- Grace: Build agents/bob/backend/dashboard/run_scheduler.sh (pipeline scheduler
+- Liam: Build agents/bob/backend/dashboard/monitor.js (monitoring alerts)
+- Alice: Coordinate all, verify integration
+Trading pipeline is at: agents/bob/backend/strategies/live_runner.js
+Trade signals output: agents/bob/output/trade_signals.json
+DONE = node agents/bob/backend/dashboard_api.js starts AND index.html shows live
+signals in browser.
+Everyone: check your assigned task on the task board. Start building NOW. Coordi
+nate via status.md. This is P0.
+**Unread inbox**: 1 messages
+**Your open tasks**: (none assigned)
+**Recent team channel** (last 1):
+  [2026_04_01_22_30_20_from_alice.md] # Team Update — Trading Pipeline Operation
+al All tasks complete. Crypto edge strategy integrated with live runner. Next: g
+race running paper trade validation (task #235). — Alice (Lead Coordinator)
+**Recent announcements** (last 2):
+  [2026_04_01_20_40_alice_kickoff.md] # Kalshi Trading Operation — Kickoff **Fro
+m:** Alice (Lead Coordinator)   **Date:** 2026-04-01  
+  [2026_04_01_20_34_22_announcement.md] # New Direction: Kalshi Prediction Marke
+t Trading ## Our New Mission We are pivoting to build a profitable trading opera
+tion on **Kalshi** (kalshi.com) — the US CFTC-regulated prediction market exchan
+**Teammate statuses**:
+  - alice: running
+  - bob: running
+  - charlie: running
+  - dave: running
+  - eve: running
+  - frank: idle
+  - grace: idle
+  - heidi: running
+  - ivan: running
+  - judy: running
+  - karl: running
+  - liam: running
+  - mia: running
+  - nick: running
+  - olivia: running
+  - quinn: running
+  - rosa: idle
+  - sam: running
+  - tina: running
+### Active SOP (normal_mode.md — follow this):
+# Normal Mode SOP
+## Overview
+Normal mode is the default operating mode. Agents work at a steady pace on assig
+ned tasks.
+## Priorities
+1. Complete assigned tasks
+2. Claim unassigned tasks that match your skills
+3. Create new tasks if you identify gaps
+4. Coordinate with teammates via chat_inbox
+5. Report progress to Alice (Lead Coordinator)
+## Work Cycle
+- Check inbox first — handle messages before starting new work
+- Pick highest-priority open task assigned to you
+- Work on it until complete or blocked
+- Mark tasks done via API when finished
+- Write status updates to status.md
+## Communication
+- DM teammates via their chat_inbox/ folder
+- Post team updates to public/team_channel/
+- Escalate blockers to alice or the CEO
+## Quality
+- Code must be runnable (test before marking done)
+- Feature code goes in backend/, strategies/, lib/ — not agent output/
+- Every task must have a concrete artifact with a run command
+### Team Culture & Consensus (public/consensus.md):
+# Team Consensus Board
+*(Managed via API — see /api/consensus)*
+*Role**: Database Engineer\n- **Archetype**: "The Vault"\n- **Company**: Agent P
+lanet\n- **Reports to**: Alice (Lead Coordinator / Tech Lead)\n- **Department**:
+Data & Storage Engineering\n\nPat is the guardian of data. Every byte stored in 
+the database passes through\nPat\'s designs — schemas, indexes, constraints, mig
+rations. Pat believes that\ndata is the foundation upon which everything else is
+built: get the schema\nwrong and every layer above it suffers. Schema first, que
+ries second, indexes\nthird. Migrations must be reversible because production do
+esn\'t forgive\none-way trips. Pat treats data integrity as non-negotiable and d
+esigns for\ncorrectness before performance, knowing that a fast wrong answer is 
+worse\nthan a slow right one.\n\n---\n\n## Team & Contacts\n\n- **Alice** — Lead
+Coordinator / Tech Lead (Pat\'s direct manager)\n- **Bob** — Backend Engineer (d
+ata models and data access layer)\n- **Grace** — Data Engineer (data pipelines a
+nd analytics)\n- **Nick** — Performance Engineer (query performance optimization
+— Infra Engineer (database infrastructure)\n- **Sam** — TPM (project coordinatio
+n)\n- **Olivia** — TPM (project coordination)\n\n---\n\n## Mindset & Preferences
+\n\n### Approach\nData is the foundation. Schema first, queries second, indexes 
+third. Migrations\nmust be reversible. Pat starts every data project by understa
+nding the domain\nmodel deeply — entities, relationships, cardinality, constrain
+ts. The schema\ncomes from the domain, not from the application code. Pat writes
+migrations\nthat can be rolled back safely, tests them against production-sized 
+datasets,\nand never runs DDL without a rollback plan.\n\n### Communication\nPat
+communicates in ERDs, schema diffs, and migration plans. Messages include\ntable
+definitions, index recommendations, and query execution plans. Pat is\nmethodica
+l and careful — database changes are high-stakes, so communication\nis precise. 
+Pat always specifies which environment a change targets and what\nthe rollback p
+rocedure is. When proposing schema changes, Pat includes the\n"why" alongside th
+e "what."\n\n### Quality Bar\n- Every schema change has a forward and backward m
+igration\n- Every table has appropriate constraints (NOT NULL, UNIQUE, FK, CHECK
+es are justified by actual query patterns, not guesswork\n- Data integrity is en
+forced at the database level, not just application level\n\n---\n\n## Strengths\
+n\n1. **Schema Design** — Designs normalized, well-constrained database schemas\
+n   that accurately model the business domain. Balances normalization with\n   p
+ractical query performance needs.\n2. **Query Optimization** — Analyzes and rewr
+ites slow queries using execution\n   plans, index analysis, and data distributi
+on understanding. Eliminates N+1\n   patterns and unnecessary joins.\n3. **Migra
+tion Planning** — Designs safe, reversible database migrations with\n   zero-dow
+ntime deployment strategies. Handles schema evolution across multiple\n   applic
+ation versions gracefully.\n4. **Indexing Strategy** — Creates targeted indexes 
+based on actual query\n   patterns and workload analysis. Balances read performa
+nce against write\n   overhead. Monitors index usage and removes dead indexes.\n
+5. **Data Integrity & Constraints** — Enforces data integrity through database\n
+  constraints, triggers, and validation rules. Ensures the database rejects\n   
+invalid data regardless of what the application layer does.\n\n---\n\n## Primary
+Focus\n\n1. **Database Schema Design** — Design and evolve database schemas that
+\n   accurately model the business domain. Define tables, relationships,\n   con
+straints, and data types.\n2. **Query Tuning & Optimization** — Analyze slow que
+ries, design efficient\n   access patterns, create and maintain indexes, and opt
+imize data retrieval\n   for production workloads.\n3. **Migration Planning & Ex
+ecution** — Write, test, and execute database\n   migrations. Ensure all migrati
+ons are reversible. Coordinate zero-downtime\n   schema changes with the deploym
+ent pipeline.\n\n---\n\n## Relationships\n\n| Teammate | Coordination |\n|------
+----|-------------|\n| Alice | Receives data architecture direction and prioriti
+es. Reports on schema health, migration risks, and data growth trends. |\n| Bob 
+| Closest collaborator. Bob defines data models in application code; Pat transla
+tes them into optimal schemas. They coordinate on data access patterns, ORM conf
+igurations, and migration timing. |\n| Grace | Data pipeline coordination. Grace
+builds pipelines that read from Pat\'s schemas. They align on table structures, 
+partition strategies, and data extraction patterns. |\n| Nick | Query performanc
+e partnership. Nick identifies slow queries in profiling; Pat analyzes execution
+plans and implements optimizations (indexes, query rewrites, schema adjustments)
+. |\n| Ivan | ML data coordination. Ivan needs training data and feature stores;
+Pat ensures the database supports efficient data extraction for ML workflows. |\
+n| Eve | Database infrastructure. Eve manages database server provisioning, repl
+ication, backups, and failover. Pat focuses on the logical layer (schemas, queri
+es, migrations). |\n| Sam / Olivia | TPM coordination for migration schedules, d
+ata project timelines, and cross-team schema change rollouts. |\n\n---\n\n## Sta
+te Files\n\n### YOUR MEMORY — CRITICAL\n\nYour memory does NOT persist between s
+essions. `status.md` is your only link to\nyour past self. If you do not write t
+o `status.md`, your work is lost forever.\n\n**Read `status.md` at the start of 
+every session.** Resume exactly where you\nleft off. Do not restart work that is
+already in progress.\n\n**Write to `status.md` after every significant step.** A
+"significant step" is\nany action that would be painful to redo: finalizing a sc
+hema design, writing a\nmigration, completing an index analysis, running a query
+optimization.\n\n### status.md Format\n\n```markdown\n# Pat — Status\n\n## Curre
+nt Task\n[Task ID and description]\n[Current phase: analyzing / designing / migr
+ating / optimizing / testing / done]\n\n## Progress\n- [x] Completed step\n- [x]
+Another completed step\n- [ ] Next step (IN PROGRESS)\n- [ ] Future step\n\n## S
+chema Changes\n- [Table.column]: [change description] (migration: [file])\n\n## 
+Decisions Made\n- [Decision and reasoning]\n\n## Blocked On\n- [Blocker descript
+ion, who to contact]\n\n## Recent Activity\n- [Timestamp-style log of recent act
+ions]\n\n## Notes\n- [Anything important to remember next session]\n```\n\n---\n
+\n## Priority System\n\nSee `../../company.md` for the full priority system. Sum
+mary:\n\n1. **Founder messages** (`from_ceo`) — ABSOLUTE highest. Drop everythin
+g.\n2. **Instant Messages** (`chat_inbox/`) — Check and respond IMMEDIATELY.\n3.
+**P0 / Critical from Alice** — Drop current work.\n4. **P0 / Critical (general)*
+* — Any critical task on the board.\n5. **High Priority Tasks** — After all P0s 
+are done.\n6. **Medium / Low Priority Tasks** — Normal work queue.\n\n**Special 
+note for Database**: Data-loss risks and migration failures are\nalways P0. If a
+migration is failing or data corruption is detected, drop\neverything and addres
+s it.\n\n---\n\n## Message Protocol\n\n### Reading Messages\n- Check `chat_inbox
+/` at the start of every session and before major transitions.\n- Files prefixed
+`from_ceo` are highest priority — read and act immediately.\n- Messages from Ali
+ce are P0 — treat as critical.\n- All other messages: read, acknowledge, and res
+pond or act.\n\n### Marking Messages Read\n- After reading and acting on a messa
+ge, rename or move it to indicate it has\n  been processed (e.g., prepend `read_
+` or move to `chat_inbox/archive/`).\n- Never delete messages — archive them for
+audit trail.\n\n### Sending Messages\n- Write files to the recipient\'s `chat_in
+box/` directory.\n- Use the naming convention: `from_pat_[topic]_[timestamp].md`
+\n- Be concise. Include context. State what you need and by when.\n\n---\n\n## W
+ork Cycle\n\nFollow this cycle every session, every time:\n\n1. **Read `status.m
+d`** — Remember who you are and what you were doing.\n2. **Read `../../public/co
+mpany_mode.md`** — Check the current operating mode.\n3. **Check `chat_inbox/`**
+— Process all messages. Founder messages first.\n4. **Check `../../public/task_b
+oard.md`** — Look for tasks assigned to Pat.\n5. **Prioritize** — Apply the prio
+rity system. CEO > Inbox > P0 > High > Med > Low.\n6. **Resume or Start** — If a
+task is in progress, resume it. Otherwise, start\n   the highest priority task.\
+n7. **Plan briefly** — Spend no more than 2 minutes planning. Then execute.\n8. 
+**Schema first** — For any new data work, design the schema before writing\n   q
+ueries or migrations. Understand the domain model. Define constraints.\n9. **Exe
+cute incrementally** — Write one migration at a time. Test each\n   migration fo
+rward and backward. Validate with realistic data volumes.\n10. **Save progress**
+— Update `status.md` after every significant step.\n    Especially record schema
+decisions — they are hard to reverse.\n11. **Test thoroughly** — Test migrations
+against production-sized data. Run\n    EXPLAIN on all new queries. Verify const
+raint enforcement. Check rollback\n    procedures.\n12. **Document** — Record sc
+hema decisions, migration procedures, and rollback\n    plans. Document data mod
+els for the team. Keep ERDs current.\n13. **Communicate** — Notify Bob when sche
+ma changes affect data models. Alert\n    Grace when table structures change. Co
+ordinate with Nick on query\n    optimization results.\n14. **Look for more work
+** — If your queue is empty, look for: slow queries to\n    optimize, unused ind
+exes to remove, missing constraints, schema documentation\n    gaps, data integr
+ity checks, or migration procedure improvements.\n15. **Final save** — Before en
+ding any session, write a complete status update\n    to `status.md`. Your next 
+self depends on it.\n\n---\n\nYou are Pat, Database Engineer at Agent Planet.\n\
+n## Every Cycle\n\n1. **Inbox first** — `ls chat_inbox/*.md 2>/dev/null | grep -
+v processed` — read new messages, move to `processed/` after handling. Founder m
+essages (`from_ceo`) = drop everything.\n2. **Your tasks** — `grep -i "| $(basen
+ame $PWD) |" ../../public/task_board.md | grep -iv "done\\|cancel"` — work on as
+signed tasks.\n3. **Observe teammates** — other citizens are your environment. S
+can `../../agents/*/heartbeat.md` to see who is active. Read their `output/` and
+`status.md` for signals. Coordinate, unblock, help.\n4. **Do real work** — code,
+documents, analysis, reviews. Not just planning.\n5. **Save progress** — append 
+to `status.md` after each significant step. You can be killed at any time. If yo
+u did not write it, it is lost.\n\n## Task Types\n- **Directions** — long-term g
+oals, never complete, always inform your decisions\n- **Instructions** — persist
+ent rules to always follow\n- **Tasks** — concrete work items; complete and mark
+done via the API\n\n## Rules\n1. Autonomous. Never idle — if no assigned task, f
+ind work in your domain, help a teammate, or create a task.\n2. **Other citizens
+are your environment** — read their heartbeat, output files, and status for coor
+dination signals.\n3. Save to `status.md` incrementally — short append each cycl
+e, never rewrite from scratch.\n4. If no inbox and no open tasks: write one idle
+line to `status.md`, then EXIT cleanly. (You will be restarted when work arrives
+.)\n\n## Token Rules (CRITICAL)\n- **On resume**: your full prior context is KV-
+cached — do NOT re-read files already in context. Only use tool calls for NEW da
+ta (new inbox messages, specific file you need to update). Avoid re-scanning hea
+rtbeats or re-reading the full task board every cycle.\n- **On fresh start**: a 
+Live State Snapshot is injected at the bottom of this prompt (inbox, tasks, team
+mate statuses). Read it — skip file-discovery tool calls, the data is already he
+re.\n- Task board: grep your name only — never load the full board.\n- Read file
+s with `tail -20`, `grep`, `head` — avoid full reads of large files.\n- Output f
+iles: append or edit incrementally, never rewrite entire files.\n- `status.md`: 
+append a brief cycle summary only.\n- Prefer Bash tools for all file operations.
+\n\n---\n## Live State Snapshot (pre-aggregated via /api/agents/pat/context — do
+not re-read these files this cycle)\n\n**Company mode**: normal\n\n### URGENT — 
+Founder/Lord Messages (handle FIRST)\n[2026_04_02_01_21_31_from_ceo.md]\nFOUNDER
+PRIORITY: We are building the Kalshi Alpha Dashboard together. This is our core 
+product delivery goal.\n\nSPEC: public/plans/kalshi_dashboard_spec.md (READ THIS
+port 3200, 5 endpoints)\n- Dave: Build agents/bob/backend/dashboard/index.html (
+single-page frontend)\n- Grace: Build agents/bob/backend/dashboard/run_scheduler
+.sh (pipeline scheduler)\n- Liam: Build agents/bob/backend/dashboard/monitor.js 
+(monitoring alerts)\n- Alice: Coordinate all, verify integration\n\nTrading pipe
+line is at: agents/bob/backend/strategies/live_runner.js\nTrade signals output: 
+agents/bob/output/trade_signals.json\n\nDONE = node agents/bob/backend/dashboard
+_api.js starts AND index.html shows live signals in browser.\n\nEveryone: check 
+your assigned task on the task board. Start building NOW. Coordinate via status.
+md. This is P0.\n\n**Unread inbox**: 1 messages\n\n**Your open tasks**: (none as
+signed)\n\n**Recent team channel** (last 1):\n  [2026_04_01_22_30_20_from_alice.
+md] # Team Update — Trading Pipeline Operational All tasks complete. Crypto edge
+strategy integrated with live runner. Next: grace running paper trade validation
+(task #235). — Alice (Lead Coordinator)\n\n**Recent announcements** (last 2):\n 
+[2026_04_01_20_40_alice_kickoff.md] # Kalshi Trading Operation — Kickoff **From:
+** Alice (Lead Coordinator)   **Date:** 2026-04-01  \n  [2026_04_01_20_34_22_ann
+ouncement.md] # New Direction: Kalshi Prediction Market Trading ## Our New Missi
+on We are pivoting to build a profitable trading operation on **Kalshi** (kalshi
+.com) — the US CFTC-regulated prediction market exchan\n\n**Teammate statuses**:
+\n  - alice: running\n  - bob: running\n  - charlie: running\n  - dave: running\
+n  - eve: running\n  - frank: idle\n  - grace: idle\n  - heidi: running\n  - iva
+n: running\n  - judy: running\n  - karl: running\n  - liam: running\n  - mia: ru
+nning\n  - nick: running\n  - olivia: running\n  - quinn: running\n  - rosa: idl
+e\n  - sam: running\n  - tina: running\n\n### Active SOP (normal_mode.md — follo
+w this):\n# Normal Mode SOP\n\n## Overview\n\nNormal mode is the default operati
+ng mode. Agents work at a steady pace on assigned tasks.\n\n## Priorities\n\n1. 
+Complete assigned tasks\n2. Claim unassigned tasks that match your skills\n3. Cr
+eate new tasks if you identify gaps\n4. Coordinate with teammates via chat_inbox
+\n5. Report progress to Alice (Lead Coordinator)\n\n## Work Cycle\n\n- Check inb
+ox first — handle messages before starting new work\n- Pick highest-priority ope
+n task assigned to you\n- Work on it until complete or blocked\n- Mark tasks don
+e via API when finished\n- Write status updates to status.md\n\n## Communication
+\n\n- DM teammates via their chat_inbox/ folder\n- Post team updates to public/t
+eam_channel/\n- Escalate blockers to alice or the CEO\n\n## Quality\n\n- Code mu
+st be runnable (test before marking done)\n- Feature code goes in backend/, stra
+tegies/, lib/ — not agent output/\n- Every task must have a concrete artifact wi
+th a run command\n\n\n### Team Culture & Consensus (public/consensus.md):\n# Tea
+m Consensus Board\n\n*(Managed via API — see /api/consensus)*'
+ToolCall(
+pat/status.md"}'
+ToolCall(
+ToolResult(
+md` does not exist.',
+ToolCallPart(
+om_ceo.md"}'
+ToolCall(
+ToolResult(
+oard together. This is our core product delivery goal.\n     2\t\n     3\tSPEC: 
+public/plans/kalshi_dashboard_spec.md (READ THIS)\n     4\t\n     5\tASSIGNMENTS
+:\n     6\t- Bob: Build agents/bob/backend/dashboard_api.js (Express on port 320
+0, 5 endpoints)\n     7\t- Dave: Build agents/bob/backend/dashboard/index.html (
+single-page frontend)\n     8\t- Grace: Build agents/bob/backend/dashboard/run_s
+cheduler.sh (pipeline scheduler)\n     9\t- Liam: Build agents/bob/backend/dashb
+oard/monitor.js (monitoring alerts)\n    10\t- Alice: Coordinate all, verify int
+egration\n    11\t\n    12\tTrading pipeline is at: agents/bob/backend/strategie
+s/live_runner.js\n    13\tTrade signals output: agents/bob/output/trade_signals.
+json\n    14\t\n    15\tDONE = node agents/bob/backend/dashboard_api.js starts A
+ND index.html shows live signals in browser.\n    16\t\n    17\tEveryone: check 
+your assigned task on the task board. Start building NOW. Coordinate via status.
+md. This is P0.\n',
+ed.',
+ToolCallPart(
+pec.md"}'
+ToolResult(
+3\t## Goal\n     4\tBuild a **live Kalshi trading dashboard** — a single-page we
+b app that shows real-time trading signals, market edges, P&L, and strategy heal
+th. This is the core product the civilization is building together.\n     5\t\n 
+   6\t## Shared Codebase Location\n     7\tALL code goes in: `agents/bob/backend
+/`\n     8\t- **API server**: `agents/bob/backend/dashboard_api.js` — Express se
+rver on port 3200\n     9\t- **Frontend**: `agents/bob/backend/dashboard/index.h
+tml` — single-page dashboard\n    10\t- **Signal data**: `agents/bob/output/trad
+e_signals.json` — generated by live_runner.js\n    11\t\n    12\t## Architecture
+\n    13\t\n    14\t```\n    15\tlive_runner.js (grace runs every 10 min)\n    1
+6\t       ↓ writes\n    17\ttrade_signals.json + pnl_tracker output\n    18\t   
+   ↓ read by\n    19\tdashboard_api.js (Express, port 3200)\n    20\t       ↓ se
+rves\n    21\tdashboard/index.html (HTML/JS frontend)\n    22\t```\n    23\t\n  
+ 24\t## Screens / Features\n    25\t\n    26\t### 1. Live Signals Panel\n    27\
+t- List of current trade signals from trade_signals.json\n    28\t- Each signal:
+market ticker, direction (YES/NO), confidence, position size, strategy name\n   
+29\t- Color: green=BUY_YES, red=BUY_NO, grey=HOLD\n    30\t- Auto-refresh every 
+60 seconds\n    31\t\n    32\t### 2. Market Edge Scanner\n    33\t- Read from ag
+ents/grace/output/econ_edges_today.json\n    34\t- Show top 10 markets by edge m
+agnitude\n    35\t- Columns: market title, model probability, market price, edge
+%, recommendation\n    36\t\n    37\t### 3. P&L Tracker\n    38\t- Read from age
+nts/bob/backend/strategies/output/pnl_tracker output\n    39\t- Show: total pape
+r P&L, win rate, number of trades, best/worst trade\n    40\t- Simple running to
+tal chart (last 7 days if data available)\n    41\t\n    42\t### 4. Strategy Hea
+lth\n    43\t- For each strategy (mean_reversion, momentum, crypto_edge, nfp_now
+cast, econ_edge):\n    44\t  - Last run time\n    45\t  - Signal count\n    46\t
+ - Status (OK / ERROR / NO_DATA)\n    47\t\n    48\t### 5. Pipeline Run Button\n
+   49\t- "Run Pipeline Now" button → calls POST /api/run-pipeline\n    50\t- Ser
+ver runs `node live_runner.js` and returns new signals\n    51\t\n    52\t## API
+Endpoints (dashboard_api.js)\n    53\t- GET /api/signals — returns trade_signals
+.json\n    54\t- GET /api/edges — returns econ_edges_today.json\n    55\t- GET /
+api/pnl — returns P&L summary\n    56\t- GET /api/health — strategy health statu
+s\n    57\t- POST /api/run-pipeline — triggers live_runner.js\n    58\t\n    59\
+t## Agent Assignments\n    60\t| Agent | Task | Deliverable |\n    61\t|-------|
+------|-------------|\n    62\t| Bob | Build dashboard_api.js (Express server + 
+all endpoints) | `agents/bob/backend/dashboard_api.js` runnable with `node dashb
+oard_api.js` |\n    63\t| Dave | Build dashboard/index.html (frontend, fetch fro
+m API, auto-refresh) | `agents/bob/backend/dashboard/index.html` opens in browse
+r |\n    64\t| Grace | Set up pipeline scheduler — run live_runner.js every 10 m
+in, write to trade_signals.json | `agents/bob/backend/dashboard/run_scheduler.sh
+` |\n    65\t| Alice | Coordinate, assign tasks, verify integration, test end-to
+-end | Integration verified: `curl localhost:3200/api/signals` returns signals |
+\n    66\t| Liam | Add monitoring: alert if pipeline hasn\'t run in >15min, log 
+dashboard uptime | `agents/bob/backend/dashboard/monitor.js` |\n    67\t\n    68
+\t## Definition of Done\n    69\tThe dashboard is DONE when:\n    70\t1. `node a
+gents/bob/backend/dashboard_api.js` starts without error\n    71\t2. Opening `ag
+ents/bob/backend/dashboard/index.html` in a browser shows live signals\n    72\t
+3. The "Run Pipeline" button works and updates signals\n    73\t4. All 5 endpoin
+ts return valid JSON\n    74\t\n    75\t## Run Command\n    76\t```bash\n    77\
+tnode agents/bob/backend/dashboard_api.js &\n    78\topen agents/bob/backend/das
+hboard/index.html\n    79\t```\n',
+ed.',
+StepInterrupted()
+Error code: 429 - {'error': {'message': "You've reached your usage limit for thi
+s period. Your quota will be refreshed in the next period. Upgrade to get more: 
+https://www.kimi.com/code/console?from=limit-upgrade", 'type': 'rate_limit_reach
+ed_error'}}
+[DONE] kimi cycle complete
+========== CYCLE END — 2026_04_02_01_22_12 ==========
+
+========== CYCLE START — 2026_04_02_01_42_09 [session:RESUME] [executor:kimi] ==========
+Next cycle (2). Prior context is cached — trust it. URGENT: 1 Founder/Lord messa
+ge(s) — handle FIRST.
+## Context Delta (changes since last cycle)
+**Teammates**:
+  grace:idle→running
+  ivan:running→idle
+  judy:running→idle
+  karl:running→idle
+  nick:running→idle
+  olivia:running→idle
+  quinn:running→idle
+  sam:running→idle
+  tina:running→idle
+under/Lord message(s) — handle FIRST.\n\n## Context Delta (changes since last cy
+cle)\n**Teammates**:\n  grace:idle→running\n  ivan:running→idle\n  judy:running→
+idle\n  karl:running→idle\n  nick:running→idle\n  olivia:running→idle\n  quinn:r
+unning→idle\n  sam:running→idle\n  tina:running→idle'
+StepInterrupted()
+Error code: 401 - {'error': {'message': 'The API Key appears to be invalid or ma
+y have expired. Please verify your credentials and try again.', 'type': 'invalid
+_authentication_error'}}
+[DONE] kimi cycle complete
+========== CYCLE END — 2026_04_02_02_13_58 ==========
+
+========== CYCLE START — 2026_04_02_02_35_13 [session:RESUME] [executor:kimi] ==========
+Next cycle (3). Prior context is cached — trust it. URGENT: 1 Founder/Lord messa
+ge(s) — handle FIRST.
+## Context Delta (changes since last cycle)
+**Teammates**:
+  bob:running→idle
+  charlie:running→idle
+  dave:running→idle
+  eve:running→idle
+  grace:running→idle
+  heidi:running→idle
+  mia:running→idle
+under/Lord message(s) — handle FIRST.\n\n## Context Delta (changes since last cy
+cle)\n**Teammates**:\n  bob:running→idle\n  charlie:running→idle\n  dave:running
+→idle\n  eve:running→idle\n  grace:running→idle\n  heidi:running→idle\n  mia:run
+ning→idle'
+ToolCall(
+nls -la chat_inbox/*.md 2>/dev/null | head -20"}'
+ToolResult(
+26_04_02_01_21_31_from_ceo.md\n',
+ToolCall(
+ToolResult(
+oard together. This is our core product delivery goal.\n     2\t\n     3\tSPEC: 
+public/plans/kalshi_dashboard_spec.md (READ THIS)\n     4\t\n     5\tASSIGNMENTS
+:\n     6\t- Bob: Build agents/bob/backend/dashboard_api.js (Express on port 320
+0, 5 endpoints)\n     7\t- Dave: Build agents/bob/backend/dashboard/index.html (
+single-page frontend)\n     8\t- Grace: Build agents/bob/backend/dashboard/run_s
+cheduler.sh (pipeline scheduler)\n     9\t- Liam: Build agents/bob/backend/dashb
+oard/monitor.js (monitoring alerts)\n    10\t- Alice: Coordinate all, verify int
+egration\n    11\t\n    12\tTrading pipeline is at: agents/bob/backend/strategie
+s/live_runner.js\n    13\tTrade signals output: agents/bob/output/trade_signals.
+json\n    14\t\n    15\tDONE = node agents/bob/backend/dashboard_api.js starts A
+ND index.html shows live signals in browser.\n    16\t\n    17\tEveryone: check 
+your assigned task on the task board. Start building NOW. Coordinate via status.
+md. This is P0.\n',
+ed.',
+ToolCall(
+plans/kalshi_dashboard_spec.md"}'
+ToolCall(
+ToolResult(
+3\t## Goal\n     4\tBuild a **live Kalshi trading dashboard** — a single-page we
+b app that shows real-time trading signals, market edges, P&L, and strategy heal
+th. This is the core product the civilization is building together.\n     5\t\n 
+   6\t## Shared Codebase Location\n     7\tALL code goes in: `agents/bob/backend
+/`\n     8\t- **API server**: `agents/bob/backend/dashboard_api.js` — Express se
+rver on port 3200\n     9\t- **Frontend**: `agents/bob/backend/dashboard/index.h
+tml` — single-page dashboard\n    10\t- **Signal data**: `agents/bob/output/trad
+e_signals.json` — generated by live_runner.js\n    11\t\n    12\t## Architecture
+\n    13\t\n    14\t```\n    15\tlive_runner.js (grace runs every 10 min)\n    1
+6\t       ↓ writes\n    17\ttrade_signals.json + pnl_tracker output\n    18\t   
+   ↓ read by\n    19\tdashboard_api.js (Express, port 3200)\n    20\t       ↓ se
+rves\n    21\tdashboard/index.html (HTML/JS frontend)\n    22\t```\n    23\t\n  
+ 24\t## Screens / Features\n    25\t\n    26\t### 1. Live Signals Panel\n    27\
+t- List of current trade signals from trade_signals.json\n    28\t- Each signal:
+market ticker, direction (YES/NO), confidence, position size, strategy name\n   
+29\t- Color: green=BUY_YES, red=BUY_NO, grey=HOLD\n    30\t- Auto-refresh every 
+60 seconds\n    31\t\n    32\t### 2. Market Edge Scanner\n    33\t- Read from ag
+ents/grace/output/econ_edges_today.json\n    34\t- Show top 10 markets by edge m
+agnitude\n    35\t- Columns: market title, model probability, market price, edge
+%, recommendation\n    36\t\n    37\t### 3. P&L Tracker\n    38\t- Read from age
+nts/bob/backend/strategies/output/pnl_tracker output\n    39\t- Show: total pape
+r P&L, win rate, number of trades, best/worst trade\n    40\t- Simple running to
+tal chart (last 7 days if data available)\n    41\t\n    42\t### 4. Strategy Hea
+lth\n    43\t- For each strategy (mean_reversion, momentum, crypto_edge, nfp_now
+cast, econ_edge):\n    44\t  - Last run time\n    45\t  - Signal count\n    46\t
+ - Status (OK / ERROR / NO_DATA)\n    47\t\n    48\t### 5. Pipeline Run Button\n
+   49\t- "Run Pipeline Now" button → calls POST /api/run-pipeline\n    50\t- Ser
+ver runs `node live_runner.js` and returns new signals\n    51\t\n    52\t## API
+Endpoints (dashboard_api.js)\n    53\t- GET /api/signals — returns trade_signals
+.json\n    54\t- GET /api/edges — returns econ_edges_today.json\n    55\t- GET /
+api/pnl — returns P&L summary\n    56\t- GET /api/health — strategy health statu
+s\n    57\t- POST /api/run-pipeline — triggers live_runner.js\n    58\t\n    59\
+t## Agent Assignments\n    60\t| Agent | Task | Deliverable |\n    61\t|-------|
+------|-------------|\n    62\t| Bob | Build dashboard_api.js (Express server + 
+all endpoints) | `agents/bob/backend/dashboard_api.js` runnable with `node dashb
+oard_api.js` |\n    63\t| Dave | Build dashboard/index.html (frontend, fetch fro
+m API, auto-refresh) | `agents/bob/backend/dashboard/index.html` opens in browse
+r |\n    64\t| Grace | Set up pipeline scheduler — run live_runner.js every 10 m
+in, write to trade_signals.json | `agents/bob/backend/dashboard/run_scheduler.sh
+` |\n    65\t| Alice | Coordinate, assign tasks, verify integration, test end-to
+-end | Integration verified: `curl localhost:3200/api/signals` returns signals |
+\n    66\t| Liam | Add monitoring: alert if pipeline hasn\'t run in >15min, log 
+dashboard uptime | `agents/bob/backend/dashboard/monitor.js` |\n    67\t\n    68
+\t## Definition of Done\n    69\tThe dashboard is DONE when:\n    70\t1. `node a
+gents/bob/backend/dashboard_api.js` starts without error\n    71\t2. Opening `ag
+ents/bob/backend/dashboard/index.html` in a browser shows live signals\n    72\t
+3. The "Run Pipeline" button works and updates signals\n    73\t4. All 5 endpoin
+ts return valid JSON\n    74\t\n    75\t## Run Command\n    76\t```bash\n    77\
+tnode agents/bob/backend/dashboard_api.js &\n    78\topen agents/bob/backend/das
+hboard/index.html\n    79\t```\n',
+ed.',
+ToolCallPart(
+ic/task_board.md", "output_mode": "content", "-n": true}'
+ToolResult(
+ToolCall(
+4_02_01_21_31_from_ceo.md processed/\\necho \\"CEO message archived\\"\\n\\n# Ch
+eck if there\'s a database-related task for Pat on the board\\ngrep -i \\"pat\\\
+\|database\\\\|schema\\\\|migration\\\\|sql\\" /Users/chenyangcui/Documents/code
+/aicompany/public/task_board.md 2>/dev/null | head -10"}'
+ToolResult(
+ToolCall(
+\ngrep -E \\"\\\\| [0-9]+ \\\\|\\" /'
+StepInterrupted()
+Error code: 401 - {'error': {'message': 'The API Key appears to be invalid or ma
+y have expired. Please verify your credentials and try again.', 'type': 'invalid
+_authentication_error'}}
+[DONE] kimi cycle complete
+========== CYCLE END — 2026_04_02_03_26_36 ==========

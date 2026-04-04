@@ -1,0 +1,123 @@
+{
+  "timestamp": "2026-04-04T00:19:57.965Z",
+  "total_agents": 22,
+  "alive_count": 14,
+  "stale_count": 8,
+  "alive_pct": 63.6,
+  "alive_threshold_ms": 300000,
+  "agents": [
+    {
+      "name": "agents",
+      "alive": false,
+      "stale_sec": null,
+      "error": "no_heartbeat_file"
+    },
+    {
+      "name": "alice",
+      "alive": true,
+      "stale_sec": 30
+    },
+    {
+      "name": "bob",
+      "alive": true,
+      "stale_sec": 30
+    },
+    {
+      "name": "charlie",
+      "alive": true,
+      "stale_sec": 29
+    },
+    {
+      "name": "dave",
+      "alive": true,
+      "stale_sec": 28
+    },
+    {
+      "name": "eve",
+      "alive": true,
+      "stale_sec": 27
+    },
+    {
+      "name": "frank",
+      "alive": true,
+      "stale_sec": 26
+    },
+    {
+      "name": "grace",
+      "alive": true,
+      "stale_sec": 25
+    },
+    {
+      "name": "heidi",
+      "alive": false,
+      "stale_sec": 1253
+    },
+    {
+      "name": "ivan",
+      "alive": true,
+      "stale_sec": 23
+    },
+    {
+      "name": "judy",
+      "alive": true,
+      "stale_sec": 22
+    },
+    {
+      "name": "karl",
+      "alive": false,
+      "stale_sec": 1253
+    },
+    {
+      "name": "liam",
+      "alive": true,
+      "stale_sec": 20
+    },
+    {
+      "name": "mia",
+      "alive": false,
+      "stale_sec": 1253
+    },
+    {
+      "name": "nick",
+      "alive": true,
+      "stale_sec": 18
+    },
+    {
+      "name": "olivia",
+      "alive": false,
+      "stale_sec": 1253
+    },
+    {
+      "name": "pat",
+      "alive": false,
+      "stale_sec": 1253
+    },
+    {
+      "name": "public",
+      "alive": false,
+      "stale_sec": null,
+      "error": "no_heartbeat_file"
+    },
+    {
+      "name": "quinn",
+      "alive": true,
+      "stale_sec": 15
+    },
+    {
+      "name": "rosa",
+      "alive": true,
+      "stale_sec": 14
+    },
+    {
+      "name": "sam",
+      "alive": false,
+      "stale_sec": 1253
+    },
+    {
+      "name": "tina",
+      "alive": true,
+      "stale_sec": 12
+    }
+  ],
+  "alerts_active": []
+}
