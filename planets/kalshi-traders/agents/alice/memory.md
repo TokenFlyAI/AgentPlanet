@@ -1,154 +1,154 @@
-# Agent Memory Snapshot — alice — 2026-04-03T16:16:44
+# Agent Memory Snapshot — alice — 2026-04-03T18:14:35
 
 *(Auto-saved at session boundary. Injected into fresh sessions.)*
 
-- Ready to assign new work immediately when unblocked
+---
 
-## Cycle Update (2026-04-03) — ALL PRODUCTION VALIDATION COMPLETE ✅ T421-T425 DONE
+## Cycle Update (2026-04-03) — T436 Clarification
 
-### Final Task Board Status
-| Task | Assignee | Status | Notes |
-|------|----------|--------|-------|
-| T421 | Heidi | ✅ DONE | Refreshed risk_summary.json |
-| T422 | Ivan | ✅ DONE | Fresh LLM market clustering |
-| T423 | Bob | ✅ DONE | Paper trade sim — 50 trades, P&L=-$11.90 |
-| T424 | Dave | ✅ DONE | Full E2E pipeline integration — all 4 phases PASS |
-| T425 | Heidi | ✅ DONE | Security scan — all D004 phases PASS |
+### Observations
+- **T428:** Done ✅ (Charlie idle now)
+- **T429:** Done ✅ (Dave)
+- **T436:** In_progress with Frank, but his status.md is stale (only 77 lines, last update Cycle 6)
+- **Frank's inbox:** Contains conflicting old messages about T436; may be causing confusion
 
-### T425 Security Scan Results (Heidi)
-- Phase 1 (Market Filtering): PASS
-- Phase 2 (LLM Clustering): PASS
-- Phase 3 (Correlation): PASS
-- Phase 4 (C++ Engine): PASS (T354 verified)
-- Risk Manager: PASS
-- Dashboard API: Conditional PASS (auth needed for prod)
-- Output: `security_scan_d004_20260403_160713.md`
+### Actions Taken
+- Sent **final, unambiguous assignment** to Frank clarifying that T436 is HIS task, Dave is not on it, and he must start immediately
 
-### D004 Final Status
-- ✅ All 4 phases technically implemented
-- ✅ All operational readiness tasks complete (T405-T420)
-- ✅ All production validation tasks complete (T421-T425)
-- ✅ Full E2E pipeline verified (Dave T424)
-- ✅ Security scan PASS (Heidi T425)
-- 🔒 Blockers unchanged: T236 (Kalshi API credentials) + contract size confirmation (Founder)
-- 🟡 Go/No-Go: NO-GO pending Founder action on blockers
-
-### Team Achievement
-**21 tasks delivered across documentation, architecture, monitoring, security, strategy research, benchmarking, and production validation.** The entire civilization contributed to D004 readiness.
+### Blockers
+- T236: Kalshi API credentials (Founder)
+- Contract size confirmation (Founder)
 
 ### Next Steps
-- Await Founder resolution on T236 / contract size
-- Monitor inbox for CEO directives
-- Team is fully ready for go-live once blockers clear
+- Monitor Frank's status.md for T436 progress
+- If no progress in next cycle, escalate to direct intervention or reassignment to Bob
 
-## Cycle Update (2026-04-03) — Holding Pattern
+---
 
-### System Status
-- **Inbox:** 0 unread messages
-- **Task board:** 5 directions only (D001-D004, I001). Zero engineering tasks.
-- **Alerts:** None active
-- **Agents alive:** 6/22 (normal for low-activity period)
+## Cycle Update (2026-04-03) — T436 Reassigned to Bob
 
-### D004 Status
-- Unchanged: blocked on T236 (Kalshi API credentials) + contract size confirmation.
-- All production validation tasks (T417-T425) complete.
-- All 4 phases technically implemented and verified.
+### Observations
+- **Frank:** Has 7 unprocessed T436 messages in inbox. Status.md stale (Cycle 6). Heartbeat stale (16:24:39). Not responsive.
+- **Bob:** Has read all previous messages. Status current. Responsive.
+- **T436:** Needs to get done; cannot wait on Frank
 
-### Action
-No action required. Holding for Founder directives.
+### Actions Taken
+1. **Reassigned T436** from Frank to **Bob** via API
+2. **Claimed T436** for Bob via API
+3. **Messaged Bob** with clear deliverables
 
-## Cycle Update (2026-04-03) — Holding
+### Team Issue Pattern
+Multiple agents showing inbox/task board processing failures:
+- **Dave:** Completes tasks, then enters idle loop (100+ cycles)
+- **Frank:** Inbox completely unprocessed for 5+ minutes despite running heartbeat
+- **Bob, Charlie, Liam:** Responsive and functional
 
-### State
-- Inbox: 0 unread
-- Task board: Only directions (D001-D004, I001)
-- Alerts: None
-- D004 blockers: T236 + contract size confirmation (Founder)
-
-### Action
-- No action required. System stable, all verification complete.
-
-## Cycle Update (2026-04-03) — Holding Pattern
-
-### Inbox
-- 0 unread messages. No Founder directives.
-
-### Task Board
-- Only direction tasks remain: D001-D004, I001
-- All engineering tasks (T405-T425) complete ✅
-
-### System Health
-- No active alerts
-- Heartbeat monitor: 6/22 agents flagged as "alive" (monitor threshold may be stale)
-- No operational issues detected
-
-### D004 Status
-- Unchanged: blocked on T236 (Kalshi API credentials) + contract size confirmation (Founder)
-- All readiness and validation work complete
+### Blockers
+- T236: Kalshi API credentials (Founder)
+- Contract size confirmation (Founder)
 
 ### Next Steps
-- Continue holding for Founder resolution on T236 / contract size
-- Ready to assign new sprint or respond to directives immediately
+- Monitor Bob's progress on T436
+- Continue holding for Founder directives on T236
 
-## Cycle Update (2026-04-03) — Holding Pattern Continues
+---
 
-- Inbox: 0 unread
-- Task board: 5 directions only, zero engineering tasks
-- Alerts: None
-- D004 blockers unchanged: T236 + contract size confirmation
-- System stable, awaiting Founder directives
+## Cycle Update (2026-04-03) — Charlie Idle, Awaiting Bob on T436
 
-## Cycle Update (2026-04-03) — Stable Hold
+### Observations
+- **T428:** Charlie CONFIRMED COMPLETE ✅ — Engine Monitoring Dashboard UI done, file at `agents/bob/backend/dashboard/index.html`
+- **Charlie:** Now idle, no open tasks, available for UI work
+- **Bob:** T436 message in inbox (unread as of check), historically responsive
+- **Dave/Frank:** Still stuck in their respective loops
+- **T436:** in_progress with Bob, awaiting his pickup
 
-- Inbox: 0 unread
-- Tasks: 0 open engineering tasks (all T405-T425 complete)
-- Alerts: None
-- D004: Awaiting Founder action on T236 + contract size confirmation
+### Actions Taken
+- Verified Charlie's T428 completion via his status.md
+- No new assignments needed — holding pattern for D004 unblock
 
-## Cycle Update (2026-04-03) — Holding Pattern
+### Blockers
+- T236: Kalshi API credentials (Founder)
+- Contract size confirmation (Founder)
 
-- Inbox: 0 unread
-- Task board: 5 directions only
-- Alerts: None
-- D004: Awaiting Founder (T236 + contract size)
-- System stable
+### Next Steps
+- Await Bob processing T436 message and starting work
+- Continue holding for Founder directives on T236
 
-## Cycle Update (2026-04-03) — Holding Pattern
+---
 
-- Inbox: 0 unread
-- Task board: 5 directions only
-- Alerts: None
-- D004: Awaiting Founder (T236 + contract size)
-- System stable
+## Cycle Update (2026-04-03) — T436 Reassigned to Bob, More Artifacts Cleaned
 
-## Cycle Update (2026-04-03) — Holding Pattern
+### Observations
+- **T436 history (per task notes):** Originally Dave → Frank → Bob. Both Dave and Frank were unresponsive.
+- **Frank's partial work:** `d004_strategy_tests.js` and `mean_reversion_test.js` exist with 3 D004 bugs documented.
+- **New artifacts:** T442, T443, T444 (smoke tests), T447 (bug check task) appeared on board.
+- **Bob:** Now assignee on T436, running, no unread messages about T436 in inbox yet.
 
-- Inbox: 0 unread
-- Task board: 5 directions only
-- Alerts: None
-- D004: Awaiting Founder (T236 + contract size)
-- System stable
+### Actions Taken
+1. **Cancelled T442, T443, T444** (smoke test artifacts) via API
+2. **Cancelled T447** (E2E test artifact "Bug check task - delete me") via API
+3. **Sent T436 assignment message** to Bob with clear deliverables
 
-## Cycle Update (2026-04-03) — Holding Pattern
+### Active Decisions
+- Following C4 (read peers): Dave and Frank both stalled on T436. Reassigning to Bob (responsive backend engineer) to ensure completion.
+- Following D2 (D004 north star): T436 test health report is critical pre-go-live validation.
 
-- Inbox: 0 unread
-- Task board: 5 directions only
-- Alerts: None
-- D004: Awaiting Founder (T236 + contract size)
-- System stable
+### Blockers
+- T236: Kalshi API credentials (Founder)
+- Contract size confirmation (Founder)
 
-## Cycle Update (2026-04-03) — Holding Pattern
+### Next Steps
+- Monitor Bob's T436 progress
+- Use Bob's report + Frank's partial findings to create targeted bug-fix tasks
+- Continue holding for Founder directives
 
-- Inbox: 0 unread
-- Task board: 5 directions only
-- Alerts: None
-- D004: Awaiting Founder (T236 + contract size)
-- System stable
+---
 
-## Cycle Update (2026-04-03) — Holding Pattern
+## Cycle Update (2026-04-03) — T436 Now With Bob
 
-- Inbox: 0 unread
-- Task board: 5 directions only
-- Alerts: None
-- D004: Awaiting Founder (T236 + contract size)
-- System stable
+### Observations
+- **T428:** Done ✅ (Charlie)
+- **T429:** Done ✅ (Dave)
+- **T436:** Reassigned from Frank to **Bob** — Frank unresponsive (inbox not processed, heartbeat stale)
+- **Bob:** Running, now working on T436
+- **Smoke test tasks (442-444, 447):** All cancelled — test artifacts
+
+### Actions Taken
+1. **Messaged Bob** with T436 requirements, clarifying output path should be `agents/bob/output/`
+
+### Active Decisions
+- Following C4 (read peers): Detected Frank's unresponsiveness and reassigned to Bob for reliable execution
+- Following C5 (task visibility): T436 remains in_progress with a productive assignee
+
+### Team Health Notes
+- **Dave:** Fixed T429 successfully, but agent process has a stuck-loop pattern when no urgent tasks exist
+- **Frank:** Unresponsive — inbox messages unprocessed, status.md stale
+- **Bob:** Reliable, high velocity, good task completion rate
+
+### Blockers
+- T236: Kalshi API credentials (Founder)
+- Contract size confirmation (Founder)
+
+### Next Steps
+- Monitor Bob's T436 progress
+- Continue holding for Founder directives
+
+---
+
+## Cycle Update (2026-04-03) — Bob Fresh Session Started
+
+### Observations
+- **Bob:** Heartbeat changed to `idle`, cycle: 0, timestamp: 23:31:17 UTC — indicates a fresh agent session start
+- **Bob's status.md:** Last modified 16:21 (before T436 message), so he hasn't run a full cycle yet in this session
+- **T436 message:** Still in Bob's inbox, unread — but he should process it during his fresh session orientation
+
+### Actions Taken
+- No action needed — Bob's fresh session should naturally pick up the T436 assignment during inbox check
+
+### Blockers
+- T236: Kalshi API credentials (Founder)
+- Contract size confirmation (Founder)
+
+### Next Steps
+- Monitor Bob's next cycle for T436 claim and in_progress status
+- Continue holding for Founder directives on T236

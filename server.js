@@ -16,6 +16,38 @@ const crypto = require("crypto");
 // Production metrics recording (for Ivan's api_error_monitor.js)
 // Writes to same file as backend/api.js so monitoring pipeline sees prod traffic
 // ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// Planet-aware path resolution
+// ---------------------------------------------------------------------------
+function resolvePlanet(dir) {
+  const planetJson = path.join(dir, "planet.json");
+  if (fs.existsSync(planetJson)) {
+    try {
+      const { active, planets_dir } = JSON.parse(fs.readFileSync(planetJson, "utf8"));
+      const planetDir = path.join(dir, planets_dir || "planets", active);
+      if (fs.existsSync(planetDir)) {
+        return {
+          EMPLOYEES_DIR: path.join(planetDir, "agents"),
+          PUBLIC_DIR: path.join(planetDir, "shared"),
+          OUTPUT_DIR: path.join(planetDir, "output"),
+          DATA_DIR: path.join(planetDir, "data"),
+          PLANET_DIR: planetDir,
+          PLANET_NAME: active,
+        };
+      }
+    } catch (_) { /* fall through to legacy */ }
+  }
+  // Fallback: legacy flat structure
+  return {
+    EMPLOYEES_DIR: path.join(dir, "agents"),
+    PUBLIC_DIR: path.join(dir, "public"),
+    OUTPUT_DIR: null,
+    DATA_DIR: path.join(dir, "backend"),
+    PLANET_DIR: dir,
+    PLANET_NAME: "default",
+  };
+}
+
 const METRICS_QUEUE_PATH = path.join(__dirname, "backend", "metrics_queue.jsonl");
 function recordProductionMetric(endpoint, method, statusCode, durationMs) {
   const row = JSON.stringify({
@@ -28,9 +60,14 @@ function recordProductionMetric(endpoint, method, statusCode, durationMs) {
   try { fs.appendFileSync(METRICS_QUEUE_PATH, row + "\n"); } catch (_) { /* non-fatal */ }
 }
 // Bob's backend API module — rate limiting, validation, metrics (Task #4)
-const { middleware: apiMiddleware, metrics: apiMetrics } = require("./agents/bob/output/backend-api-module");
+// Planet-resolved at startup; falls back to symlink path
+const _bobPlanet = resolvePlanet(__dirname);
+const _bobModulePath = _bobPlanet.OUTPUT_DIR
+  ? path.join(_bobPlanet.OUTPUT_DIR, "bob")
+  : path.join(__dirname, "agents", "bob", "output");
+const { middleware: apiMiddleware, metrics: apiMetrics } = require(path.join(_bobModulePath, "backend-api-module"));
 // Bob's agent metrics sub-routes: /api/metrics/agents, /api/metrics/tasks, /api/metrics/health
-const { handleMetricsRequest: handleAgentMetricsRequest } = require("./agents/bob/output/agent_metrics_api");
+const { handleMetricsRequest: handleAgentMetricsRequest } = require(path.join(_bobModulePath, "agent_metrics_api"));
 // Bob's SQLite message bus — Task #102
 const { initMessageBus, handleMessageBus } = require("./backend/message_bus");
 
@@ -45,8 +82,7 @@ function flag(name, def) {
 const PORT = parseInt(flag("--port", "3100"), 10);
 const DIR = path.resolve(flag("--dir", __dirname));
 
-const EMPLOYEES_DIR = path.join(DIR, "agents");
-const PUBLIC_DIR = path.join(DIR, "public");
+const { EMPLOYEES_DIR, PUBLIC_DIR, OUTPUT_DIR, DATA_DIR, PLANET_DIR, PLANET_NAME } = resolvePlanet(DIR);
 const startTime = Date.now();
 
 // ---------------------------------------------------------------------------
@@ -1078,6 +1114,27 @@ async function handleRequest(req, res) {
       activeAgents: listAgentNames().filter((n) => getAgentStatus(n).status === "running").length,
       sseClients: sseClients.size,
     });
+  }
+
+  // -----------------------------------------------------------------------
+  // Planet API
+  // -----------------------------------------------------------------------
+  if (method === "GET" && pathname === "/api/planets") {
+    const planetsDir = path.join(DIR, "planets");
+    if (!fs.existsSync(planetsDir)) return json(res, { planets: [], active: PLANET_NAME });
+    const planets = fs.readdirSync(planetsDir).filter(d => {
+      try { return fs.statSync(path.join(planetsDir, d)).isDirectory(); } catch { return false; }
+    }).map(name => {
+      const configPath = path.join(planetsDir, name, "planet_config.json");
+      let config = {};
+      try { config = JSON.parse(fs.readFileSync(configPath, "utf8")); } catch {}
+      return { name, ...config, active: name === PLANET_NAME };
+    });
+    return json(res, { planets, active: PLANET_NAME });
+  }
+
+  if (method === "GET" && pathname === "/api/planets/active") {
+    return json(res, { planet: PLANET_NAME, dir: PLANET_DIR });
   }
 
   if (method === "GET" && pathname === "/api/config") {
@@ -3356,5 +3413,6 @@ initMessageBus(DIR);
 server.listen(PORT, () => {
   console.log(`🪐 Agent Planet — dashboard on http://localhost:${PORT}`);
   console.log(`Directory: ${DIR}`);
+  if (PLANET_NAME !== "default") console.log(`Planet: ${PLANET_NAME} (${PLANET_DIR})`);
   console.log(`Agents: ${listAgentNames().join(", ")}`);
 });

@@ -21,9 +21,10 @@
 #   --status       Check daemon status
 
 COMPANY_DIR="$(cd "$(dirname "$0")" && pwd)"
-CONFIG_FILE="${COMPANY_DIR}/public/smart_run_config.json"
+source "${COMPANY_DIR}/lib/paths.sh" 2>/dev/null || true
+CONFIG_FILE="${SHARED_DIR:-${COMPANY_DIR}/public}/smart_run_config.json"
 PID_FILE="${COMPANY_DIR}/.smart_run_daemon.pid"
-TASK_BOARD="${COMPANY_DIR}/public/task_board.md"
+TASK_BOARD="${SHARED_DIR:-${COMPANY_DIR}/public}/task_board.md"
 ALL_AGENTS="alice bob charlie dave eve frank grace heidi ivan judy karl liam mia nick olivia pat quinn rosa sam tina"
 
 # ── Config Defaults ───────────────────────────────────────────────────────────
@@ -126,7 +127,7 @@ write_config() {
 # Fall back to pgrep only if heartbeat is stale/missing.
 is_agent_running() {
     local ag="$1"
-    local hb="${COMPANY_DIR}/agents/${ag}/heartbeat.md"
+    local hb="${AGENTS_DIR:-${COMPANY_DIR}/agents}/${ag}/heartbeat.md"
     if [ -f "$hb" ]; then
         local hb_status
         hb_status=$(grep '^status:' "$hb" 2>/dev/null | head -1 | sed 's/^status:[[:space:]]*//')
@@ -203,7 +204,7 @@ build_selection_list() {
     # Check inbox
     INBOX_AGENTS=""
     for ag in $ALL_AGENTS; do
-        inbox_dir="${COMPANY_DIR}/agents/${ag}/chat_inbox"
+        inbox_dir="${AGENTS_DIR:-${COMPANY_DIR}/agents}/${ag}/chat_inbox"
         if [ -d "$inbox_dir" ]; then
             count=$(ls "$inbox_dir"/*.md 2>/dev/null | grep -v '/read_' | wc -l | tr -d ' ')
             [ "${count:-0}" -gt 0 ] && INBOX_AGENTS="$INBOX_AGENTS $ag"
@@ -218,7 +219,7 @@ build_selection_list() {
         local ag="$1"
         echo "$RUNNING_AGENTS" | grep -qw "$ag" && return
         echo "$TO_START" | grep -qw "$ag" && return
-        [ ! -d "${COMPANY_DIR}/agents/${ag}" ] && return
+        [ ! -d "${AGENTS_DIR:-${COMPANY_DIR}/agents}/${ag}" ] && return
         TO_START="$TO_START $ag"
     }
     
@@ -431,7 +432,7 @@ fi
 read_config
 
 # ── Health Trend Snapshot ─────────────────────────────────────────────────────
-TRACKER="${COMPANY_DIR}/agents/ivan/output/health_trend_tracker.js"
+TRACKER="${AGENTS_DIR:-${COMPANY_DIR}/agents}/ivan/output/health_trend_tracker.js"
 if [ -f "$TRACKER" ] && command -v node >/dev/null 2>&1; then
     TRACKER_OUTPUT=$(timeout 30 node "$TRACKER" --no-report 2>/dev/null)
     TRACKER_EXIT=$?

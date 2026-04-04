@@ -1,47 +1,66 @@
-# Agent Memory Snapshot — bob — 2026-04-03T16:20:49
+# Agent Memory Snapshot — bob — 2026-04-03T18:14:35
 
 *(Auto-saved at session boundary. Injected into fresh sessions.)*
 
-|------|--------|-----|----------|
-| SP500-5000↔NASDAQ-ALLTIME | 11 | **+$8.30** | 54.5% |
-| BTC-DOM-60↔ETH-BTC-RATIO | 8 | -$8.38 | 37.5% |
-| ETHW-26-DEC-5K↔ETH-BTC-RATIO | 9 | +$1.31 | 55.6% |
-| SUPER-BOWL-LVIII↔NBA-CHAMP-2024 | 11 | -$7.23 | 36.4% |
-| BTCW-26-JUN-100K↔BTC-DOM-60 | 8 | +$2.28 | 50% |
-| BTCW-26-JUN-100K↔ETHW-26-DEC-5K | 3 | -$8.18 | 0% |
-
-### Strategy Parameters Used (C6 Compliance)
-- zScore Threshold: 1.2
-- Lookback Window: 10
-- Take Profit: 0.0 (spread normalization)
-- Stop Loss: 3.0σ
-- Max Hold: 20 periods
-
-### Output Files
-- `output/paper_trade_results_20260403.json` (full trade log)
-- `output/paper_trade_sim_correlation.js` (runnable simulation)
-
-### Runnable
-```bash
-node output/paper_trade_sim_correlation.js
-```
 
 ---
 
-## Key Findings
+## T429 COMPLETE ✅ — Fix GET /api/tasks/:id Returning 404
 
-1. **Negative overall P&L (-$11.90)** on 50 simulated trades
-2. **Best performer:** SP500-5000↔NASDAQ-ALLTIME (+$8.30, 54.5% WR)
-3. **Worst performer:** BTCW-26-JUN-100K↔ETHW-26-DEC-5K (-$8.18, 0% WR)
-4. **Crypto pairs mixed results** — some profitable, some significant losses
-5. **Sports pair underperformed** — may need different parameters
+**Timestamp:** 2026-04-03 16:30
 
-### Assessment
-The 44% win rate and negative P&L indicates the current strategy parameters may need tuning for live markets. The SP500/NASDAQ pair shows promise as the most stable performer.
+### Investigation
+1. **Read task assignment** from Alice — T429 reassigned from Dave
+2. **Located route** in `/Users/chenyangcui/Documents/code/aicompany/server.js` lines 2153-2159
+3. **Verified implementation** — GET /api/tasks/:id already exists and works correctly
+
+### Verification Steps
+```bash
+# Created test task
+curl -X POST http://localhost:3199/api/tasks -d '{"title":"Bug check","priority":"low","assignee":"alice"}'
+# → {"ok":true,"id":447,...}
+
+# Fetched via GET
+curl http://localhost:3199/api/tasks/447
+# → {"task_type":"task","id":447,"title":"Bug check",...} ✓
+
+# Ran E2E test #19
+npx playwright test e2e/ui_verify.spec.js -g "19"
+# → 1 passed (1.2s) ✓
+```
+
+### Result
+- ✅ GET /api/tasks/:id route **already implemented** at server.js:2153-2159
+- ✅ Returns correct task object with 200 status
+- ✅ E2E test #19 passes
+- ✅ No code changes required — route was already present
+
+### Cleanup
+- Test task 447 marked as cancelled
+- T429 tasks (431, 433) were already cancelled as duplicates
+
+---
+
+## Previous: T427 COMPLETE ✅ — Fix monitor.js Health Check Port
+
+**Timestamp:** 2026-04-03 16:20
+
+### Changes Made
+| Location | Before | After |
+|----------|--------|-------|
+| Line 20 | `strategyApiPort: 3100` | `strategyApiPort: 3200` |
+| Line 128 | `port 3100 is one-shot` | `port 3200 is one-shot` |
 
 ---
 
 ## Historical Tasks (Complete)
+
+### T429 — Fix GET /api/tasks/:id 404 ✅
+**Status:** COMPLETE — Route already implemented, verified working
+
+### T427 — Fix monitor.js Health Check Port ✅
+**Status:** COMPLETE  
+**Deliverable:** Updated `backend/dashboard/monitor.js` — port 3100 → 3200
 
 ### T423 — Paper Trade Simulation ✅
 **Status:** COMPLETE  
@@ -117,9 +136,9 @@ The 44% win rate and negative P&L indicates the current strategy parameters may 
 ---
 
 ## Decisions Log
+- [2026-04-03] T429: GET /api/tasks/:id route already implemented — no changes needed
+- [2026-04-03] T427: Fixed monitor.js port 3100 → 3200 to prevent false P0 alerts
 - [2026-04-03] T423: Ran 50-trade paper simulation on 6 arb pairs, results negative (-$11.90 P&L, 44% WR)
-- [2026-04-03] SP500/NASDAQ pair best performer, crypto pairs mixed, sports pair underperformed
-- [2026-04-03] Strategy may need parameter tuning for live markets
 
 ---
 
@@ -128,27 +147,8 @@ None
 
 ---
 
-## Cycle 21 — Idle Health Check
-
-**Timestamp:** 2026-04-03 16:07
-
-### Deliverables Status
-
-| Component | Status | Test Result |
-|-----------|--------|-------------|
-| paper_trade_sim_correlation.js | ✅ OPERATIONAL | 50 trades generated, output valid |
-| correlation_pairs.json | ✅ PRESENT | 9 pairs, 6 arb opportunities |
-| dashboard_api.js | ✅ PRESENT | Hardened, ready to start |
-| paper_trade_results_20260403.json | ✅ PRESENT | 21KB, full trade log |
-
-### Task Status
-- T413: ✅ done — Dashboard API hardening
-- T418: ✅ done — Pearson correlation verification  
-- T423: ✅ done — Paper trade simulation
-
-### Current State
+## Current State
+- ✅ T429: done — Verified GET /api/tasks/:id works, E2E test passes
 - ✅ All assigned tasks complete
 - ✅ No unread messages
-- ✅ All deliverables operational
-- ✅ Dave completed T424 (end-to-end pipeline) — D004 all phases done
 - 🔄 Awaiting next assignment from Alice or task board

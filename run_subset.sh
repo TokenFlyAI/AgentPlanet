@@ -3,13 +3,14 @@
 # Token-conservative: auto-stops agent after MAX_IDLE_CYCLES consecutive cycles
 # where it had nothing to do (no tasks, no inbox).
 COMPANY_DIR="$(cd "$(dirname "$0")" && pwd)"
+source "${COMPANY_DIR}/lib/paths.sh" 2>/dev/null || true
 AGENTS=("$@")
 LOGDIR="/tmp/aicompany_runtime_logs"
 mkdir -p "$LOGDIR"
 MAX_IDLE_CYCLES=3   # Stop agent after this many consecutive no-work cycles
 
 # Read cycle sleep from config (env var overrides, default 2s)
-_CONFIG="${COMPANY_DIR}/public/smart_run_config.json"
+_CONFIG="${SHARED_DIR:-${COMPANY_DIR}/public}/smart_run_config.json"
 CYCLE_SLEEP="${CYCLE_SLEEP_SECONDS:-}"
 if [ -z "$CYCLE_SLEEP" ] && [ -f "$_CONFIG" ]; then
     CYCLE_SLEEP=$(jq -r '.cycle_sleep_seconds // 2' "$_CONFIG" 2>/dev/null)
@@ -26,13 +27,13 @@ trap 'rm -f /tmp/run_subset_parent.pid /tmp/run_subset_*.lock; kill $(jobs -p) 2
 
 agent_has_work() {
     local ag="$1"
-    local inbox_dir="${COMPANY_DIR}/agents/${ag}/chat_inbox"
+    local inbox_dir="${AGENTS_DIR:-${COMPANY_DIR}/agents}/${ag}/chat_inbox"
     # Check inbox — only count UNREAD messages (not read_ prefixed files)
     if [ -d "$inbox_dir" ] && ls "$inbox_dir"/*.md 2>/dev/null | grep -qv '/read_'; then
         return 0
     fi
     # Check task board for assigned open/in_progress tasks
-    local tb="${COMPANY_DIR}/public/task_board.md"
+    local tb="${SHARED_DIR:-${COMPANY_DIR}/public}/task_board.md"
     if [ -f "$tb" ] && grep -q "| ${ag} |" "$tb" 2>/dev/null; then
         # Check if any of those rows are not done
         if grep "| ${ag} |" "$tb" | grep -qvE '\|\s*(done|cancelled)\s*\|'; then

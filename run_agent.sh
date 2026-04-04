@@ -15,7 +15,8 @@ set -e
 
 AGENT_NAME="$1"
 COMPANY_DIR="$(cd "$(dirname "$0")" && pwd)"
-AGENT_DIR="${COMPANY_DIR}/agents/${AGENT_NAME}"
+source "${COMPANY_DIR}/lib/paths.sh" 2>/dev/null || true
+AGENT_DIR="${AGENTS_DIR:-${COMPANY_DIR}/agents}/${AGENT_NAME}"
 
 # Source executor config helper
 source "${COMPANY_DIR}/lib/executor_config.sh"
@@ -36,8 +37,8 @@ SESSION_ID_FILE=$(get_session_id_file "$AGENT_DIR" "$EXECUTOR")
 SESSION_CYCLE_FILE=$(get_session_cycle_file "$AGENT_DIR" "$EXECUTOR")
 # Read session_max_cycles from config (env var overrides, default 20)
 SESSION_MAX_CYCLES="${SESSION_MAX_CYCLES:-}"
-if [ -z "$SESSION_MAX_CYCLES" ] && [ -f "${COMPANY_DIR}/public/smart_run_config.json" ]; then
-    _cfg_cycles=$(jq -r '.session_max_cycles // 20' "${COMPANY_DIR}/public/smart_run_config.json" 2>/dev/null)
+if [ -z "$SESSION_MAX_CYCLES" ] && [ -f "${SHARED_DIR:-${COMPANY_DIR}/public}/smart_run_config.json" ]; then
+    _cfg_cycles=$(jq -r '.session_max_cycles // 20' "${SHARED_DIR:-${COMPANY_DIR}/public}/smart_run_config.json" 2>/dev/null)
     echo "$_cfg_cycles" | grep -qE '^[0-9]+$' && SESSION_MAX_CYCLES="$_cfg_cycles"
 fi
 SESSION_MAX_CYCLES="${SESSION_MAX_CYCLES:-20}"
@@ -469,15 +470,15 @@ cd "$AGENT_DIR"
 # ── Dry-run mode: skip real CLI call ─────────────────────────────────────────
 # Set DRY_RUN=1 (env var) or "dry_run": true in public/smart_run_config.json
 _DRY_RUN="${DRY_RUN:-0}"
-if [ "$_DRY_RUN" != "1" ] && [ -f "${COMPANY_DIR}/public/smart_run_config.json" ]; then
-    _cfg_dry=$(jq -r '.dry_run // false' "${COMPANY_DIR}/public/smart_run_config.json" 2>/dev/null)
+if [ "$_DRY_RUN" != "1" ] && [ -f "${SHARED_DIR:-${COMPANY_DIR}/public}/smart_run_config.json" ]; then
+    _cfg_dry=$(jq -r '.dry_run // false' "${SHARED_DIR:-${COMPANY_DIR}/public}/smart_run_config.json" 2>/dev/null)
     [ "$_cfg_dry" = "true" ] && _DRY_RUN=1
 fi
 
 if [ "$_DRY_RUN" = "1" ]; then
     echo "[DRY RUN] ${AGENT_NAME} — skipping ${EXECUTOR} call"
     # Sleep briefly so stop commands have a window to interrupt (testable stop behavior)
-    _DRY_SLEEP=$(jq -r '.dry_run_sleep // 8' "${COMPANY_DIR}/public/smart_run_config.json" 2>/dev/null)
+    _DRY_SLEEP=$(jq -r '.dry_run_sleep // 8' "${SHARED_DIR:-${COMPANY_DIR}/public}/smart_run_config.json" 2>/dev/null)
     echo "[DRY RUN] Simulating work for ${_DRY_SLEEP}s (killable) ..."
     sleep "${_DRY_SLEEP:-8}"
     FAKE_SESSION="dryrun-$(date +%s)-${AGENT_NAME}"

@@ -4,7 +4,8 @@ MODE="$1"
 WHO="$2"
 REASON="$3"
 COMPANY_DIR="$(cd "$(dirname "$0")" && pwd)"
-MODE_FILE="${COMPANY_DIR}/public/company_mode.md"
+source "${COMPANY_DIR}/lib/paths.sh" 2>/dev/null || true
+MODE_FILE="${SHARED_DIR:-${COMPANY_DIR}/public}/company_mode.md"
 
 [ -z "$MODE" ] || [ -z "$WHO" ] || [ -z "$REASON" ] && \
     echo "Usage: $0 <plan|normal|crazy|autonomous> <who> <reason>" && exit 1
@@ -58,7 +59,7 @@ ${REASON}
 EOF
 
 # Post announcement
-ANNOUNCEMENT="${COMPANY_DIR}/public/announcements/$(date +%Y_%m_%d_%H_%M_%S)_mode_switch.md"
+ANNOUNCEMENT="${SHARED_DIR:-${COMPANY_DIR}/public}/announcements/$(date +%Y_%m_%d_%H_%M_%S)_mode_switch.md"
 cat > "$ANNOUNCEMENT" << EOF
 # Mode Switch: ${CURRENT_MODE} → ${MODE}
 

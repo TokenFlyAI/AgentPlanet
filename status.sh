@@ -1,6 +1,7 @@
 #!/bin/bash
 # status.sh — CLI status dashboard (RUNNING / IDLE / DREAMING)
 COMPANY_DIR="$(cd "$(dirname "$0")" && pwd)"
+source "${COMPANY_DIR}/lib/paths.sh" 2>/dev/null || true
 TODAY=$(date +%Y_%m_%d)
 
 GREEN='\033[0;32m'
@@ -13,7 +14,7 @@ echo ""
 printf "${CYAN}%-12s %-10s %5s %8s %7s  %-50s${NC}\n" "AGENT" "STATUS" "CYCLE" "HEARTBEAT" "LOG" "CURRENT TASK"
 printf "%-12s %-10s %5s %8s %7s  %-50s\n" "------------" "----------" "-----" "----------" "-------" "--------------------------------------------------"
 
-for AGENT_DIR in "${COMPANY_DIR}"/agents/*/; do
+for AGENT_DIR in "${AGENTS_DIR:-${COMPANY_DIR}/agents}"/*/; do
     [ ! -d "$AGENT_DIR" ] && continue
     AGENT_NAME=$(basename "$AGENT_DIR")
     [ ! -f "${AGENT_DIR}/prompt.md" ] && continue
@@ -75,9 +76,9 @@ for AGENT_DIR in "${COMPANY_DIR}"/agents/*/; do
 done
 
 echo ""
-[ -f "${COMPANY_DIR}/public/company_mode.md" ] && echo -e "Mode: ${CYAN}$(grep '^\*\*' "${COMPANY_DIR}/public/company_mode.md" | head -1 | tr -d '*')${NC}"
+[ -f "${SHARED_DIR:-${COMPANY_DIR}/public}/company_mode.md" ] && echo -e "Mode: ${CYAN}$(grep '^\*\*' "${SHARED_DIR:-${COMPANY_DIR}/public}/company_mode.md" | head -1 | tr -d '*')${NC}"
 
-[ -f "${COMPANY_DIR}/public/task_board.md" ] && echo "Tasks: $(grep "^|" "${COMPANY_DIR}/public/task_board.md" | grep -v "^| ID\|^|--" | wc -l | tr -d ' ') total"
+[ -f "${SHARED_DIR:-${COMPANY_DIR}/public}/task_board.md" ] && echo "Tasks: $(grep "^|" "${SHARED_DIR:-${COMPANY_DIR}/public}/task_board.md" | grep -v "^| ID\|^|--" | wc -l | tr -d ' ') total"
 
 echo ""
 echo -e "Legend: ${GREEN}RUNNING${NC}=working  ${YELLOW}IDLE${NC}=waiting  ${BLUE}DREAMING${NC}=system task"
