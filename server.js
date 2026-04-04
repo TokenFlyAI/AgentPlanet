@@ -1168,7 +1168,10 @@ async function handleRequest(req, res) {
     const planetsDir = path.join(DIR, "planets");
     if (!fs.existsSync(planetsDir)) return json(res, { planets: [], active: PLANET_NAME });
     const planets = fs.readdirSync(planetsDir).filter(d => {
-      try { return fs.statSync(path.join(planetsDir, d)).isDirectory(); } catch { return false; }
+      try {
+        return fs.statSync(path.join(planetsDir, d)).isDirectory() &&
+          fs.existsSync(path.join(planetsDir, d, "planet_config.json"));
+      } catch { return false; }
     }).map(name => {
       const configPath = path.join(planetsDir, name, "planet_config.json");
       let config = {};
@@ -2347,6 +2350,67 @@ async function handleRequest(req, res) {
     if (!updatedTask) return notFound(res, "task not found");
     broadcastWS("task_updated", { id: parseInt(updatedTask.id, 10), status: updatedTask.status, assignee: updatedTask.assignee, title: updatedTask.title });
     return json(res, { ok: true, ...updatedTask, id: parseInt(updatedTask.id, 10), notesList: (updatedTask.notes || "").split(" ;; ").filter(Boolean) });
+  }
+
+  // POST /api/tasks/:id/review — validate and approve a task (reviewer gate)
+  // Checks: deliverable exists in output/ or task_outputs/, then marks done
+  const taskReviewMatch = pathname.match(/^\/api\/tasks\/(\d+)\/review$/);
+  if (method === "POST" && taskReviewMatch) {
+    const id = taskReviewMatch[1];
+    const body = await parseBody(req);
+    const task = parseTaskBoard().find((t) => String(t.id) === String(id));
+    if (!task) return notFound(res, "task not found");
+
+    const reviewer = (body.reviewer || "").trim();
+    const verdict = (body.verdict || "").trim().toLowerCase(); // "approve" or "reject"
+    const comment = (body.comment || "").trim();
+
+    if (!verdict || !["approve", "reject"].includes(verdict)) {
+      return badRequest(res, "verdict required: 'approve' or 'reject'");
+    }
+
+    // Check if deliverable exists
+    const assignee = (task.assignee || "").toLowerCase().trim();
+    let deliverableFound = false;
+    let deliverableLocation = "";
+
+    // Check task_outputs/
+    const taskOutDir = path.join(PUBLIC_DIR, "task_outputs");
+    if (fs.existsSync(taskOutDir)) {
+      const files = listDir(taskOutDir).filter(f => f.toLowerCase().match(new RegExp(`task[_-]?0*${id}[_-]`, 'i')));
+      if (files.length > 0) { deliverableFound = true; deliverableLocation = `task_outputs/${files[0]}`; }
+    }
+
+    // Check assignee's output/
+    if (!deliverableFound && assignee && EMPLOYEES_DIR) {
+      const agentOutDir = path.join(EMPLOYEES_DIR, assignee, "output");
+      if (fs.existsSync(agentOutDir) && listDir(agentOutDir).length > 0) {
+        deliverableFound = true;
+        deliverableLocation = `agents/${assignee}/output/`;
+      }
+    }
+
+    if (verdict === "approve") {
+      const noteText = `[REVIEWED by ${reviewer || "unknown"}] ${comment || "Approved"}${deliverableFound ? " — deliverable: " + deliverableLocation : " — no deliverable file found (manual verify)"}`;
+      await updateTaskRow(id, { status: "done", notes: noteText });
+      const updated = parseTaskBoard().find((t) => String(t.id) === String(id));
+      broadcastWS("task_updated", { id: parseInt(id, 10), status: "done", reviewer });
+      return json(res, { ok: true, verdict: "approved", deliverable_found: deliverableFound, deliverable_location: deliverableLocation, task: updated });
+    } else {
+      const noteText = `[REJECTED by ${reviewer || "unknown"}] ${comment || "Needs revision"}`;
+      await updateTaskRow(id, { status: "in_progress", notes: noteText });
+      // Notify assignee via inbox
+      if (assignee) {
+        const inboxDir = path.join(EMPLOYEES_DIR, assignee, "chat_inbox");
+        if (fs.existsSync(inboxDir)) {
+          const ts = new Date().toISOString().replace(/[-:T]/g, "_").slice(0, 19);
+          const msgFile = path.join(inboxDir, `${ts}_from_${reviewer || "reviewer"}.md`);
+          fs.writeFileSync(msgFile, `# Task T${id} Review: REJECTED\n\nYour task "${task.title}" was rejected by ${reviewer || "a reviewer"}.\n\n**Reason:** ${comment || "Needs revision"}\n\nPlease fix and resubmit.`);
+        }
+      }
+      broadcastWS("task_updated", { id: parseInt(id, 10), status: "in_progress", reviewer });
+      return json(res, { ok: true, verdict: "rejected", comment, task_id: id });
+    }
   }
 
   // GET /api/tasks/:id/result — find task-specific result file

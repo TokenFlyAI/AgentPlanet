@@ -61,11 +61,17 @@ cat > "${COMPANY_DIR}/planet.json" << EOF
 EOF
 echo "Updated planet.json"
 
-# Clean up legacy symlinks if present (Phase 5: all code uses planet.json directly)
-for sl in agents public output ceo_inbox; do
+# Re-point root symlinks to new planet (required for agent prompts + server.js)
+for sl in agents public output; do
   [ -L "${COMPANY_DIR}/${sl}" ] && rm -f "${COMPANY_DIR}/${sl}"
 done
-echo "planet.json is the source of truth (no root symlinks needed)"
+ln -s "planets/${PLANET_NAME}/agents" "${COMPANY_DIR}/agents"
+ln -s "planets/${PLANET_NAME}/shared" "${COMPANY_DIR}/public"
+ln -s "planets/${PLANET_NAME}/output" "${COMPANY_DIR}/output"
+# ceo_inbox symlink (optional)
+[ -L "${COMPANY_DIR}/ceo_inbox" ] && rm -f "${COMPANY_DIR}/ceo_inbox"
+[ -d "${PLANET_DIR}/data/ceo_inbox" ] && ln -s "planets/${PLANET_NAME}/data/ceo_inbox" "${COMPANY_DIR}/ceo_inbox"
+echo "Symlinks updated: agents → public → output → planets/${PLANET_NAME}/"
 
 # Swap codebase worktree if applicable
 if [ -d "${COMPANY_DIR}/planets/${OLD_PLANET}/output/shared/codebase/.git" ] 2>/dev/null; then

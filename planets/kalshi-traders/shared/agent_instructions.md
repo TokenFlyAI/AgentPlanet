@@ -158,11 +158,36 @@ curl -X PATCH http://localhost:3199/api/tasks/{TASK_ID} \
 
 **Why this matters:** If you don't close tasks, the task board shows stale work. Other agents can't see what's available. The Founder can't track progress. The whole civilization slows down.
 
-**Checklist before marking done:**
-1. Did you actually run and verify your code/output? (C8)
-2. Did you write your deliverable to output/?
-3. Did you update your status.md?
-4. Did you notify downstream agents if they depend on your output?
+**Task completion flow:**
+1. Finish your work and write deliverable to `output/`
+2. Mark task as `in_review` (NOT `done`):
+   ```bash
+   curl -X PATCH http://localhost:3199/api/tasks/{TASK_ID} \
+     -H "Content-Type: application/json" \
+     -d '{"status":"in_review","notes":"Ready for review: [what you delivered]"}'
+   ```
+3. DM olivia or tina to review your deliverable
+4. They will approve (→ done) or reject (→ back to in_progress with feedback)
+
+**Reviewers (olivia, tina, alice):** To approve or reject a task:
+```bash
+# Approve — marks task done
+curl -X POST http://localhost:3199/api/tasks/{TASK_ID}/review \
+  -H "Content-Type: application/json" \
+  -d '{"verdict":"approve","reviewer":"olivia","comment":"Deliverable verified"}'
+
+# Reject — sends feedback to assignee, sets back to in_progress
+curl -X POST http://localhost:3199/api/tasks/{TASK_ID}/review \
+  -H "Content-Type: application/json" \
+  -d '{"verdict":"reject","reviewer":"olivia","comment":"Missing test coverage"}'
+```
+
+**Self-close exception:** If you are alice (lead coordinator), you may mark your own tasks done directly for coordination/report tasks.
+
+**Code integration:** After completing code tasks, also copy/merge your code into the shared codebase:
+```bash
+cp -r output/backend/* ../../output/shared/codebase/backend/ 2>/dev/null
+```
 
 **Never leave a task in open or in_progress when you've completed the work.**
 

@@ -641,3 +641,81 @@ test.describe("Task input sanitization", () => {
     }
   });
 });
+
+test.describe("Task review endpoint", () => {
+  test("POST /api/tasks/:id/review requires verdict", async () => {
+    const { body: created } = await apiPost("/api/tasks", { title: "review-test" });
+    const taskId = created.id;
+    try {
+      const { status } = await apiPost(`/api/tasks/${taskId}/review`, { reviewer: "tester" });
+      expect(status).toBe(400);
+    } finally {
+      await apiDelete(`/api/tasks/${taskId}`);
+    }
+  });
+
+  test("POST /api/tasks/:id/review approve marks task done", async () => {
+    const { body: created } = await apiPost("/api/tasks", { title: "review-approve-test", assignee: "alice" });
+    const taskId = created.id;
+    try {
+      const { status, body } = await apiPost(`/api/tasks/${taskId}/review`, {
+        verdict: "approve", reviewer: "olivia", comment: "Looks good"
+      });
+      expect(status).toBe(200);
+      expect(body.ok).toBe(true);
+      expect(body.verdict).toBe("approved");
+      // Task should now be done
+      const { body: tasks } = await apiGet("/api/tasks");
+      const task = (Array.isArray(tasks) ? tasks : []).find((t) => String(t.id) === String(taskId));
+      expect(task.status).toBe("done");
+    } finally {
+      await apiDelete(`/api/tasks/${taskId}`);
+    }
+  });
+
+  test("POST /api/tasks/:id/review reject sets back to in_progress", async () => {
+    const { body: created } = await apiPost("/api/tasks", { title: "review-reject-test", assignee: "bob", status: "in_review" });
+    const taskId = created.id;
+    try {
+      const { status, body } = await apiPost(`/api/tasks/${taskId}/review`, {
+        verdict: "reject", reviewer: "tina", comment: "Missing tests"
+      });
+      expect(status).toBe(200);
+      expect(body.ok).toBe(true);
+      expect(body.verdict).toBe("rejected");
+      // Task should be back to in_progress
+      const { body: tasks } = await apiGet("/api/tasks");
+      const task = (Array.isArray(tasks) ? tasks : []).find((t) => String(t.id) === String(taskId));
+      expect(task.status).toBe("in_progress");
+    } finally {
+      await apiDelete(`/api/tasks/${taskId}`);
+    }
+  });
+
+  test("POST /api/tasks/:id/review returns 404 for unknown task", async () => {
+    const { status } = await apiPost("/api/tasks/99999/review", { verdict: "approve" });
+    expect(status).toBe(404);
+  });
+});
+
+test.describe("Planet API", () => {
+  test("GET /api/planets only lists dirs with planet_config.json", async () => {
+    const { status, body } = await apiGet("/api/planets");
+    expect(status).toBe(200);
+    expect(body.planets).toBeInstanceOf(Array);
+    // Every listed planet must have a name
+    for (const p of body.planets) {
+      expect(p.name).toBeTruthy();
+    }
+    // No planet should be named "output" or "public" (stale artifacts)
+    const names = body.planets.map(p => p.name);
+    expect(names).not.toContain("output");
+    expect(names).not.toContain("public");
+  });
+
+  test("GET /api/planets/active returns current planet", async () => {
+    const { status, body } = await apiGet("/api/planets/active");
+    expect(status).toBe(200);
+    expect(body.planet).toBeTruthy();
+  });
+});

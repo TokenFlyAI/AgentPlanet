@@ -4504,14 +4504,30 @@ function renderAnnouncements() {
   const list = document.getElementById('announcements-list');
   const items = Array.isArray(announcements) ? [...announcements] : [];
   items.sort((a, b) => (b.filename || '').localeCompare(a.filename || ''));
-  list.innerHTML = items.map(ann => {
+  const PAGE_SIZE = 20;
+  const showCount = window._annShowAll ? items.length : PAGE_SIZE;
+  const visible = items.slice(0, showCount);
+  list.innerHTML = visible.map((ann, i) => {
     const body = ann.body || ann.content || ann.message || '';
+    const preview = body.length > 200 ? body.slice(0, 200) + '...' : body;
+    const needsExpand = body.length > 200;
     return '<div class="card announcement-card">' +
       '<div class="ann-date">' + formatTime(ann.date || ann.created_at || '') + '</div>' +
       '<div class="ann-title">' + esc(ann.title || 'Untitled') + '</div>' +
-      '<div class="ann-body" style="line-height:1.6;">' + renderMarkdown(body) + '</div>' +
+      '<div class="ann-body" style="line-height:1.6;" id="ann-body-' + i + '">' + renderMarkdown(preview) + '</div>' +
+      (needsExpand ? '<button onclick="expandAnn(' + i + ',this)" style="background:none;border:none;color:#4a90d9;cursor:pointer;font-size:0.8rem;padding:4px 0;">▼ Show full message</button>' : '') +
     '</div>';
   }).join('');
+  if (items.length > PAGE_SIZE && !window._annShowAll) {
+    list.innerHTML += '<button onclick="window._annShowAll=true;renderAnnouncements();" style="width:100%;padding:12px;margin-top:10px;background:#16213e;border:1px solid #0f3460;color:#aaa;border-radius:8px;cursor:pointer;font-size:0.85rem;">Show all ' + items.length + ' announcements (' + (items.length - PAGE_SIZE) + ' more)</button>';
+  }
+}
+
+function expandAnn(i, btn) {
+  const ann = announcements[i];
+  const body = ann.body || ann.content || ann.message || '';
+  document.getElementById('ann-body-' + i).innerHTML = renderMarkdown(body);
+  btn.remove();
 }
 
 function postAnnouncement() {
