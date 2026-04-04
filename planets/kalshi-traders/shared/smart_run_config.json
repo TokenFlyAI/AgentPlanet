@@ -2,7 +2,7 @@
   "max_agents": 5,
   "enabled": true,
   "interval_seconds": 30,
-  "last_updated": "2026-04-03T23:59:11Z",
+  "last_updated": "2026-04-04T01:22:09Z",
   "mode": "smart",
   "force_alice": 1,
   "dry_run": true,

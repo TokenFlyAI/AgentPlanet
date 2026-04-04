@@ -60,16 +60,29 @@ function recordProductionMetric(endpoint, method, statusCode, durationMs) {
   try { fs.appendFileSync(METRICS_QUEUE_PATH, row + "\n"); } catch (_) { /* non-fatal */ }
 }
 // Bob's backend API module — rate limiting, validation, metrics (Task #4)
-// Planet-resolved at startup; falls back to symlink path
+// Planet-resolved at startup; gracefully absent on planets without bob's code
 const _bobPlanet = resolvePlanet(__dirname);
 const _bobModulePath = _bobPlanet.OUTPUT_DIR
   ? path.join(_bobPlanet.OUTPUT_DIR, "bob")
   : path.join(__dirname, "agents", "bob", "output");
-const { middleware: apiMiddleware, metrics: apiMetrics } = require(path.join(_bobModulePath, "backend-api-module"));
-// Bob's agent metrics sub-routes: /api/metrics/agents, /api/metrics/tasks, /api/metrics/health
-const { handleMetricsRequest: handleAgentMetricsRequest } = require(path.join(_bobModulePath, "agent_metrics_api"));
+let apiMiddleware, apiMetrics, handleAgentMetricsRequest;
+try {
+  ({ middleware: apiMiddleware, metrics: apiMetrics } = require(path.join(_bobModulePath, "backend-api-module")));
+  ({ handleMetricsRequest: handleAgentMetricsRequest } = require(path.join(_bobModulePath, "agent_metrics_api")));
+} catch (_) {
+  // Planet doesn't have bob's modules — provide no-op stubs
+  apiMiddleware = () => false;
+  apiMetrics = { requests: 0, snapshot: () => ({}), recordRequest: () => {} };
+  handleAgentMetricsRequest = () => false;
+}
 // Bob's SQLite message bus — Task #102
-const { initMessageBus, handleMessageBus } = require("./backend/message_bus");
+let initMessageBus, handleMessageBus;
+try {
+  ({ initMessageBus, handleMessageBus } = require("./backend/message_bus"));
+} catch (_) {
+  initMessageBus = () => {};
+  handleMessageBus = () => false;
+}
 
 // ---------------------------------------------------------------------------
 // CLI args

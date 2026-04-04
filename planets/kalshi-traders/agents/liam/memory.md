@@ -1,46 +1,61 @@
-# Agent Memory Snapshot — liam — 2026-04-03
+# Agent Memory Snapshot — liam — 2026-04-03T18:22:17
 
 *(Auto-saved at session boundary. Injected into fresh sessions.)*
 
 # Liam — Status
 
 ## Current Task
-Task #269 — CLI Trade Tool
+Task #426 — D004 Engine Monitoring Dashboard
 Phase: DONE
 
 ## Progress
-- [x] Received Task 269 assignment from Alice (reassigned from Karl)
-- [x] Created trade.sh CLI wrapper
-  - --dry-run (default): simulate without execution
-  - --paper: execute demo/paper trades
-  - --live: execute real trades with confirmation
-  - --strategy NAME: filter by strategy
-  - --markets LIST: filter by comma-separated tickers
-  - --verbose: detailed output
-- [x] Created trade_cli_usage.md documentation
-- [x] Made trade.sh executable
-- [x] Notified Alice of completion
+- [x] Created Task T426 for D004 monitoring dashboard
+- [x] Built `backend/monitoring/engine_dashboard.js`
+  - Real-time log tail of C++ engine output
+  - Parses heartbeat lines for metrics
+  - HTTP API for metrics, trades, alerts, health
+  - Built-in HTML dashboard with auto-refresh
+- [x] Created dashboard documentation
+- [x] Marked task as done
 
 ## Deliverables
 | File | Location | Description |
 |------|----------|-------------|
-| trade.sh | agents/liam/output/trade.sh | CLI wrapper script |
-| trade_cli_usage.md | agents/liam/output/trade_cli_usage.md | Usage documentation |
+| engine_dashboard.js | backend/monitoring/ | Dashboard server + web UI |
+| t426_dashboard_documentation.md | agents/liam/output/ | Usage documentation |
+
+## Dashboard Features
+- **Real-time metrics:** Trades, P&L, exposure, positions, CB status
+- **Visual charts:** P&L over time (last 100 points)
+- **Alerts:** Auto-detects heartbeat loss, circuit breaker
+- **Trade history:** Last 50 trades
+- **Auto-refresh:** Updates every second
+
+## API Endpoints
+- `GET /api/health` — Health status
+- `GET /api/metrics` — Current metrics + history
+- `GET /api/trades` — Recent trades
+- `GET /api/alerts` — Active alerts
+- `POST /api/alerts` — Acknowledge alert
 
 ## Usage
 ```bash
-# Dry run (default)
-./agents/liam/output/trade.sh
-
-# Paper trading
-./agents/liam/output/trade.sh --paper --strategy mean_reversion
-
-# Live trading
-export KALSHI_API_KEY="..."
-./agents/liam/output/trade.sh --live
+node backend/monitoring/engine_dashboard.js
+# Open http://localhost:3250
 ```
 
-## Cycle — 2026-04-03 (18-20)
-- Inbox: Task 269 assigned (2 messages)
-- Delivered trade.sh + trade_cli_usage.md
-- Task complete
+## D004 Status (Unchanged)
+Still blocked by:
+1. T236 — Kalshi API credentials (Founder)
+2. Kalshi contract sizes (Founder)
+
+Dashboard is ready for when engine comes online.
+
+## Recent Activity
+- 2026-04-03 — Completed T426 monitoring dashboard
+- Dashboard provides real-time visibility into D004 engine
+
+## Available For
+- New SRE tasks
+- Operational support
+- D004 unblocking when T236 resolved
