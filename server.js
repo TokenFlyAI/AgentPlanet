@@ -369,6 +369,27 @@ setInterval(() => {
       }
     });
   });
+  // Also check for recent cycle failures (agents that ran but LLM call failed)
+  names.forEach((name) => {
+    const failLog = path.join(EMPLOYEES_DIR, name, "logs", "cycle_failures.log");
+    if (!fs.existsSync(failLog)) return;
+    const lines = (safeRead(failLog) || "").trim().split("\n").filter(Boolean);
+    if (!lines.length) return;
+    const lastFail = lines[lines.length - 1];
+    const tsMatch = lastFail.match(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})/);
+    if (!tsMatch) return;
+    const failAge = Date.now() - new Date(tsMatch[1]).getTime();
+    // If failure was in the last 5 minutes and agent is idle, flag it
+    if (failAge < 5 * 60 * 1000) {
+      const hb = safeRead(path.join(EMPLOYEES_DIR, name, "heartbeat.md")) || "";
+      if (hb.includes("idle")) {
+        const entry = { ts: new Date().toISOString(), name, action: "cycle_failure_detected", last_fail: tsMatch[1] };
+        watchdogLog.unshift(entry);
+        if (watchdogLog.length > 50) watchdogLog.length = 50;
+        console.log(`[watchdog] Cycle failure detected for ${name} at ${tsMatch[1]} — will be retried on next smart_run`);
+      }
+    }
+  });
 }, 10 * 60 * 1000);
 
 // ---------------------------------------------------------------------------

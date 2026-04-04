@@ -636,6 +636,25 @@ if [ -n "$NEW_SESSION_ID" ]; then
     fi
 fi
 
+# ── Cycle success check ───────────────────────────────────────────────────────
+# Detect failed cycles (no output, errors) and log for monitoring
+_CYCLE_SUCCESS=1
+_RAW_SIZE=$(wc -c < "$RAW_LOG" 2>/dev/null | tr -d ' ')
+if [ -z "$NEW_SESSION_ID" ] && [ "$_DRY_RUN" != "1" ]; then
+    _CYCLE_SUCCESS=0
+    echo "[WARN] ${AGENT_NAME}: cycle produced no session ID — LLM call may have failed" | tee -a "$DAILY_LOG"
+    echo "[WARN] Raw log size: ${_RAW_SIZE:-0} bytes"
+fi
+if [ "${_RAW_SIZE:-0}" -lt 50 ] && [ "$_DRY_RUN" != "1" ]; then
+    _CYCLE_SUCCESS=0
+    echo "[WARN] ${AGENT_NAME}: raw output too small (${_RAW_SIZE} bytes) — likely failed" | tee -a "$DAILY_LOG"
+fi
+if [ "$_CYCLE_SUCCESS" -eq 0 ]; then
+    # Write failure marker for watchdog/monitoring
+    echo "$(date +%Y-%m-%dT%H:%M:%S) FAIL executor=${EXECUTOR} raw_bytes=${_RAW_SIZE:-0}" >> "${AGENT_DIR}/logs/cycle_failures.log"
+    echo "[WARN] Failure logged to logs/cycle_failures.log. Watchdog or next smart_run will retry."
+fi
+
 # ── Dump last context ─────────────────────────────────────────────────────────
 {
     echo "# Last Cycle Context — ${AGENT_NAME} — $(date +%Y_%m_%d_%H_%M_%S)"
