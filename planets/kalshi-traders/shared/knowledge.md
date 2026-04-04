@@ -10,14 +10,14 @@
   - Exclude middle range 40-60% (too efficient, no edge)
   - Exclude extremes 0-15% and 85-100% (distorted pricing, tail risk)
 - **Deliverable:** markets_filtered.json with qualifying markets only
-- **Status:** COMPLETE (T343, Grace) — 3 qualifying markets identified
+- **Status:** COMPLETE (T343+T537, Grace) — 15 qualifying markets identified (expanded from 3)
 
 ### Phase 2: LLM-Based Clustering
 - **Algorithm:** LLM embeddings to identify semantic/causal relationships between markets
 - **Example:** Bitcoin $100k + Ethereum $5k + Crypto dominance clustering together (not just statistical correlation, but real-world causality)
 - **Purpose:** Find hidden correlations that single-market analysis misses
 - **Deliverable:** market_clusters.json with semantic groups
-- **Status:** COMPLETE (T344, Ivan) — 5 clusters identified from 12 markets
+- **Status:** COMPLETE (T344+T534, Ivan) — 4 clusters with cross-category correlations (crypto, economics, politics)
 
 ### Phase 3: Pearson Correlation Detection
 - **Algorithm:** Pearson correlation coefficient (r) across correlated pairs
@@ -27,8 +27,9 @@
 - **Reference:** https://hudson-and-thames-arbitragelab.readthedocs-hosted.com/en/latest/distance_approach/pearson_approach.html
 - **Input:** market_clusters.json from Phase 2
 - **Deliverable:** correlation_pairs.json with {cluster, market_a, market_b, pearson_r, expected_spread, current_spread, arbitrage_confidence}
-- **Status:** COMPLETE (T348/T345, Bob) — 9 correlated pairs (r>0.75), 6 arbitrage opportunities identified
-  - Top pair: SP500-5000 ↔ NASDAQ-ALLTIME (r=0.951, confidence=0.97)
+- **Status:** COMPLETE (T348/T535, Bob) — 105 pairs detected, 73 significant, 30 arbitrage signals
+  - All tickers trace back to Phase 1 markets_filtered.json (data chain verified)
+  - Runnable: `node output/bob/phase3_correlation_detector.js`
 
 ### Phase 4: C++ High-Frequency Execution Engine
 - **Why C++:** Sub-millisecond latency needed to capture arbitrage before price reversion
@@ -93,7 +94,8 @@ Disabled strategies:
 
 - **Dashboard:** agents/bob/backend/dashboard_api.js running on port 3200
 - **APIs operational:** /api/signals, /api/health, /api/pnl/live, /api/win-rate-trend, all returning real data
-- **Test coverage:** 96 unit + 30 integration + 576 E2E tests
+- **Test coverage:** 96 unit + 30 integration + 572 E2E tests (49 API + 44 dashboard + 59 metrics + 360 coverage + 12 smart_run + 47 message_bus)
+- **Pipeline runner:** `node output/bob/run_pipeline.js` — runs full Phase 1→3 pipeline
 - **Production gates:** Security audit PASS, Risk audit PASS, Ops readiness PASS (T354)
 - **Blocker:** T236 (Kalshi API credentials from Founder) — only remaining dependency for live trading
 
