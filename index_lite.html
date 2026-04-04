@@ -2171,6 +2171,16 @@ body {
   </div>
 </div>
 
+<!-- ===== PLANET TRAVEL ANIMATION ===== -->
+<div id="planet-travel-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:#000;overflow:hidden;">
+  <canvas id="planet-travel-canvas" style="position:absolute;inset:0;width:100%;height:100%;"></canvas>
+  <div id="planet-travel-text" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;">
+    <div id="pt-phase" style="font-size:1.6rem;font-weight:700;color:#fff;text-shadow:0 0 20px #7c3aed,0 0 40px #7c3aed;margin-bottom:12px;opacity:0;transition:opacity 0.5s;">Departing...</div>
+    <div id="pt-planet" style="font-size:3rem;font-weight:800;color:#c4b5fd;text-shadow:0 0 30px #7c3aed,0 0 60px #5b21b6;opacity:0;transition:opacity 0.6s;letter-spacing:2px;"></div>
+    <div id="pt-sub" style="font-size:0.9rem;color:#888;margin-top:16px;opacity:0;transition:opacity 0.5s;"></div>
+  </div>
+</div>
+
 <!-- ===== MODE SWITCH MODAL ===== -->
 <div class="modal-overlay" id="mode-switch-modal-overlay">
   <div class="modal" style="max-width:400px;">
@@ -3414,21 +3424,150 @@ function loadPlanetList() {
   }).catch(() => {});
 }
 function switchPlanet(name) {
-  if (!confirm('Switch to planet "' + name + '"? All running agents will be stopped and the server will need to restart.')) return;
+  if (!confirm('Switch to planet "' + name + '"?')) return;
   togglePlanetMenu();
-  showToast('Switching to ' + name + '...', 5000);
+  // Launch travel animation
+  const overlay = document.getElementById('planet-travel-overlay');
+  const canvas = document.getElementById('planet-travel-canvas');
+  const ctx = canvas.getContext('2d');
+  const phase = document.getElementById('pt-phase');
+  const planetText = document.getElementById('pt-planet');
+  const sub = document.getElementById('pt-sub');
+  overlay.style.display = 'block';
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  // Star field
+  const stars = Array.from({length: 300}, () => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    z: Math.random() * 3 + 0.5,
+    brightness: Math.random()
+  }));
+  let speed = 1, animId, startTime = Date.now();
+  let switchDone = false, switchError = null, agentCount = 0;
+  // Fire API call immediately
   apiFetch('/api/planets/switch', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ planet: name })
   }).then(r => r.json()).then(d => {
-    if (d.ok) {
-      showToast('Switched to ' + name + '. Reloading in 3s...', 4000);
-      setTimeout(() => location.reload(), 3000);
-    } else {
-      alert('Switch failed: ' + (d.error || 'unknown'));
+    if (d.ok) { switchDone = true; agentCount = d.stdout?.match(/Agents:\s*(\d+)/)?.[1] || '?'; }
+    else { switchError = d.error || 'unknown'; }
+  }).catch(e => { switchError = e.message; });
+  // Animation phases
+  function drawStars() {
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    const cx = canvas.width / 2, cy = canvas.height / 2;
+    for (const s of stars) {
+      // Move stars outward from center for warp effect
+      const dx = s.x - cx, dy = s.y - cy;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      const angle = Math.atan2(dy, dx);
+      const newDist = dist + speed * s.z * 2;
+      s.x = cx + Math.cos(angle) * newDist;
+      s.y = cy + Math.sin(angle) * newDist;
+      // Reset if off screen
+      if (s.x < 0 || s.x > canvas.width || s.y < 0 || s.y > canvas.height) {
+        s.x = cx + (Math.random() - 0.5) * 60;
+        s.y = cy + (Math.random() - 0.5) * 60;
+        s.z = Math.random() * 3 + 0.5;
+      }
+      // Draw — stretch at high speed
+      const streak = Math.min(speed * s.z * 0.8, 40);
+      const alpha = Math.min(1, 0.3 + s.brightness * 0.7 + speed * 0.02);
+      const hue = 260 + Math.random() * 30;
+      ctx.strokeStyle = `hsla(${hue}, 80%, ${70 + s.brightness * 30}%, ${alpha})`;
+      ctx.lineWidth = s.z * (speed > 5 ? 1.5 : 0.8);
+      ctx.beginPath();
+      ctx.moveTo(s.x, s.y);
+      ctx.lineTo(s.x - Math.cos(angle) * streak, s.y - Math.sin(angle) * streak);
+      ctx.stroke();
     }
-  }).catch(e => alert('Switch error: ' + e.message));
+    // Central glow during warp
+    if (speed > 5) {
+      const grd = ctx.createRadialGradient(cx, cy, 0, cx, cy, 120);
+      grd.addColorStop(0, `rgba(124, 58, 237, ${Math.min(speed * 0.01, 0.15)})`);
+      grd.addColorStop(1, 'transparent');
+      ctx.fillStyle = grd;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+  }
+  function drawPlanet(progress) {
+    const cx = canvas.width / 2, cy = canvas.height / 2;
+    const radius = 30 + progress * 80;
+    const grd = ctx.createRadialGradient(cx - radius*0.3, cy - radius*0.3, radius*0.1, cx, cy, radius);
+    grd.addColorStop(0, '#a78bfa');
+    grd.addColorStop(0.5, '#7c3aed');
+    grd.addColorStop(1, '#1e1040');
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+    ctx.fillStyle = grd;
+    ctx.fill();
+    // Atmosphere glow
+    const atm = ctx.createRadialGradient(cx, cy, radius * 0.9, cx, cy, radius * 1.4);
+    atm.addColorStop(0, 'rgba(124, 58, 237, 0.3)');
+    atm.addColorStop(1, 'transparent');
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius * 1.4, 0, Math.PI * 2);
+    ctx.fillStyle = atm;
+    ctx.fill();
+  }
+  const totalDuration = 4000;
+  function animate() {
+    const elapsed = Date.now() - startTime;
+    const t = Math.min(elapsed / totalDuration, 1);
+    if (t < 0.15) {
+      // Phase 1: Departure — slow stars
+      speed = 1 + t * 20;
+      phase.style.opacity = '1';
+      phase.textContent = 'Departing...';
+      sub.style.opacity = '1';
+      sub.textContent = 'Stopping agents & saving state';
+      planetText.style.opacity = '0';
+    } else if (t < 0.55) {
+      // Phase 2: Warp — fast stars
+      speed = 4 + (t - 0.15) * 60;
+      phase.textContent = 'Traveling through space';
+      sub.textContent = '';
+      planetText.style.opacity = '0';
+    } else if (t < 0.8) {
+      // Phase 3: Decelerate — planet appears
+      speed = Math.max(1, 30 - (t - 0.55) * 120);
+      const planetProgress = (t - 0.55) / 0.25;
+      drawStars();
+      drawPlanet(planetProgress);
+      phase.textContent = 'Approaching destination';
+      planetText.textContent = name;
+      planetText.style.opacity = String(planetProgress);
+      sub.style.opacity = '1';
+      sub.textContent = agentCount ? agentCount + ' agents awaiting' : '';
+      animId = requestAnimationFrame(animate);
+      return;
+    } else {
+      // Phase 4: Landing
+      speed = 0.3;
+      drawStars();
+      drawPlanet(1);
+      phase.textContent = 'Landing';
+      planetText.textContent = name;
+      planetText.style.opacity = '1';
+      if (switchError) {
+        sub.textContent = 'Error: ' + switchError;
+        sub.style.color = '#f87171';
+        setTimeout(() => { overlay.style.display = 'none'; sub.style.color = '#888'; }, 2000);
+        return;
+      }
+      if (t >= 1) {
+        sub.textContent = 'Welcome to ' + name;
+        setTimeout(() => location.reload(), 600);
+        return;
+      }
+    }
+    drawStars();
+    animId = requestAnimationFrame(animate);
+  }
+  animate();
 }
 function openNewPlanetModal() {
   document.getElementById('new-planet-name').value = '';
