@@ -1,0 +1,85 @@
+{
+  "generated_at": "2026-04-04T07:12:01.838Z",
+  "phase": 3,
+  "config": {
+    "min_correlation": 0.6,
+    "spread_threshold": 1,
+    "min_history_length": 10
+  },
+  "total_pairs_analyzed": 6,
+  "arbitrage_opportunities": 3,
+  "pairs": [
+    {
+      "cluster": "economics_internal",
+      "market_a": "GDPW-26-Q2-3PCT",
+      "market_b": "CPIW-26-MAY-3PCT",
+      "pearson_correlation": 0.9589,
+      "expected_spread": -0.0027,
+      "current_spread": -0.12,
+      "spread_deviation": 1.56,
+      "arbitrage_confidence": 0.98,
+      "direction": "buy_A_sell_B",
+      "is_arbitrage_opportunity": true
+    },
+    {
+      "cluster": "crypto_internal",
+      "market_a": "BTCW-26-JUN30-80K",
+      "market_b": "ETHW-26-DEC31-5K",
+      "pearson_correlation": 0.7756,
+      "expected_spread": 0.0041,
+      "current_spread": 0.0835,
+      "spread_deviation": 1.57,
+      "arbitrage_confidence": 0.87,
+      "direction": "sell_A_buy_B",
+      "is_arbitrage_opportunity": true
+    },
+    {
+      "cluster": "crypto_macro",
+      "market_a": "BTCW-26-JUN30-80K",
+      "market_b": "ETHW-26-DEC31-5K",
+      "pearson_correlation": 0.7756,
+      "expected_spread": 0.0041,
+      "current_spread": 0.0835,
+      "spread_deviation": 1.57,
+      "arbitrage_confidence": 0.87,
+      "direction": "sell_A_buy_B",
+      "is_arbitrage_opportunity": true
+    },
+    {
+      "cluster": "economics_internal",
+      "market_a": "INXW-26-DEC31-6000",
+      "market_b": "CPIW-26-MAY-3PCT",
+      "pearson_correlation": 0.963,
+      "expected_spread": -0.0476,
+      "current_spread": -0.1467,
+      "spread_deviation": 0.62,
+      "arbitrage_confidence": 0.82,
+      "direction": "buy_A_sell_B",
+      "is_arbitrage_opportunity": false
+    },
+    {
+      "cluster": "economics_internal",
+      "market_a": "INXW-26-DEC31-6000",
+      "market_b": "GDPW-26-Q2-3PCT",
+      "pearson_correlation": 0.9848,
+      "expected_spread": -0.0449,
+      "current_spread": -0.0267,
+      "spread_deviation": 0.16,
+      "arbitrage_confidence": 0.66,
+      "direction": "sell_A_buy_B",
+      "is_arbitrage_opportunity": false
+    },
+    {
+      "cluster": "crypto_macro",
+      "market_a": "INXW-26-DEC31-6000",
+      "market_b": "GDPW-26-Q2-3PCT",
+      "pearson_correlation": 0.9848,
+      "expected_spread": -0.0449,
+      "current_spread": -0.0267,
+      "spread_deviation": 0.16,
+      "arbitrage_confidence": 0.66,
+      "direction": "sell_A_buy_B",
+      "is_arbitrage_opportunity": false
+    }
+  ]
+}

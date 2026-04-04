@@ -1,0 +1,174 @@
+{
+  "generated_at": "2026-04-03T21:12:00.434561",
+  "task": "T529",
+  "phase": "D004 Phase 3 \u2014 Pearson Correlation Detection",
+  "method": "Pearson pairwise correlation with spread Z-score",
+  "reference": "Hudson & Thames ArbitrageLab distance/pearson approach",
+  "input_files": {
+    "markets_filtered": "public/markets_filtered.json",
+    "market_clusters": "public/market_clusters.json"
+  },
+  "parameters": {
+    "n_periods": 60,
+    "z_threshold": 1.5,
+    "significance_level": 0.05,
+    "note": "Using synthetic price history (real data pending T236 Kalshi API credentials)"
+  },
+  "all_pairs": [
+    {
+      "market1": "KXNF-20260501-T200000",
+      "market2": "ETHW-26-DEC31-5K",
+      "market1_title": "NFP above 200k",
+      "market2_title": "Will Ethereum exceed $5,000 by December 31, 2026?",
+      "categories": [
+        "Financial",
+        "Crypto"
+      ],
+      "pearson_r": 0.38,
+      "t_statistic": 3.13,
+      "statistically_significant": true,
+      "n_periods": 60,
+      "spread_zscore": -3.33,
+      "spread_mean": 22.63,
+      "spread_std": 3.49,
+      "current_prices": {
+        "KXNF-20260501-T200000": 27,
+        "ETHW-26-DEC31-5K": 30
+      },
+      "arbitrage": {
+        "signal": "BUY_SPREAD",
+        "signal_detail": "Spread undervalued: buy KXNF-20260501-T200000, sell ETHW-26-DEC31-5K",
+        "estimated_edge_cents": 4.42,
+        "z_threshold": 1.5,
+        "confidence_discount": 0.38
+      },
+      "confidence": 0.68,
+      "confidence_components": {
+        "correlation_strength": 0.38,
+        "statistical_significance": 1.0,
+        "spread_stability": 0.65
+      },
+      "source": "cross_cluster",
+      "cluster": "cross_domain"
+    },
+    {
+      "market1": "KXNF-20260501-T200000",
+      "market2": "BTCW-26-JUN30-80K",
+      "market1_title": "NFP above 200k",
+      "market2_title": "Will Bitcoin exceed $80,000 by June 30, 2026?",
+      "categories": [
+        "Financial",
+        "Crypto"
+      ],
+      "pearson_r": 0.1713,
+      "t_statistic": 1.32,
+      "statistically_significant": false,
+      "n_periods": 60,
+      "spread_zscore": -2.67,
+      "spread_mean": 20.77,
+      "spread_std": 3.72,
+      "current_prices": {
+        "KXNF-20260501-T200000": 27,
+        "BTCW-26-JUN30-80K": 84
+      },
+      "arbitrage": {
+        "signal": "BUY_SPREAD",
+        "signal_detail": "Spread undervalued: buy KXNF-20260501-T200000, sell BTCW-26-JUN30-80K",
+        "estimated_edge_cents": 1.7,
+        "z_threshold": 1.5,
+        "confidence_discount": 0.17
+      },
+      "confidence": 0.37,
+      "confidence_components": {
+        "correlation_strength": 0.17,
+        "statistical_significance": 0.3,
+        "spread_stability": 0.63
+      },
+      "source": "cross_cluster",
+      "cluster": "cross_domain"
+    },
+    {
+      "market1": "BTCW-26-JUN30-80K",
+      "market2": "ETHW-26-DEC31-5K",
+      "market1_title": "Will Bitcoin exceed $80,000 by June 30, 2026?",
+      "market2_title": "Will Ethereum exceed $5,000 by December 31, 2026?",
+      "categories": [
+        "Crypto",
+        "Crypto"
+      ],
+      "pearson_r": -0.0004,
+      "t_statistic": -0.0,
+      "statistically_significant": false,
+      "n_periods": 60,
+      "spread_zscore": -1.1,
+      "spread_mean": 77.77,
+      "spread_std": 6.54,
+      "current_prices": {
+        "BTCW-26-JUN30-80K": 84,
+        "ETHW-26-DEC31-5K": 30
+      },
+      "arbitrage": {
+        "signal": "NO_SIGNAL",
+        "signal_detail": "Spread within normal range (Z=-1.10, threshold=\u00b11.5)",
+        "estimated_edge_cents": 0.0,
+        "z_threshold": 1.5,
+        "confidence_discount": 0.0
+      },
+      "confidence": 0.22,
+      "confidence_components": {
+        "correlation_strength": 0.0,
+        "statistical_significance": 0.3,
+        "spread_stability": 0.35
+      },
+      "source": "intra_cluster",
+      "cluster": "Crypto Markets"
+    }
+  ],
+  "arbitrage_candidates": [
+    {
+      "market1": "KXNF-20260501-T200000",
+      "market2": "ETHW-26-DEC31-5K",
+      "market1_title": "NFP above 200k",
+      "market2_title": "Will Ethereum exceed $5,000 by December 31, 2026?",
+      "categories": [
+        "Financial",
+        "Crypto"
+      ],
+      "pearson_r": 0.38,
+      "t_statistic": 3.13,
+      "statistically_significant": true,
+      "n_periods": 60,
+      "spread_zscore": -3.33,
+      "spread_mean": 22.63,
+      "spread_std": 3.49,
+      "current_prices": {
+        "KXNF-20260501-T200000": 27,
+        "ETHW-26-DEC31-5K": 30
+      },
+      "arbitrage": {
+        "signal": "BUY_SPREAD",
+        "signal_detail": "Spread undervalued: buy KXNF-20260501-T200000, sell ETHW-26-DEC31-5K",
+        "estimated_edge_cents": 4.42,
+        "z_threshold": 1.5,
+        "confidence_discount": 0.38
+      },
+      "confidence": 0.68,
+      "confidence_components": {
+        "correlation_strength": 0.38,
+        "statistical_significance": 1.0,
+        "spread_stability": 0.65
+      },
+      "source": "cross_cluster",
+      "cluster": "cross_domain"
+    }
+  ],
+  "summary": {
+    "total_pairs_analyzed": 3,
+    "significant_correlations": 1,
+    "arbitrage_signals": 1,
+    "pairs_by_source": {
+      "intra_cluster": 1,
+      "cross_cluster": 2
+    }
+  }
+}

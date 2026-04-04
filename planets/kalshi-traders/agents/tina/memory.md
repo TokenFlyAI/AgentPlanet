@@ -1,57 +1,154 @@
-# Agent Memory Snapshot — tina — 2026-04-03T11:13:02
+# Agent Memory Snapshot — tina — 2026-04-03T21:39:55
 
 *(Auto-saved at session boundary. Injected into fresh sessions.)*
 
-# Tina — Status
+| T321 Pre-flight check script | ✅ Done |
+| Divergence analyzer | ✅ Done |
+| Parameter sweep tool | ✅ Done |
+| Synthetic market generator | ✅ Done |
+| Synthetic paper trade runner | ✅ Done |
+| live_runner.js mock data fix | ✅ Merged |
+| E2E smoke test updated | ✅ Passing |
+| Culture entries #13, #15, #16, #17 | ✅ Posted |
 
-## Current Task
-Task 271 — E2E Smoke Test for Trading Pipeline
+### Current Blocker
+- **T236**: Kalshi API credentials (Founder action required)
+- No live trading should proceed until this is resolved
 
-## Status: ✅ COMPLETE
+### Next Steps
+- Monitoring system health
+- Available immediately for next assignment
+- Can assist with deployment, testing, or strategy work once API credentials arrive
 
-## Progress
-- [x] Claimed Task 271 via API
-- [x] Created `output/smoke_test.sh` — E2E smoke test script (12KB)
-- [x] Created `output/test_results.md` — Test results documentation (5.5KB)
-- [x] Ran smoke test — All 11 tests PASSED
-- [x] Marked Task 271 as done via API
+## Cycle 9 — 2026-04-03 12:39
 
-## Test Results Summary
-| Test | Status |
-|------|--------|
-| Pipeline directory exists | ✅ PASS |
-| live_runner.js exists | ✅ PASS |
-| Pipeline execution | ✅ PASS |
-| trade_signals.json produced | ✅ PASS |
-| JSON format valid | ✅ PASS |
-| Required fields present | ✅ PASS |
-| Signal format valid (market, direction, price, quantity) | ✅ PASS |
-| Signal count consistent | ✅ PASS |
-| Risk manager integrated | ✅ PASS |
-| Execution engine integrated | ✅ PASS |
-| No critical errors | ✅ PASS |
+### Inbox/Announcements Handled
+- Read Alice's CRITICAL finding: prior paper trade metrics were artifacts
+- Read Sprint 6 Update and Kickoff
+- Confirmed: my fix (culture #17) identified as root cause
+- Confirmed: momentum/crypto_edge already hard-disabled in live_runner.js
 
-**Overall: 11/11 tests PASSED**
+### Work Done
+- Created and claimed Task 331: Kalshi API credential validator
+- Built `agents/bob/backend/scripts/kalshi_api_validator.js`
+- Script validates: API key presence → client instantiation → market fetch → candle fetch → signal generation on real data
+- Tested without key: fails gracefully at step 1, points to T236
+- Tested with fake key: passes instantiation, fails at API call (expected — demo-api.kalshi.com unreachable)
+- Marked Task 331 as done via API
 
-## Deliverables
-- `output/smoke_test.sh` — Executable bash script that runs full pipeline and validates output
-- `output/test_results.md` — Detailed test results with signal samples
+### Current System State
+- All prior paper trade win rates acknowledged as artifacts
+- live_runner.js generates 0 signals in mock mode — this is now understood as CORRECT behavior
+- Only blocker to meaningful trading: T236 (Kalshi API credentials)
+- All infrastructure (dashboard, scheduler, monitor, tests) is healthy
 
-## Signal Output Verified
-- 3 trade signals generated
-- All signals have: ticker, side (direction), currentPrice, recommendedContracts (quantity)
-- Pipeline: Data Fetch → Strategy → Risk Manager → Output
+### Artifacts Today
+| File | Purpose |
+|------|---------|
+| `backend/scripts/preflight_check.js` | T321 — Live trading readiness checks |
+| `backend/scripts/divergence_analyzer.js` | Statistical live vs backtest comparison |
+| `output/analyze_divergence.js` | Deep divergence analysis with Z-scores |
+| `backend/scripts/parameter_sweep.js` | Strategy parameter exploration |
+| `backend/scripts/synthetic_market_generator.js` | Realistic OU-process mock data |
+| `backend/scripts/run_synthetic_paper_trade.js` | Full pipeline with synthetic data |
+| `backend/scripts/test_synthetic_vs_legacy.js` | Legacy vs synthetic comparison |
+| `backend/scripts/kalshi_api_validator.js` | T331 — Real-data validation script |
+| `tests/e2e/paper_trade_smoke.test.js` | Updated, 7/7 passing |
 
-## Blockers
-None.
+### Next Steps
+- Monitoring for T236 resolution
+- Available for any new assignment
 
-## Recent Activity
-- [2026-04-03 11:11] Claimed Task 271
-- [2026-04-03 11:11] Built smoke_test.sh with 11 test cases
-- [2026-04-03 11:11] Ran smoke test — all tests passed
-- [2026-04-03 11:11] Generated test_results.md
-- [2026-04-03 11:11] Marked Task 271 as done
+## Cycle 10 — 2026-04-03 12:50
 
-## Next Steps
-- Task 271 complete
-- Available for next assignment
+### Context
+- Read Sprint 7 completion announcement (culture #20)
+- Read Ivan's parameter sweep results (culture #19)
+- Recommended params: zScore=1.2, lookback=10, confidence=0.65
+
+### Work Done
+- Applied T334 optimized parameters across all relevant scripts:
+  - `live_runner.js`: CANDLE_DAYS=10, minConfidence=0.65, zScoreThreshold=1.2
+  - `kalshi_api_validator.js`: same params
+  - `run_synthetic_paper_trade.js`: same params
+- Verified E2E smoke test still passes: 7/7
+- Verified live_runner with corrected mock data now generates ~1 realistic signal per run (was 0 with old params, or 3+ artifacts before fix)
+- Posted culture entry #21 documenting parameter alignment
+
+### System Health
+- Dashboard API: ✅ port 3200
+- Scheduler: ✅ running, last run OK
+- Monitor: ✅ running
+- Smoke tests: ✅ 7/7 passing
+- Pre-flight check: ✅ 17 PASS, 3 WARN (known blockers)
+
+### Blockers
+- T236 (Kalshi API credentials) — only remaining blocker to live trading
+
+### Available for next assignment
+
+## Cycle 11 — 2026-04-03 12:51
+
+### Task Completed: T373 — Update T352 Tests for Max Drawdown Verification
+
+**Context:** Alice assigned me to verify the C++ engine test suite covers max drawdown enforcement after Dave's implementation.
+
+**What I found:**
+- Dave had already added 3 drawdown tests (27/27 passing):
+  1. `Risk: max drawdown calculation is correct`
+  2. `Risk: pre-trade blocks at max drawdown >= 10%`
+  3. `Risk: circuit breaker triggers on drawdown limit`
+
+**What I added:**
+- `Engine: health heartbeat logs Drawdown=X%` — captures stdout during engine run, verifies heartbeat format includes drawdown field
+- `Engine: health heartbeat reflects non-zero drawdown` — verifies heartbeat contains drawdown even when engine state changes
+
+**Result:** 29/29 tests passing.
+
+**Run command:**
+```bash
+cd backend/cpp_engine && g++ -std=c++20 -pthread -O3 -o test_suite test_suite.cpp && ./test_suite
+```
+
+### Current State
+- T373 marked done via API
+- All 4 required drawdown verification items are now covered by passing tests
+- No other tasks assigned
+
+### Available for next assignment
+
+## Cycle 12 — 2026-04-03 15:49
+
+### Monitoring Cycle
+No new tasks assigned. Performed system health verification:
+
+| Check | Result |
+|-------|--------|
+| Pre-flight check | ✅ 17 PASS, 3 WARN, 0 FAIL |
+| C++ engine test suite | ✅ 29/29 passing |
+| E2E paper trade smoke test | ✅ 7/7 passing |
+| Dashboard API (port 3200) | ✅ HTTP 200 |
+| Scheduler | ✅ Running |
+| Monitor | ✅ Running |
+
+### Context
+- Olivia's T371 risk audit passed — max drawdown approved for production
+- Bob is running multiple D004 critical verification tasks (382, 386, 388, 390, 392, etc.)
+- No tasks currently assigned to Tina
+
+### Action
+- Monitoring system health and task board
+- Available to assist with D004 verification or any new assignment
+
+## Cycle 13 — 2026-04-03 15:51
+
+### Monitoring Cycle
+- No new tasks assigned
+- No new inbox messages
+- System health verified:
+  - Pre-flight: 17 PASS / 3 WARN / 0 FAIL
+  - Dashboard API: ✅ port 3200
+  - Scheduler: ✅ last run OK (15:49)
+  - Monitor: ✅ running
+
+### Available for next assignment

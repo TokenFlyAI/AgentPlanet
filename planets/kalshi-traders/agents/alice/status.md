@@ -9,88 +9,8 @@ Holding pattern — No open tasks assigned. Monitoring for Founder directives.
 ## Cycle Update (2026-04-03) — Holding
 
 
-## [Historical cycles trimmed to save tokens — see logs/ for full history]
+## [Old cycles trimmed to save tokens — see logs/ for history]
 
-3. **Sent T436 assignment message** to Bob with clear deliverables
-
-### Active Decisions
-- Following C4 (read peers): Dave and Frank both stalled on T436. Reassigning to Bob (responsive backend engineer) to ensure completion.
-- Following D2 (D004 north star): T436 test health report is critical pre-go-live validation.
-
-### Blockers
-- T236: Kalshi API credentials (Founder)
-- Contract size confirmation (Founder)
-
-### Next Steps
-- Monitor Bob's T436 progress
-- Use Bob's report + Frank's partial findings to create targeted bug-fix tasks
-- Continue holding for Founder directives
-
----
-
-## Cycle Update (2026-04-03) — T436 Now With Bob
-
-### Observations
-- **T428:** Done ✅ (Charlie)
-- **T429:** Done ✅ (Dave)
-- **T436:** Reassigned from Frank to **Bob** — Frank unresponsive (inbox not processed, heartbeat stale)
-- **Bob:** Running, now working on T436
-- **Smoke test tasks (442-444, 447):** All cancelled — test artifacts
-
-### Actions Taken
-1. **Messaged Bob** with T436 requirements, clarifying output path should be `agents/bob/output/`
-
-### Active Decisions
-- Following C4 (read peers): Detected Frank's unresponsiveness and reassigned to Bob for reliable execution
-- Following C5 (task visibility): T436 remains in_progress with a productive assignee
-
-### Team Health Notes
-- **Dave:** Fixed T429 successfully, but agent process has a stuck-loop pattern when no urgent tasks exist
-- **Frank:** Unresponsive — inbox messages unprocessed, status.md stale
-- **Bob:** Reliable, high velocity, good task completion rate
-
-### Blockers
-- T236: Kalshi API credentials (Founder)
-- Contract size confirmation (Founder)
-
-### Next Steps
-- Monitor Bob's T436 progress
-- Continue holding for Founder directives
-
----
-
-## Cycle Update (2026-04-03) — Bob Fresh Session Started
-
-### Observations
-- **Bob:** Heartbeat changed to `idle`, cycle: 0, timestamp: 23:31:17 UTC — indicates a fresh agent session start
-- **Bob's status.md:** Last modified 16:21 (before T436 message), so he hasn't run a full cycle yet in this session
-- **T436 message:** Still in Bob's inbox, unread — but he should process it during his fresh session orientation
-
-### Actions Taken
-- No action needed — Bob's fresh session should naturally pick up the T436 assignment during inbox check
-
-### Blockers
-- T236: Kalshi API credentials (Founder)
-- Contract size confirmation (Founder)
-
-### Next Steps
-- Monitor Bob's next cycle for T436 claim and in_progress status
-- Continue holding for Founder directives on T236
-
----
-
-## Cycle Update (2026-04-03) — T527 D004 Sprint Kickoff
-
-### Founder Directive Received
-CEO message: D004 Sprint Kickoff with 4 tasks (T527-T530).
-
-### T527 Audit Findings
-1. **CRITICAL: Phase 1→2→3 data chain broken** — Phase 3 correlation_pairs.json uses tickers (SP500-5000, NASDAQ-ALLTIME, etc.) that never passed Phase 1 filtering (BTCW-26-JUN30-80K, ETHW-26-DEC31-5K, KXNF-20260501-T200000)
-2. **Phase 2 too thin** — Only 1 cluster (crypto), 0 hidden correlations
-3. **Phase 4 (C++ engine)** — Ready, no issues
-4. **LongshotFading** — Bug needs fixing (T528)
-
-### Actions Taken
 1. Claimed T527 → in_progress
 2. Created sprint plan: `agents/alice/output/t527_d004_sprint_plan.md`
 3. Messaged Bob (T528), Ivan (T529), Grace (T530) with clear assignments
@@ -156,3 +76,110 @@ C++ engine integration complete (13/13 integration, 29/29 unit tests). Engine lo
 - Implement persona changes from T543 report (pending Founder approval)
 - Monitor remaining open tasks
 - Ready for next Founder directive
+
+---
+
+## Cycle Update (2026-04-04) — T559 Done, Sprint 2 Active
+
+### Inbox Processed
+1. **Lord message** — "Review task board" → Reviewed. Sprint 2 tasks all in_progress or assigned.
+2. **CEO Sprint 2 kickoff** — Acknowledged. Tasks T555-T560 + T539 assigned. My task T559.
+3. **Sam velocity report** — 17/20 idle, T236 still blocking. Noted.
+4. **Ivan T546 update** — Phase 2 clustering v2 deployed, 3 clusters, 26 cross-category correlations.
+
+### T559 COMPLETE ✅ — Sprint Report
+**Deliverable:** `output/shared/merged/sprint_report.md`
+**Culture ref:** Following C3 (cite culture), C7 (close tasks when done), D2 (D004 north star)
+- Sprint 1 retrospective: 10/10 tasks, pipeline E2E, quality/security audits PASS
+- Sprint 2 plan: 7 tasks assigned — signals (Bob), backtesting (Grace), monitoring (Dave), clustering (Ivan), QA (Frank, Tina)
+
+### Task Board Status
+- T555 (Bob) — in_progress, CRITICAL: signal generation
+- T556 (Dave) — in_progress: pipeline metrics
+- T557 (Grace) — in_progress: synthetic price history
+- T558 (Ivan) — in_progress: TF-IDF clustering
+- T559 (Alice) — DONE ✅
+- T560 (Frank) — in_progress: QA tests
+- T539 (Tina) — in_progress: QA data chain (Sprint 1 carryover)
+
+### Team Status
+- **Bob:** Running, T542 done, should be picking up T555
+- **All others:** Idle — Sprint 2 tasks assigned, awaiting start
+
+### Blockers
+- T236: Kalshi API credentials (Founder)
+- Contract size confirmation (Founder)
+
+### Next Steps
+- Monitor Bob's T555 progress (critical path)
+- Check if idle agents pick up their Sprint 2 tasks when started
+- Available for coordination and unblocking
+
+---
+
+## Cycle 2 (2026-04-04) — Monitoring Sprint 2
+
+### Observations
+- **Inbox:** Empty — no new messages
+- **Bob:** Running (heartbeat 00:06:09) but status.md still shows T542 as last work. Hasn't picked up T555 yet.
+- **All others:** Still idle
+
+### Actions Taken
+- **DM'd Bob** about T555 (critical path signal generation) with clear instructions to claim and start
+
+### Next Steps
+- Monitor Bob's T555 pickup in next cycle
+- If Bob doesn't respond, escalate or consider reassignment
+- Available for coordination
+
+---
+
+## Cycle 3 (2026-04-04) — T555 Approved, Sprint 2 Critical Path Done
+
+### Observations
+- **Bob:** Went idle after completing T555. Status.md not yet updated but task API shows in_review → approved.
+- **T555 verified:** `node run_pipeline.js --with-signals` runs successfully. Phase 5 produces 8 signal trades. P&L negative on synthetic data (expected — efficient mock markets produce poor signals by design). Infrastructure is sound.
+- **Bob's T555 message** still in his inbox (unread when he went idle — he found T555 via task board directly)
+
+### Actions Taken
+- **Approved T555** via review API. Signal generation infrastructure verified and working.
+- Following C8 (run and verify): Ran full pipeline with --with-signals, confirmed output files exist and pipeline completes in 8ms.
+
+### Sprint 2 Progress
+- ✅ T555 (Bob) — DONE: Signal generation
+- ✅ T559 (Alice) — DONE: Sprint report
+- 🔄 T556 (Dave) — in_progress: Pipeline metrics (agent idle)
+- 🔄 T557 (Grace) — in_progress: Synthetic price history (agent idle)
+- 🔄 T558 (Ivan) — in_progress: TF-IDF clustering (agent idle)
+- 🔄 T560 (Frank) — in_progress: QA tests (agent idle)
+- 🔄 T539 (Tina) — in_progress: QA data chain (agent idle)
+
+### Next Steps
+- Monitor remaining Sprint 2 tasks as agents come online
+- DM Bob with approval confirmation and stretch task ideas
+- Available for coordination
+
+---
+
+## Cycle 4 (2026-04-04) — Steady State, Sprint 2 Progressing
+
+### Observations
+- **Bob:** Running again, picked up T567 (backtest with 100+ price history) — self-directed stretch work after T555 approval. Good.
+- **T560 (Frank QA):** No longer on board — may have been completed or cancelled. Need to verify next cycle.
+- **Inbox:** Empty
+- **5 tasks remain:** T539 (Tina), T556 (Dave), T557 (Grace), T558 (Ivan), T567 (Bob)
+
+### Sprint 2 Status
+- ✅ T555 (Bob) — DONE: Signal generation approved
+- ✅ T559 (Alice) — DONE: Sprint report
+- ❓ T560 (Frank) — Not on board (check next cycle)
+- 🔄 T556 (Dave) — in_progress (idle)
+- 🔄 T557 (Grace) — in_progress (idle)
+- 🔄 T558 (Ivan) — in_progress (idle)
+- 🔄 T539 (Tina) — in_progress (idle)
+- 🔄 T567 (Bob) — in_progress: backtesting with extended history (NEW)
+
+### Next Steps
+- Monitor Bob's T567 progress
+- Check T560 status (Frank)
+- Available for coordination as agents come online

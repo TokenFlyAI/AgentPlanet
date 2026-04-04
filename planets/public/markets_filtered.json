@@ -1,0 +1,135 @@
+{
+  "generated_at": "2026-04-04T07:12:01.836Z",
+  "phase": 1,
+  "filter_criteria": {
+    "min_volume": 10000,
+    "yes_no_ratio_ranges": [
+      "15-30%",
+      "70-85%"
+    ],
+    "exclude_ranges": [
+      "0-15%",
+      "40-60%",
+      "85-100%"
+    ]
+  },
+  "qualifying_markets": [
+    {
+      "ticker": "BTCW-26-JUN30-80K",
+      "title": "Bitcoin >$80K by Jun 30",
+      "category": "Crypto",
+      "volume": 720000,
+      "yes_price": 82,
+      "no_price": 18
+    },
+    {
+      "ticker": "ETHW-26-DEC31-5K",
+      "title": "Ethereum >$5K by Dec 31",
+      "category": "Crypto",
+      "volume": 540000,
+      "yes_price": 28,
+      "no_price": 72
+    },
+    {
+      "ticker": "INXW-26-DEC31-6000",
+      "title": "S&P 500 >6000 by Dec 31",
+      "category": "Economics",
+      "volume": 250000,
+      "yes_price": 75,
+      "no_price": 25
+    },
+    {
+      "ticker": "GDPW-26-Q2-3PCT",
+      "title": "Q2 GDP >3%",
+      "category": "Economics",
+      "volume": 95000,
+      "yes_price": 25,
+      "no_price": 75
+    },
+    {
+      "ticker": "CPIW-26-MAY-3PCT",
+      "title": "May CPI >3%",
+      "category": "Economics",
+      "volume": 88000,
+      "yes_price": 72,
+      "no_price": 28
+    },
+    {
+      "ticker": "KXNF-20260501-T200000",
+      "title": "NFP >200K",
+      "category": "Financial",
+      "volume": 150000,
+      "yes_price": 26,
+      "no_price": 74
+    },
+    {
+      "ticker": "OILW-26-DEC31-100",
+      "title": "Oil >$100 by Dec 31",
+      "category": "Commodities",
+      "volume": 75000,
+      "yes_price": 22,
+      "no_price": 78
+    }
+  ],
+  "excluded_markets": [
+    {
+      "ticker": "BTCW-26-DEC31-120K",
+      "title": "Bitcoin >$120K by Dec 31",
+      "category": "Crypto",
+      "volume": 890000,
+      "yes_price": 62,
+      "no_price": 38,
+      "reason": "price_ratio"
+    },
+    {
+      "ticker": "ETHW-26-JUN30-4K",
+      "title": "Ethereum >$4K by Jun 30",
+      "category": "Crypto",
+      "volume": 420000,
+      "yes_price": 45,
+      "no_price": 55,
+      "reason": "price_ratio_middle"
+    },
+    {
+      "ticker": "SOLW-26-JUN30-300",
+      "title": "Solana >$300 by Jun 30",
+      "category": "Crypto",
+      "volume": 180000,
+      "yes_price": 35,
+      "no_price": 65,
+      "reason": "price_ratio"
+    },
+    {
+      "ticker": "INXW-26-DEC31-7000",
+      "title": "S&P 500 >7000 by Dec 31",
+      "category": "Economics",
+      "volume": 180000,
+      "yes_price": 35,
+      "no_price": 65,
+      "reason": "price_ratio"
+    },
+    {
+      "ticker": "KXNF-20260501-T250000",
+      "title": "NFP >250K",
+      "category": "Financial",
+      "volume": 120000,
+      "yes_price": 12,
+      "no_price": 88,
+      "reason": "price_ratio_extreme"
+    },
+    {
+      "ticker": "FEDW-26-JUN-CUT",
+      "title": "Fed cuts rates by June",
+      "category": "Rates",
+      "volume": 320000,
+      "yes_price": 45,
+      "no_price": 55,
+      "reason": "price_ratio_middle"
+    }
+  ],
+  "summary": {
+    "total_markets": 13,
+    "qualifying": 7,
+    "excluded": 6
+  }
+}

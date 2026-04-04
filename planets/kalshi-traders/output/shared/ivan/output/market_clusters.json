@@ -1,0 +1,95 @@
+{
+  "generated_at": "2026-04-03T21:23:13.649918",
+  "clusters": [
+    {
+      "name": "Cluster-1",
+      "markets": [
+        "BTCW-26-JUN30-80K",
+        "ETHW-26-DEC31-5K",
+        "BTCW-26-DEC31-120K",
+        "SOLW-26-JUN30-300",
+        "ETHW-26-JUN30-4K"
+      ],
+      "strength": 0
+    },
+    {
+      "name": "Cluster-2",
+      "markets": [
+        "INXW-26-DEC31-6000",
+        "INXW-26-DEC31-7000",
+        "GDPW-26-Q2-3PCT",
+        "CPIW-26-MAY-3PCT"
+      ],
+      "strength": 0
+    },
+    {
+      "name": "Cluster-3",
+      "markets": [
+        "KXNF-20260501-T200000",
+        "KXNF-20260501-T250000"
+      ],
+      "strength": 0
+    },
+    {
+      "name": "Cluster-4",
+      "markets": [
+        "FEDW-26-JUN-CUT",
+        "INXW-26-DEC31-6000",
+        "INXW-26-DEC31-7000"
+      ],
+      "strength": 0
+    },
+    {
+      "name": "Cluster-5",
+      "markets": [
+        "BTCW-26-JUN30-80K",
+        "ETHW-26-DEC31-5K",
+        "BTCW-26-DEC31-120K",
+        "SOLW-26-JUN30-300",
+        "ETHW-26-JUN30-4K",
+        "INXW-26-DEC31-6000",
+        "INXW-26-DEC31-7000",
+        "GDPW-26-Q2-3PCT",
+        "CPIW-26-MAY-3PCT",
+        "KXNF-20260501-T200000",
+        "KXNF-20260501-T250000"
+      ],
+      "strength": 0
+    },
+    {
+      "name": "Cluster-6",
+      "markets": [
+        "INXW-26-DEC31-6000",
+        "INXW-26-DEC31-7000",
+        "INXW-26-DEC31-6000",
+        "INXW-26-DEC31-7000",
+        "GDPW-26-Q2-3PCT",
+        "CPIW-26-MAY-3PCT",
+        "KXNF-20260501-T200000",
+        "KXNF-20260501-T250000"
+      ],
+      "strength": 0
+    },
+    {
+      "name": "Cluster-7",
+      "markets": [
+        "BTCW-26-JUN30-80K",
+        "ETHW-26-DEC31-5K",
+        "INXW-26-DEC31-6000",
+        "INXW-26-DEC31-7000"
+      ],
+      "strength": 0
+    },
+    {
+      "name": "Cluster-8",
+      "markets": [
+        "OILW-26-DEC31-100",
+        "CPIW-26-MAY-3PCT"
+      ],
+      "strength": 0
+    }
+  ],
+  "summary": {
+    "total_markets_clustered": 13
+  }
+}

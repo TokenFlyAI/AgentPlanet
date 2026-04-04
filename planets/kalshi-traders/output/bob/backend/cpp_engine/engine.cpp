@@ -1110,13 +1110,19 @@ private:
             std::strncpy(pair.market_a, ma.c_str(), sizeof(pair.market_a) - 1);
             std::strncpy(pair.market_b, mb.c_str(), sizeof(pair.market_b) - 1);
             pair.pearson_correlation = extract_double(obj, "pearson_correlation", 0);
+            if (pair.pearson_correlation == 0.0)
+                pair.pearson_correlation = extract_double(obj, "pearson_r", 0);
             pair.expected_spread = extract_double(obj, "expected_spread", 0);
+            if (pair.expected_spread == 0.0)
+                pair.expected_spread = extract_double(obj, "spread_zscore", 0);
             pair.spread_threshold = extract_double(obj, "spread_threshold", 0);
             if (pair.spread_threshold == 0.0) {
                 pair.spread_threshold = extract_double(obj, "expected_spread", 0);
                 if (pair.spread_threshold == 0.0) pair.spread_threshold = 0.01;
             }
             pair.arbitrage_confidence = extract_double(obj, "arbitrage_confidence", 0);
+            if (pair.arbitrage_confidence == 0.0)
+                pair.arbitrage_confidence = extract_double(obj, "estimated_edge_cents", 0) / 100.0;
             pair.direction = (dir == "sell_A_buy_B") ? 1 : 0;
             pair.is_arbitrage_opportunity = extract_bool(obj, "is_arbitrage_opportunity", 0);
             pairs_.push_back(pair);

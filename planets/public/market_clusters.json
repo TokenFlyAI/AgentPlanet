@@ -1,0 +1,81 @@
+{
+  "generated_at": "2026-04-04T07:12:01.837Z",
+  "phase": 2,
+  "method": "Economic domain knowledge + cross-category correlation rules",
+  "input_markets": 7,
+  "clusters": [
+    {
+      "id": "crypto_internal",
+      "label": "Crypto Markets",
+      "markets": [
+        "BTCW-26-JUN30-80K",
+        "ETHW-26-DEC31-5K"
+      ],
+      "correlation_strength": 0.95,
+      "description": "Internal Crypto market correlations based on shared underlying drivers",
+      "correlation_type": "internal"
+    },
+    {
+      "id": "economics_internal",
+      "label": "Economics Markets",
+      "markets": [
+        "INXW-26-DEC31-6000",
+        "GDPW-26-Q2-3PCT",
+        "CPIW-26-MAY-3PCT"
+      ],
+      "correlation_strength": 0.9,
+      "description": "Internal Economics market correlations based on shared underlying drivers",
+      "correlation_type": "internal"
+    },
+    {
+      "id": "crypto_macro",
+      "label": "Crypto-Macro Correlation",
+      "markets": [
+        "BTCW-26-JUN30-80K",
+        "ETHW-26-DEC31-5K",
+        "INXW-26-DEC31-6000",
+        "GDPW-26-Q2-3PCT"
+      ],
+      "correlation_strength": 0.65,
+      "description": "Crypto assets inversely correlate with strong economic data (NFP/GDP) due to risk-off flows",
+      "correlation_type": "cross_category"
+    }
+  ],
+  "hidden_correlations": [
+    {
+      "market_a": "BTCW-26-JUN30-80K",
+      "market_b": "INXW-26-DEC31-6000",
+      "correlation_type": "crypto_macro_inverse",
+      "strength": 0.65,
+      "rationale": "BTCW-26-JUN30-80K inversely correlates with INXW-26-DEC31-6000: strong economic data → risk-off from crypto"
+    },
+    {
+      "market_a": "BTCW-26-JUN30-80K",
+      "market_b": "GDPW-26-Q2-3PCT",
+      "correlation_type": "crypto_macro_inverse",
+      "strength": 0.65,
+      "rationale": "BTCW-26-JUN30-80K inversely correlates with GDPW-26-Q2-3PCT: strong economic data → risk-off from crypto"
+    },
+    {
+      "market_a": "ETHW-26-DEC31-5K",
+      "market_b": "INXW-26-DEC31-6000",
+      "correlation_type": "crypto_macro_inverse",
+      "strength": 0.65,
+      "rationale": "ETHW-26-DEC31-5K inversely correlates with INXW-26-DEC31-6000: strong economic data → risk-off from crypto"
+    },
+    {
+      "market_a": "ETHW-26-DEC31-5K",
+      "market_b": "GDPW-26-Q2-3PCT",
+      "correlation_type": "crypto_macro_inverse",
+      "strength": 0.65,
+      "rationale": "ETHW-26-DEC31-5K inversely correlates with GDPW-26-Q2-3PCT: strong economic data → risk-off from crypto"
+    }
+  ],
+  "summary": {
+    "total_clusters": 3,
+    "internal_clusters": 2,
+    "cross_category_clusters": 1,
+    "total_markets_clustered": 5,
+    "hidden_correlations_found": 4
+  }
+}

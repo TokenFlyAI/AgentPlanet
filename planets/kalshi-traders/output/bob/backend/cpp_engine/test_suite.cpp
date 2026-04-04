@@ -424,7 +424,7 @@ void test_full_engine(TestSuite& suite) {
     suite.test("Engine: initializes and starts/stops cleanly", []() {
         engine::ExecutionEngine eng;
         router::KalshiApiConfig cfg{};
-        assert(eng.initialize("/Users/chenyangcui/Documents/code/aicompany/agents/public/correlation_pairs.json", cfg, "ws://test") == true);
+        assert(eng.initialize("/Users/chenyangcui/Documents/code/aicompany/planets/kalshi-traders/shared/correlation_pairs.json", cfg, "ws://test") == true);
         eng.start();
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
         assert(eng.is_running() == true);
@@ -435,7 +435,7 @@ void test_full_engine(TestSuite& suite) {
     suite.test("Engine: strategy loop processes mock market data", []() {
         engine::ExecutionEngine eng;
         router::KalshiApiConfig cfg{};
-        assert(eng.initialize("/Users/chenyangcui/Documents/code/aicompany/agents/public/correlation_pairs.json", cfg, "ws://test") == true);
+        assert(eng.initialize("/Users/chenyangcui/Documents/code/aicompany/planets/kalshi-traders/shared/correlation_pairs.json", cfg, "ws://test") == true);
         eng.start();
 
         // Push mock updates for a known pair from correlation_pairs.json
@@ -456,7 +456,7 @@ void test_full_engine(TestSuite& suite) {
     suite.test("Engine: risk summary updates after trades", []() {
         engine::ExecutionEngine eng;
         router::KalshiApiConfig cfg{};
-        assert(eng.initialize("/Users/chenyangcui/Documents/code/aicompany/agents/public/correlation_pairs.json", cfg, "ws://test") == true);
+        assert(eng.initialize("/Users/chenyangcui/Documents/code/aicompany/planets/kalshi-traders/shared/correlation_pairs.json", cfg, "ws://test") == true);
         eng.start();
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
         auto summary = eng.get_risk_summary();
@@ -468,7 +468,7 @@ void test_full_engine(TestSuite& suite) {
     suite.test("Engine: health heartbeat logs Drawdown=X%", []() {
         engine::ExecutionEngine eng;
         router::KalshiApiConfig cfg{};
-        assert(eng.initialize("/Users/chenyangcui/Documents/code/aicompany/agents/public/correlation_pairs.json", cfg, "ws://test") == true);
+        assert(eng.initialize("/Users/chenyangcui/Documents/code/aicompany/planets/kalshi-traders/shared/correlation_pairs.json", cfg, "ws://test") == true);
 
         // Redirect stdout to capture heartbeat
         std::stringstream captured;
@@ -488,7 +488,7 @@ void test_full_engine(TestSuite& suite) {
     suite.test("Engine: health heartbeat reflects non-zero drawdown", []() {
         engine::ExecutionEngine eng;
         router::KalshiApiConfig cfg{};
-        assert(eng.initialize("/Users/chenyangcui/Documents/code/aicompany/agents/public/correlation_pairs.json", cfg, "ws://test") == true);
+        assert(eng.initialize("/Users/chenyangcui/Documents/code/aicompany/planets/kalshi-traders/shared/correlation_pairs.json", cfg, "ws://test") == true);
         eng.start();
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
 

@@ -111,3 +111,34 @@ As Velocity TPM, I now track:
 - Monitor D004 pipeline velocity
 - Track Sprint 9 Phase 4 implementation
 - Flag any blockers on arbitrage execution
+
+---
+
+## Cycle 12 Update — 2026-04-03 22:50
+
+### CEO Sprint Kickoff Processed
+Founder directive: D004 Pipeline Push — get trading pipeline running end-to-end.
+
+### T549 COMPLETE — Sprint Velocity Report
+- Scanned all 20 agent status.md files + heartbeats
+- Deliverable: `output/velocity_2026_04_03.md`
+- Copied to: `public/reports/velocity_report.md`
+- Task marked done via API
+
+### Key Findings
+- **D004 Pipeline:** All 4 phases technically complete (markets_filtered.json → market_clusters.json → correlation_pairs.json → C++ engine)
+- **Critical:** Prior 84% win rate was artifact of broken mock data (per Alice's critical finding). Pipeline NOT production-validated.
+- **Blockers:** T236 (Kalshi API creds) + contract size confirmation — both require Founder action
+- **Active agents:** 3/20 (Charlie T547, Ivan T546, Sam T549-now done)
+- **Idle agents:** 17/20
+- **Stale:** Nick T264 (18+ hours no update), Tina T539 (assigned not started)
+
+### Actions Taken
+- DM'd Alice with velocity findings + 4 action items
+- Flagged T236 as #1 bottleneck
+- Recommended nudging Tina on T539, closing Nick's stale T264
+
+### Next Steps
+- Monitor T546 (Ivan clustering improvement) and T547 (Charlie dashboard)
+- Track T236 resolution
+- Produce next velocity report when sprint activity picks up

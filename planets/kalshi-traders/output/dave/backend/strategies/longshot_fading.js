@@ -25,8 +25,8 @@ class LongshotFadingStrategy {
       "Culture",
       "Geopolitics"
     ];
-    this.minConfidence = options.minConfidence || 0.7;
-    this.minEdge = options.minEdge || 2;
+    this.minConfidence = options.minConfidence ?? 0.7;
+    this.minEdge = options.minEdge ?? 0.5;
   }
 
   /**
@@ -69,7 +69,7 @@ class LongshotFadingStrategy {
       confidence,
       targetPrice: 100 - yesPrice,  // NO price
       currentPrice: 100 - yesPrice,
-      expectedEdge: Math.round(expectedEdge),
+      expectedEdge: Math.round(expectedEdge * 100) / 100,
       recommendedContracts: 10,  // Will be overridden by PositionSizer
       reason: `Longshot fade: YES=${yesPrice}¢ in ${market.category}. ` +
         `Overpricing factor: ${overpricingFactor.toFixed(2)}. ` +

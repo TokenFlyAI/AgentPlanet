@@ -141,7 +141,10 @@ app.use((err, req, res, next) => {
 
 const API_KEY = process.env.DASHBOARD_API_KEY;
 function requireAuth(req, res, next) {
-  if (!API_KEY) return next(); // no key configured = open (dev mode)
+  if (!API_KEY) {
+    console.warn('[SECURITY] DASHBOARD_API_KEY not set — rejecting request. Set env var to enable API access.');
+    return sendError(res, 403, 'FORBIDDEN', 'API key not configured. Set DASHBOARD_API_KEY env var.');
+  }
   const key = req.headers['x-api-key'] || req.query.api_key;
   if (key !== API_KEY) {
     return sendError(res, 401, 'UNAUTHORIZED', 'Invalid or missing API key');
@@ -693,7 +696,7 @@ const deviceTokens = new Map();
  * Register device token for push notifications
  * Body: { userId, token, platform: "apns"|"fcm" }
  */
-app.post("/api/notifications/register", (req, res) => {
+app.post("/api/notifications/register", requireAuth, (req, res) => {
   const { userId, token, platform } = req.body;
   
   // Validation

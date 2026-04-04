@@ -1,0 +1,285 @@
+{
+  "generated_at": "2026-04-03T22:47:43.429298",
+  "task": "T546 (improved from T344)",
+  "method": "Multi-dimensional embedding: semantic + volatility + news sentiment",
+  "features": [
+    "keyword_semantic",
+    "bid_ask_volatility",
+    "price_implied_sentiment",
+    "category_baseline_sentiment",
+    "volume_weight"
+  ],
+  "clusters": [
+    {
+      "id": "cluster_2",
+      "label": "Economics Markets",
+      "markets": [
+        "INXW-26-DEC31-6000",
+        "INXW-26-DEC31-7000"
+      ],
+      "strength": 0.997,
+      "avg_volatility": 0.4,
+      "avg_sentiment": 0.075,
+      "cross_category": false,
+      "description": "2 markets | similarity=1.00 | dominant sentiment: neutral"
+    },
+    {
+      "id": "cluster_1",
+      "label": "Crypto Markets",
+      "markets": [
+        "BTCW-26-JUN30-80K",
+        "ETHW-26-DEC31-5K",
+        "ETHW-26-JUN30-4K",
+        "BTCW-26-DEC31-120K",
+        "SOLW-26-JUN30-300"
+      ],
+      "strength": 0.987,
+      "avg_volatility": 0.4,
+      "avg_sentiment": 0.254,
+      "cross_category": false,
+      "description": "5 markets | similarity=0.99 | dominant sentiment: bullish"
+    },
+    {
+      "id": "cluster_3",
+      "label": "Financial + Economics",
+      "markets": [
+        "CPIW-26-MAY-3PCT",
+        "GDPW-26-Q2-3PCT",
+        "KXNF-20260501-T200000",
+        "KXNF-20260501-T250000"
+      ],
+      "strength": 0.982,
+      "avg_volatility": 0.4,
+      "avg_sentiment": 0.062,
+      "cross_category": true,
+      "description": "4 markets spanning Financial, Economics | similarity=0.98 | dominant sentiment: neutral"
+    }
+  ],
+  "hidden_correlations": [
+    {
+      "market1": "GDPW-26-Q2-3PCT",
+      "market2": "KXNF-20260501-T250000",
+      "categories": [
+        "Economics",
+        "Financial"
+      ],
+      "correlation": 0.993,
+      "sentiment_alignment": 0.26,
+      "insight": "Crypto-macro linkage: Economics and Financial share risk-on/risk-off dynamics"
+    },
+    {
+      "market1": "GDPW-26-Q2-3PCT",
+      "market2": "KXNF-20260501-T200000",
+      "categories": [
+        "Economics",
+        "Financial"
+      ],
+      "correlation": 0.987,
+      "sentiment_alignment": 0.15,
+      "insight": "Crypto-macro linkage: Economics and Financial share risk-on/risk-off dynamics"
+    },
+    {
+      "market1": "CPIW-26-MAY-3PCT",
+      "market2": "KXNF-20260501-T250000",
+      "categories": [
+        "Economics",
+        "Financial"
+      ],
+      "correlation": 0.984,
+      "sentiment_alignment": 0.24,
+      "insight": "Crypto-macro linkage: Economics and Financial share risk-on/risk-off dynamics"
+    },
+    {
+      "market1": "CPIW-26-MAY-3PCT",
+      "market2": "KXNF-20260501-T200000",
+      "categories": [
+        "Economics",
+        "Financial"
+      ],
+      "correlation": 0.955,
+      "sentiment_alignment": 0.13,
+      "insight": "Crypto-macro linkage: Economics and Financial share risk-on/risk-off dynamics"
+    },
+    {
+      "market1": "BTCW-26-JUN30-80K",
+      "market2": "FEDW-26-JUN-CUT",
+      "categories": [
+        "Crypto",
+        "Rates"
+      ],
+      "correlation": 0.511,
+      "sentiment_alignment": 0.4,
+      "insight": "Crypto-macro linkage: Crypto and Rates share risk-on/risk-off dynamics"
+    },
+    {
+      "market1": "ETHW-26-DEC31-5K",
+      "market2": "FEDW-26-JUN-CUT",
+      "categories": [
+        "Crypto",
+        "Rates"
+      ],
+      "correlation": 0.472,
+      "sentiment_alignment": 0.26,
+      "insight": "Crypto-macro linkage: Crypto and Rates share risk-on/risk-off dynamics"
+    },
+    {
+      "market1": "BTCW-26-JUN30-80K",
+      "market2": "INXW-26-DEC31-6000",
+      "categories": [
+        "Crypto",
+        "Economics"
+      ],
+      "correlation": 0.469,
+      "sentiment_alignment": 0.24,
+      "insight": "Crypto-macro linkage: Crypto and Economics share risk-on/risk-off dynamics"
+    },
+    {
+      "market1": "ETHW-26-JUN30-4K",
+      "market2": "FEDW-26-JUN-CUT",
+      "categories": [
+        "Crypto",
+        "Rates"
+      ],
+      "correlation": 0.46,
+      "sentiment_alignment": 0.3,
+      "insight": "Crypto-macro linkage: Crypto and Rates share risk-on/risk-off dynamics"
+    },
+    {
+      "market1": "ETHW-26-DEC31-5K",
+      "market2": "INXW-26-DEC31-6000",
+      "categories": [
+        "Crypto",
+        "Economics"
+      ],
+      "correlation": 0.443,
+      "sentiment_alignment": 0.1,
+      "insight": "Crypto-macro linkage: Crypto and Economics share risk-on/risk-off dynamics"
+    },
+    {
+      "market1": "ETHW-26-JUN30-4K",
+      "market2": "INXW-26-DEC31-6000",
+      "categories": [
+        "Crypto",
+        "Economics"
+      ],
+      "correlation": 0.44,
+      "sentiment_alignment": 0.14,
+      "insight": "Crypto-macro linkage: Crypto and Economics share risk-on/risk-off dynamics"
+    }
+  ],
+  "market_features": {
+    "BTCW-26-JUN30-80K": {
+      "category": "Crypto",
+      "volatility": 0.4,
+      "sentiment": 0.39,
+      "sentiment_label": "bullish",
+      "volume": 720000
+    },
+    "ETHW-26-DEC31-5K": {
+      "category": "Crypto",
+      "volatility": 0.4,
+      "sentiment": 0.25,
+      "sentiment_label": "bullish",
+      "volume": 540000
+    },
+    "BTCW-26-DEC31-120K": {
+      "category": "Crypto",
+      "volatility": 0.4,
+      "sentiment": 0.19,
+      "sentiment_label": "bullish",
+      "volume": 410000
+    },
+    "SOLW-26-JUN30-300": {
+      "category": "Crypto",
+      "volatility": 0.4,
+      "sentiment": 0.15,
+      "sentiment_label": "bullish",
+      "volume": 320000
+    },
+    "ETHW-26-JUN30-4K": {
+      "category": "Crypto",
+      "volatility": 0.4,
+      "sentiment": 0.29,
+      "sentiment_label": "bullish",
+      "volume": 480000
+    },
+    "INXW-26-DEC31-6000": {
+      "category": "Economics",
+      "volatility": 0.4,
+      "sentiment": 0.15,
+      "sentiment_label": "bullish",
+      "volume": 350000
+    },
+    "INXW-26-DEC31-7000": {
+      "category": "Economics",
+      "volatility": 0.4,
+      "sentiment": 0.0,
+      "sentiment_label": "neutral",
+      "volume": 280000
+    },
+    "GDPW-26-Q2-3PCT": {
+      "category": "Economics",
+      "volatility": 0.4,
+      "sentiment": 0.17,
+      "sentiment_label": "bullish",
+      "volume": 195000
+    },
+    "CPIW-26-MAY-3PCT": {
+      "category": "Economics",
+      "volatility": 0.6,
+      "sentiment": 0.15,
+      "sentiment_label": "bullish",
+      "volume": 230000
+    },
+    "KXNF-20260501-T200000": {
+      "category": "Financial",
+      "volatility": 0.2,
+      "sentiment": 0.02,
+      "sentiment_label": "neutral",
+      "volume": 180000
+    },
+    "KXNF-20260501-T250000": {
+      "category": "Financial",
+      "volatility": 0.4,
+      "sentiment": -0.09,
+      "sentiment_label": "neutral",
+      "volume": 120000
+    },
+    "FEDW-26-JUN-CUT": {
+      "category": "Rates",
+      "volatility": 0.4,
+      "sentiment": -0.01,
+      "sentiment_label": "neutral",
+      "volume": 510000
+    },
+    "TEMPW-26-JUL-RECORD": {
+      "category": "Climate",
+      "volatility": 0.4,
+      "sentiment": -0.3,
+      "sentiment_label": "bearish",
+      "volume": 85000
+    },
+    "CHIPT-26-DEC31": {
+      "category": "Geopolitical",
+      "volatility": 0.4,
+      "sentiment": -0.09,
+      "sentiment_label": "neutral",
+      "volume": 175000
+    },
+    "OILW-26-DEC31-100": {
+      "category": "Commodities",
+      "volatility": 0.4,
+      "sentiment": 0.07,
+      "sentiment_label": "neutral",
+      "volume": 290000
+    }
+  },
+  "summary": {
+    "total_markets": 15,
+    "total_clusters": 3,
+    "singleton_markets": 0,
+    "total_markets_clustered": 11,
+    "hidden_correlations_found": 26,
+    "avg_cluster_strength": 0.989
+  }
+}

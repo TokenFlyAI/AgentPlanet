@@ -1,0 +1,845 @@
+{
+  "generated_at": "2026-04-04T04:22:08.786Z",
+  "pairs": [
+    {
+      "market_a": "BTCW-26-JUN30-80K",
+      "market_b": "ETHW-26-DEC31-5K",
+      "pearson_r": -0.0771,
+      "spread_zscore": 0.24,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "BTCW-26-JUN30-80K",
+      "market_b": "BTCW-26-DEC31-120K",
+      "pearson_r": 0.4908,
+      "spread_zscore": -1.91,
+      "is_arbitrage_opportunity": true,
+      "estimated_edge_cents": 1.69
+    },
+    {
+      "market_a": "BTCW-26-JUN30-80K",
+      "market_b": "SOLW-26-JUN30-300",
+      "pearson_r": -0.1305,
+      "spread_zscore": 1.27,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "BTCW-26-JUN30-80K",
+      "market_b": "ETHW-26-JUN30-4K",
+      "pearson_r": 0.052,
+      "spread_zscore": 1.32,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "BTCW-26-JUN30-80K",
+      "market_b": "INXW-26-DEC31-6000",
+      "pearson_r": -0.4879,
+      "spread_zscore": 0.72,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "BTCW-26-JUN30-80K",
+      "market_b": "INXW-26-DEC31-7000",
+      "pearson_r": 0.5768,
+      "spread_zscore": -2.68,
+      "is_arbitrage_opportunity": true,
+      "estimated_edge_cents": 3.6
+    },
+    {
+      "market_a": "BTCW-26-JUN30-80K",
+      "market_b": "GDPW-26-Q2-3PCT",
+      "pearson_r": 0.0982,
+      "spread_zscore": -0.85,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "BTCW-26-JUN30-80K",
+      "market_b": "CPIW-26-MAY-3PCT",
+      "pearson_r": -0.1615,
+      "spread_zscore": -0.25,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "BTCW-26-JUN30-80K",
+      "market_b": "KXNF-20260501-T200000",
+      "pearson_r": 0.0029,
+      "spread_zscore": 0.65,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "BTCW-26-JUN30-80K",
+      "market_b": "KXNF-20260501-T250000",
+      "pearson_r": -0.1345,
+      "spread_zscore": 1.12,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "BTCW-26-JUN30-80K",
+      "market_b": "FEDW-26-JUN-CUT",
+      "pearson_r": 0.2343,
+      "spread_zscore": -1.52,
+      "is_arbitrage_opportunity": true,
+      "estimated_edge_cents": 0.07
+    },
+    {
+      "market_a": "BTCW-26-JUN30-80K",
+      "market_b": "TEMPW-26-JUL-RECORD",
+      "pearson_r": -0.4822,
+      "spread_zscore": 0.51,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "BTCW-26-JUN30-80K",
+      "market_b": "CHIPT-26-DEC31",
+      "pearson_r": 0.0972,
+      "spread_zscore": -1.32,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "BTCW-26-JUN30-80K",
+      "market_b": "OILW-26-DEC31-100",
+      "pearson_r": -0.1548,
+      "spread_zscore": 0.5,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "ETHW-26-DEC31-5K",
+      "market_b": "BTCW-26-DEC31-120K",
+      "pearson_r": -0.5441,
+      "spread_zscore": -1.51,
+      "is_arbitrage_opportunity": true,
+      "estimated_edge_cents": 0.06
+    },
+    {
+      "market_a": "ETHW-26-DEC31-5K",
+      "market_b": "SOLW-26-JUN30-300",
+      "pearson_r": -0.0102,
+      "spread_zscore": 1.42,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "ETHW-26-DEC31-5K",
+      "market_b": "ETHW-26-JUN30-4K",
+      "pearson_r": -0.1032,
+      "spread_zscore": 1.34,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "ETHW-26-DEC31-5K",
+      "market_b": "INXW-26-DEC31-6000",
+      "pearson_r": 0.4053,
+      "spread_zscore": 0.91,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "ETHW-26-DEC31-5K",
+      "market_b": "INXW-26-DEC31-7000",
+      "pearson_r": -0.4289,
+      "spread_zscore": -1.97,
+      "is_arbitrage_opportunity": true,
+      "estimated_edge_cents": 2.14
+    },
+    {
+      "market_a": "ETHW-26-DEC31-5K",
+      "market_b": "GDPW-26-Q2-3PCT",
+      "pearson_r": -0.6394,
+      "spread_zscore": -1.01,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "ETHW-26-DEC31-5K",
+      "market_b": "CPIW-26-MAY-3PCT",
+      "pearson_r": 0.1337,
+      "spread_zscore": -0.58,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "ETHW-26-DEC31-5K",
+      "market_b": "KXNF-20260501-T200000",
+      "pearson_r": 0.5948,
+      "spread_zscore": 0.75,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "ETHW-26-DEC31-5K",
+      "market_b": "KXNF-20260501-T250000",
+      "pearson_r": 0.2917,
+      "spread_zscore": 1.3,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "ETHW-26-DEC31-5K",
+      "market_b": "FEDW-26-JUN-CUT",
+      "pearson_r": -0.612,
+      "spread_zscore": -1.51,
+      "is_arbitrage_opportunity": true,
+      "estimated_edge_cents": 0.04
+    },
+    {
+      "market_a": "ETHW-26-DEC31-5K",
+      "market_b": "TEMPW-26-JUL-RECORD",
+      "pearson_r": 0.4981,
+      "spread_zscore": 0.6,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "ETHW-26-DEC31-5K",
+      "market_b": "CHIPT-26-DEC31",
+      "pearson_r": -0.3798,
+      "spread_zscore": -1.42,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "ETHW-26-DEC31-5K",
+      "market_b": "OILW-26-DEC31-100",
+      "pearson_r": -0.457,
+      "spread_zscore": 0.34,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "BTCW-26-DEC31-120K",
+      "market_b": "SOLW-26-JUN30-300",
+      "pearson_r": -0.6271,
+      "spread_zscore": 1.96,
+      "is_arbitrage_opportunity": true,
+      "estimated_edge_cents": 3.07
+    },
+    {
+      "market_a": "BTCW-26-DEC31-120K",
+      "market_b": "ETHW-26-JUN30-4K",
+      "pearson_r": -0.1684,
+      "spread_zscore": 2.27,
+      "is_arbitrage_opportunity": true,
+      "estimated_edge_cents": 4.16
+    },
+    {
+      "market_a": "BTCW-26-DEC31-120K",
+      "market_b": "INXW-26-DEC31-6000",
+      "pearson_r": -0.7561,
+      "spread_zscore": 1.43,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "BTCW-26-DEC31-120K",
+      "market_b": "INXW-26-DEC31-7000",
+      "pearson_r": 0.7961,
+      "spread_zscore": -0.1,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "BTCW-26-DEC31-120K",
+      "market_b": "GDPW-26-Q2-3PCT",
+      "pearson_r": 0.516,
+      "spread_zscore": 1.19,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "BTCW-26-DEC31-120K",
+      "market_b": "CPIW-26-MAY-3PCT",
+      "pearson_r": 0.1482,
+      "spread_zscore": 1.28,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "BTCW-26-DEC31-120K",
+      "market_b": "KXNF-20260501-T200000",
+      "pearson_r": -0.6724,
+      "spread_zscore": 1.45,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "BTCW-26-DEC31-120K",
+      "market_b": "KXNF-20260501-T250000",
+      "pearson_r": -0.7359,
+      "spread_zscore": 1.69,
+      "is_arbitrage_opportunity": true,
+      "estimated_edge_cents": 1.53
+    },
+    {
+      "market_a": "BTCW-26-DEC31-120K",
+      "market_b": "FEDW-26-JUN-CUT",
+      "pearson_r": 0.7709,
+      "spread_zscore": 0.83,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "BTCW-26-DEC31-120K",
+      "market_b": "TEMPW-26-JUL-RECORD",
+      "pearson_r": -0.8672,
+      "spread_zscore": 1.18,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "BTCW-26-DEC31-120K",
+      "market_b": "CHIPT-26-DEC31",
+      "pearson_r": 0.7114,
+      "spread_zscore": 0.43,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "BTCW-26-DEC31-120K",
+      "market_b": "OILW-26-DEC31-100",
+      "pearson_r": 0.033,
+      "spread_zscore": 1.9,
+      "is_arbitrage_opportunity": true,
+      "estimated_edge_cents": 2.07
+    },
+    {
+      "market_a": "SOLW-26-JUN30-300",
+      "market_b": "ETHW-26-JUN30-4K",
+      "pearson_r": 0.6132,
+      "spread_zscore": -0.37,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "SOLW-26-JUN30-300",
+      "market_b": "INXW-26-DEC31-6000",
+      "pearson_r": 0.2887,
+      "spread_zscore": -0.1,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "SOLW-26-JUN30-300",
+      "market_b": "INXW-26-DEC31-7000",
+      "pearson_r": -0.4603,
+      "spread_zscore": -2.48,
+      "is_arbitrage_opportunity": true,
+      "estimated_edge_cents": 5.27
+    },
+    {
+      "market_a": "SOLW-26-JUN30-300",
+      "market_b": "GDPW-26-Q2-3PCT",
+      "pearson_r": -0.1616,
+      "spread_zscore": -2.07,
+      "is_arbitrage_opportunity": true,
+      "estimated_edge_cents": 2.28
+    },
+    {
+      "market_a": "SOLW-26-JUN30-300",
+      "market_b": "CPIW-26-MAY-3PCT",
+      "pearson_r": -0.5024,
+      "spread_zscore": -1.26,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "SOLW-26-JUN30-300",
+      "market_b": "KXNF-20260501-T200000",
+      "pearson_r": 0.4392,
+      "spread_zscore": -0.72,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "SOLW-26-JUN30-300",
+      "market_b": "KXNF-20260501-T250000",
+      "pearson_r": 0.7978,
+      "spread_zscore": 0.23,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "SOLW-26-JUN30-300",
+      "market_b": "FEDW-26-JUN-CUT",
+      "pearson_r": -0.3146,
+      "spread_zscore": -2.36,
+      "is_arbitrage_opportunity": true,
+      "estimated_edge_cents": 3.84
+    },
+    {
+      "market_a": "SOLW-26-JUN30-300",
+      "market_b": "TEMPW-26-JUL-RECORD",
+      "pearson_r": 0.5515,
+      "spread_zscore": -0.33,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "SOLW-26-JUN30-300",
+      "market_b": "CHIPT-26-DEC31",
+      "pearson_r": -0.7164,
+      "spread_zscore": -1.81,
+      "is_arbitrage_opportunity": true,
+      "estimated_edge_cents": 1.99
+    },
+    {
+      "market_a": "SOLW-26-JUN30-300",
+      "market_b": "OILW-26-DEC31-100",
+      "pearson_r": 0.4155,
+      "spread_zscore": -1.21,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "ETHW-26-JUN30-4K",
+      "market_b": "INXW-26-DEC31-6000",
+      "pearson_r": -0.1688,
+      "spread_zscore": 0.06,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "ETHW-26-JUN30-4K",
+      "market_b": "INXW-26-DEC31-7000",
+      "pearson_r": -0.0264,
+      "spread_zscore": -3.01,
+      "is_arbitrage_opportunity": true,
+      "estimated_edge_cents": 6.33
+    },
+    {
+      "market_a": "ETHW-26-JUN30-4K",
+      "market_b": "GDPW-26-Q2-3PCT",
+      "pearson_r": 0.0167,
+      "spread_zscore": -2.3,
+      "is_arbitrage_opportunity": true,
+      "estimated_edge_cents": 2.61
+    },
+    {
+      "market_a": "ETHW-26-JUN30-4K",
+      "market_b": "CPIW-26-MAY-3PCT",
+      "pearson_r": -0.5062,
+      "spread_zscore": -1.23,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "ETHW-26-JUN30-4K",
+      "market_b": "KXNF-20260501-T200000",
+      "pearson_r": 0.2782,
+      "spread_zscore": -0.46,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "ETHW-26-JUN30-4K",
+      "market_b": "KXNF-20260501-T250000",
+      "pearson_r": 0.5344,
+      "spread_zscore": 0.4,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "ETHW-26-JUN30-4K",
+      "market_b": "FEDW-26-JUN-CUT",
+      "pearson_r": 0.2038,
+      "spread_zscore": -3.1,
+      "is_arbitrage_opportunity": true,
+      "estimated_edge_cents": 5.02
+    },
+    {
+      "market_a": "ETHW-26-JUN30-4K",
+      "market_b": "TEMPW-26-JUL-RECORD",
+      "pearson_r": 0.0553,
+      "spread_zscore": -0.13,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "ETHW-26-JUN30-4K",
+      "market_b": "CHIPT-26-DEC31",
+      "pearson_r": -0.3399,
+      "spread_zscore": -2.05,
+      "is_arbitrage_opportunity": true,
+      "estimated_edge_cents": 2.9
+    },
+    {
+      "market_a": "ETHW-26-JUN30-4K",
+      "market_b": "OILW-26-DEC31-100",
+      "pearson_r": 0.3766,
+      "spread_zscore": -1.02,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "INXW-26-DEC31-6000",
+      "market_b": "INXW-26-DEC31-7000",
+      "pearson_r": -0.8207,
+      "spread_zscore": -1.62,
+      "is_arbitrage_opportunity": true,
+      "estimated_edge_cents": 0.96
+    },
+    {
+      "market_a": "INXW-26-DEC31-6000",
+      "market_b": "GDPW-26-Q2-3PCT",
+      "pearson_r": -0.2164,
+      "spread_zscore": -1.34,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "INXW-26-DEC31-6000",
+      "market_b": "CPIW-26-MAY-3PCT",
+      "pearson_r": 0.3485,
+      "spread_zscore": -1.26,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "INXW-26-DEC31-6000",
+      "market_b": "KXNF-20260501-T200000",
+      "pearson_r": 0.2084,
+      "spread_zscore": -0.36,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "INXW-26-DEC31-6000",
+      "market_b": "KXNF-20260501-T250000",
+      "pearson_r": 0.3045,
+      "spread_zscore": 0.2,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "INXW-26-DEC31-6000",
+      "market_b": "FEDW-26-JUN-CUT",
+      "pearson_r": -0.8013,
+      "spread_zscore": -1.39,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "INXW-26-DEC31-6000",
+      "market_b": "TEMPW-26-JUL-RECORD",
+      "pearson_r": 0.6056,
+      "spread_zscore": -0.23,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "INXW-26-DEC31-6000",
+      "market_b": "CHIPT-26-DEC31",
+      "pearson_r": -0.2581,
+      "spread_zscore": -1.57,
+      "is_arbitrage_opportunity": true,
+      "estimated_edge_cents": 0.5
+    },
+    {
+      "market_a": "INXW-26-DEC31-6000",
+      "market_b": "OILW-26-DEC31-100",
+      "pearson_r": -0.3227,
+      "spread_zscore": -0.47,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "INXW-26-DEC31-7000",
+      "market_b": "GDPW-26-Q2-3PCT",
+      "pearson_r": 0.4147,
+      "spread_zscore": 1.45,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "INXW-26-DEC31-7000",
+      "market_b": "CPIW-26-MAY-3PCT",
+      "pearson_r": -0.2075,
+      "spread_zscore": 1.33,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "INXW-26-DEC31-7000",
+      "market_b": "KXNF-20260501-T200000",
+      "pearson_r": -0.337,
+      "spread_zscore": 1.92,
+      "is_arbitrage_opportunity": true,
+      "estimated_edge_cents": 2.41
+    },
+    {
+      "market_a": "INXW-26-DEC31-7000",
+      "market_b": "KXNF-20260501-T250000",
+      "pearson_r": -0.4121,
+      "spread_zscore": 2.18,
+      "is_arbitrage_opportunity": true,
+      "estimated_edge_cents": 4.33
+    },
+    {
+      "market_a": "INXW-26-DEC31-7000",
+      "market_b": "FEDW-26-JUN-CUT",
+      "pearson_r": 0.7741,
+      "spread_zscore": 1.24,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "INXW-26-DEC31-7000",
+      "market_b": "TEMPW-26-JUL-RECORD",
+      "pearson_r": -0.7474,
+      "spread_zscore": 1.4,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "INXW-26-DEC31-7000",
+      "market_b": "CHIPT-26-DEC31",
+      "pearson_r": 0.4626,
+      "spread_zscore": 0.43,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "INXW-26-DEC31-7000",
+      "market_b": "OILW-26-DEC31-100",
+      "pearson_r": 0.0829,
+      "spread_zscore": 2.44,
+      "is_arbitrage_opportunity": true,
+      "estimated_edge_cents": 3.89
+    },
+    {
+      "market_a": "GDPW-26-Q2-3PCT",
+      "market_b": "CPIW-26-MAY-3PCT",
+      "pearson_r": 0.1293,
+      "spread_zscore": 0.51,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "GDPW-26-Q2-3PCT",
+      "market_b": "KXNF-20260501-T200000",
+      "pearson_r": -0.7342,
+      "spread_zscore": 1.06,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "GDPW-26-Q2-3PCT",
+      "market_b": "KXNF-20260501-T250000",
+      "pearson_r": -0.4749,
+      "spread_zscore": 1.56,
+      "is_arbitrage_opportunity": true,
+      "estimated_edge_cents": 0.34
+    },
+    {
+      "market_a": "GDPW-26-Q2-3PCT",
+      "market_b": "FEDW-26-JUN-CUT",
+      "pearson_r": 0.4934,
+      "spread_zscore": -0.8,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "GDPW-26-Q2-3PCT",
+      "market_b": "TEMPW-26-JUL-RECORD",
+      "pearson_r": -0.6842,
+      "spread_zscore": 0.91,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "GDPW-26-Q2-3PCT",
+      "market_b": "CHIPT-26-DEC31",
+      "pearson_r": 0.6387,
+      "spread_zscore": -1.01,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "GDPW-26-Q2-3PCT",
+      "market_b": "OILW-26-DEC31-100",
+      "pearson_r": -0.0413,
+      "spread_zscore": 1.42,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "CPIW-26-MAY-3PCT",
+      "market_b": "KXNF-20260501-T200000",
+      "pearson_r": -0.4993,
+      "spread_zscore": 0.71,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "CPIW-26-MAY-3PCT",
+      "market_b": "KXNF-20260501-T250000",
+      "pearson_r": -0.6394,
+      "spread_zscore": 1.07,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "CPIW-26-MAY-3PCT",
+      "market_b": "FEDW-26-JUN-CUT",
+      "pearson_r": -0.2077,
+      "spread_zscore": -0.89,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "CPIW-26-MAY-3PCT",
+      "market_b": "TEMPW-26-JUL-RECORD",
+      "pearson_r": -0.2239,
+      "spread_zscore": 0.71,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "CPIW-26-MAY-3PCT",
+      "market_b": "CHIPT-26-DEC31",
+      "pearson_r": 0.6026,
+      "spread_zscore": -1.52,
+      "is_arbitrage_opportunity": true,
+      "estimated_edge_cents": 0.07
+    },
+    {
+      "market_a": "CPIW-26-MAY-3PCT",
+      "market_b": "OILW-26-DEC31-100",
+      "pearson_r": -0.4852,
+      "spread_zscore": 0.65,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "KXNF-20260501-T200000",
+      "market_b": "KXNF-20260501-T250000",
+      "pearson_r": 0.7288,
+      "spread_zscore": 1.05,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "KXNF-20260501-T200000",
+      "market_b": "FEDW-26-JUN-CUT",
+      "pearson_r": -0.481,
+      "spread_zscore": -1.52,
+      "is_arbitrage_opportunity": true,
+      "estimated_edge_cents": 0.11
+    },
+    {
+      "market_a": "KXNF-20260501-T200000",
+      "market_b": "TEMPW-26-JUL-RECORD",
+      "pearson_r": 0.6713,
+      "spread_zscore": 0.21,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "KXNF-20260501-T200000",
+      "market_b": "CHIPT-26-DEC31",
+      "pearson_r": -0.8027,
+      "spread_zscore": -1.28,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "KXNF-20260501-T200000",
+      "market_b": "OILW-26-DEC31-100",
+      "pearson_r": -0.0117,
+      "spread_zscore": -0.22,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "KXNF-20260501-T250000",
+      "market_b": "FEDW-26-JUN-CUT",
+      "pearson_r": -0.3846,
+      "spread_zscore": -1.94,
+      "is_arbitrage_opportunity": true,
+      "estimated_edge_cents": 2.51
+    },
+    {
+      "market_a": "KXNF-20260501-T250000",
+      "market_b": "TEMPW-26-JUL-RECORD",
+      "pearson_r": 0.6939,
+      "spread_zscore": -0.52,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "KXNF-20260501-T250000",
+      "market_b": "CHIPT-26-DEC31",
+      "pearson_r": -0.835,
+      "spread_zscore": -1.55,
+      "is_arbitrage_opportunity": true,
+      "estimated_edge_cents": 0.39
+    },
+    {
+      "market_a": "KXNF-20260501-T250000",
+      "market_b": "OILW-26-DEC31-100",
+      "pearson_r": 0.3246,
+      "spread_zscore": -0.98,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "FEDW-26-JUN-CUT",
+      "market_b": "TEMPW-26-JUL-RECORD",
+      "pearson_r": -0.6908,
+      "spread_zscore": 1.17,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "FEDW-26-JUN-CUT",
+      "market_b": "CHIPT-26-DEC31",
+      "pearson_r": 0.4876,
+      "spread_zscore": -0.29,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "FEDW-26-JUN-CUT",
+      "market_b": "OILW-26-DEC31-100",
+      "pearson_r": 0.3451,
+      "spread_zscore": 2.43,
+      "is_arbitrage_opportunity": true,
+      "estimated_edge_cents": 2.79
+    },
+    {
+      "market_a": "TEMPW-26-JUL-RECORD",
+      "market_b": "CHIPT-26-DEC31",
+      "pearson_r": -0.8235,
+      "spread_zscore": -1.09,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "TEMPW-26-JUL-RECORD",
+      "market_b": "OILW-26-DEC31-100",
+      "pearson_r": 0.1223,
+      "spread_zscore": -0.31,
+      "is_arbitrage_opportunity": false,
+      "estimated_edge_cents": 0
+    },
+    {
+      "market_a": "CHIPT-26-DEC31",
+      "market_b": "OILW-26-DEC31-100",
+      "pearson_r": -0.3107,
+      "spread_zscore": 1.54,
+      "is_arbitrage_opportunity": true,
+      "estimated_edge_cents": 0.22
+    }
+  ]
+}

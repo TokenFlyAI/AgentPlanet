@@ -1,381 +1,433 @@
 #!/usr/bin/env python3
 """
-LLM-Based Market Clustering Engine
+LLM-Based Market Clustering Engine (v2 — T546)
 
-Task 344: Use LLM embeddings to identify hidden correlations in Kalshi markets
+Improvements over v1 (T344):
+- News sentiment scoring per market (category-based + price-implied)
+- Volatility features from bid-ask spread
+- Fixed strength=0 bug (Olivia Q1 finding)
+- Non-overlapping clusters (no duplicate markets)
+- Multi-dimensional feature vectors: semantic + volatility + sentiment
 
-Input: agents/public/markets_filtered.json
-Output: agents/public/market_clusters.json
+Input: ../public/markets_filtered.json (Phase 1 output)
+Output: ../public/market_clusters.json (Phase 2 output for Phase 3)
+
+Run: python3 output/llm_market_clustering.py
 """
 
 import json
-import numpy as np
+import math
 from typing import List, Dict, Tuple
-from dataclasses import dataclass
-import re
+from dataclasses import dataclass, field
 from datetime import datetime
+import os
 
 
 @dataclass
 class Market:
-    """Represents a Kalshi market"""
     ticker: str
     title: str
     category: str
-    description: str = ""
-    
-    def to_text(self) -> str:
-        """Convert market to text for embedding"""
-        return f"{self.title}. Category: {self.category}. Ticker: {self.ticker}"
+    volume: int = 0
+    yes_bid: int = 0
+    yes_ask: int = 0
+    no_bid: int = 0
+    no_ask: int = 0
+    yes_ratio: int = 50
+    # Computed features
+    volatility: float = 0.0
+    sentiment: float = 0.0
+    news_sentiment_label: str = "neutral"
 
 
 @dataclass
 class Cluster:
-    """Represents a market cluster"""
     id: str
     label: str
     markets: List[str]
-    correlation_strength: float
+    strength: float
     description: str = ""
+    avg_volatility: float = 0.0
+    avg_sentiment: float = 0.0
+    cross_category: bool = False
 
 
-class SimpleEmbeddingEngine:
+# --- News Sentiment Model ---
+# Maps category to baseline sentiment + direction based on market research.
+# In production, this would call a news API (e.g., NewsAPI, GDELT) and run
+# NLP sentiment analysis. For now, we use category priors + price-implied sentiment.
+
+CATEGORY_SENTIMENT = {
+    "Crypto": {"baseline": 0.15, "volatility_factor": 1.5,
+               "keywords_bullish": ["exceed", "above"], "keywords_bearish": ["below", "under"]},
+    "Economics": {"baseline": 0.0, "volatility_factor": 0.8,
+                  "keywords_bullish": ["above", "exceed", "growth"], "keywords_bearish": ["below", "recession"]},
+    "Financial": {"baseline": -0.05, "volatility_factor": 1.0,
+                  "keywords_bullish": ["above", "exceed"], "keywords_bearish": ["below", "decline"]},
+    "Rates": {"baseline": -0.10, "volatility_factor": 0.7,
+              "keywords_bullish": ["cut", "lower"], "keywords_bearish": ["hike", "raise"]},
+    "Climate": {"baseline": -0.20, "volatility_factor": 1.2,
+                "keywords_bullish": [], "keywords_bearish": ["record", "extreme"]},
+    "Geopolitical": {"baseline": -0.15, "volatility_factor": 1.3,
+                     "keywords_bullish": ["peace", "agreement"], "keywords_bearish": ["conflict", "war", "tension"]},
+    "Commodities": {"baseline": 0.05, "volatility_factor": 1.1,
+                    "keywords_bullish": ["above", "exceed"], "keywords_bearish": ["below", "decline"]},
+}
+
+# Semantic domain keywords for embedding
+DOMAIN_KEYWORDS = {
+    'crypto': ['bitcoin', 'btc', 'ethereum', 'eth', 'crypto', 'solana', 'sol',
+               'blockchain', 'coin', 'token', 'defi'],
+    'macro_index': ['s&p', 'sp500', 'nasdaq', 'dow', 'index', 'close above'],
+    'macro_econ': ['gdp', 'cpi', 'inflation', 'unemployment', 'nfp', 'jobs',
+                   'recession', 'economy', 'growth'],
+    'rates': ['fed', 'federal reserve', 'interest rate', 'rate cut', 'rate hike',
+              'monetary policy'],
+    'commodities': ['oil', 'gold', 'commodity', 'crude', 'energy'],
+    'climate': ['temperature', 'hurricane', 'storm', 'climate', 'weather', 'record'],
+    'geopolitical': ['china', 'taiwan', 'war', 'conflict', 'geopolitical', 'chip'],
+}
+
+
+def compute_volatility(market: Market) -> float:
+    """Volatility proxy from bid-ask spread. Higher spread = more uncertainty."""
+    yes_spread = market.yes_ask - market.yes_bid
+    no_spread = market.no_ask - market.no_bid
+    avg_spread = (yes_spread + no_spread) / 2.0
+    # Normalize: typical Kalshi spread is 2-8 cents
+    return min(avg_spread / 10.0, 1.0)
+
+
+def compute_sentiment(market: Market) -> Tuple[float, str]:
     """
-    Simplified embedding engine using keyword-based vectors.
-    
-    In production, this would use OpenAI/Claude API for real embeddings.
-    For this implementation, we use semantic keyword matching.
+    News sentiment score [-1, 1] combining:
+    1. Category baseline (macro sentiment for this asset class)
+    2. Price-implied sentiment (yes_ratio far from 50 = strong directional view)
+    3. Title keyword analysis (bullish/bearish language)
     """
-    
-    # Domain-specific keywords for clustering
-    DOMAIN_KEYWORDS = {
-        'crypto': [
-            'bitcoin', 'btc', 'ethereum', 'eth', 'crypto', 'cryptocurrency',
-            'blockchain', 'digital asset', 'coin', 'token', 'altcoin',
-            'defi', 'nft', 'mining', 'wallet', 'exchange'
-        ],
-        'politics': [
-            'election', 'president', 'congress', 'senate', 'house',
-            'vote', 'ballot', 'candidate', 'party', 'democrat', 'republican',
-            'trump', 'biden', 'legislation', 'policy', 'government'
-        ],
-        'economics': [
-            'fed', 'federal reserve', 'interest rate', 'inflation', 'cpi',
-            'gdp', 'unemployment', 'jobs', 'nfp', 'recession', 'economy',
-            'monetary policy', 'fiscal', 'treasury', 'dollar'
-        ],
-        'sports': [
-            'super bowl', 'nba', 'nfl', 'mlb', 'nhl', 'championship',
-            'playoff', 'game', 'match', 'team', 'player', 'season',
-            'tournament', 'finals', 'world cup', 'olympics'
-        ],
-        'finance': [
-            'sp500', 's&p', 'nasdaq', 'dow', 'index', 'stock', 'equity',
-            'market', 'trading', 'volatility', 'bull', 'bear', 'rally',
-            'correction', 'ipo', 'earnings'
-        ],
-        'weather': [
-            'hurricane', 'storm', 'temperature', 'rain', 'snow', 'drought',
-            'climate', 'weather', 'season', 'winter', 'summer', 'tornado'
-        ],
-        'technology': [
-            'ai', 'artificial intelligence', 'tech', 'software', 'hardware',
-            'semiconductor', 'chip', 'cloud', 'data', 'cyber', 'digital'
-        ],
-        'entertainment': [
-            'movie', 'film', 'oscar', 'grammy', 'emmy', 'award',
-            'celebrity', 'music', 'album', 'streaming', 'box office'
-        ]
-    }
-    
-    def __init__(self):
-        self.dimensions = len(self.DOMAIN_KEYWORDS)
-        self.domains = list(self.DOMAIN_KEYWORDS.keys())
-    
-    def embed(self, text: str) -> np.ndarray:
-        """
-        Create embedding vector based on keyword presence.
-        
-        Returns normalized vector where each dimension represents
-        strength of association with a domain.
-        """
-        text_lower = text.lower()
-        vector = np.zeros(self.dimensions)
-        
-        for i, (domain, keywords) in enumerate(self.DOMAIN_KEYWORDS.items()):
-            score = 0
-            for keyword in keywords:
-                if keyword in text_lower:
-                    # Weight exact matches higher
-                    if f" {keyword} " in f" {text_lower} ":
-                        score += 2
-                    else:
-                        score += 1
-            vector[i] = score
-        
-        # Normalize
-        norm = np.linalg.norm(vector)
-        if norm > 0:
-            vector = vector / norm
-        
-        return vector
-    
-    def similarity(self, vec1: np.ndarray, vec2: np.ndarray) -> float:
-        """Cosine similarity between two vectors"""
-        return np.dot(vec1, vec2)
+    cat_info = CATEGORY_SENTIMENT.get(market.category, {"baseline": 0, "volatility_factor": 1.0,
+                                                         "keywords_bullish": [], "keywords_bearish": []})
+
+    # 1. Category baseline
+    score = cat_info["baseline"]
+
+    # 2. Price-implied: ratio > 70 = bullish consensus, < 30 = bearish consensus
+    if market.yes_ratio > 70:
+        score += 0.3 * ((market.yes_ratio - 70) / 30.0)
+    elif market.yes_ratio < 30:
+        score -= 0.3 * ((30 - market.yes_ratio) / 30.0)
+
+    # 3. Title keyword scan
+    title_lower = market.title.lower()
+    for kw in cat_info.get("keywords_bullish", []):
+        if kw in title_lower:
+            score += 0.1
+    for kw in cat_info.get("keywords_bearish", []):
+        if kw in title_lower:
+            score -= 0.1
+
+    # Clamp to [-1, 1]
+    score = max(-1.0, min(1.0, score))
+
+    label = "bullish" if score > 0.1 else ("bearish" if score < -0.1 else "neutral")
+    return round(score, 3), label
 
 
-class MarketClusteringEngine:
-    """Main clustering engine for Kalshi markets"""
-    
-    def __init__(self, similarity_threshold: float = 0.3):
-        self.embedder = SimpleEmbeddingEngine()
-        self.similarity_threshold = similarity_threshold
-    
-    def load_markets(self, filepath: str) -> List[Market]:
-        """Load markets from JSON file"""
-        try:
-            with open(filepath, 'r') as f:
-                data = json.load(f)
-            
-            markets = []
-            # Support both 'markets' and 'qualifying_markets' keys
-            market_items = data.get('markets', []) or data.get('qualifying_markets', [])
-            for item in market_items:
-                market = Market(
-                    ticker=item.get('ticker', ''),
-                    title=item.get('title', ''),
-                    category=item.get('category', ''),
-                    description=item.get('description', '')
-                )
-                markets.append(market)
-            
-            return markets
-        except FileNotFoundError:
-            print(f"Warning: {filepath} not found. Using sample data.")
-            return self._get_sample_markets()
-        except json.JSONDecodeError:
-            print(f"Warning: {filepath} is empty or invalid. Using sample data.")
-            return self._get_sample_markets()
-    
-    def _get_sample_markets(self) -> List[Market]:
-        """Sample markets for testing"""
-        return [
-            Market("BTCW-26-JUN-100K", "Will Bitcoin exceed $100,000 by June 2026?", "Crypto"),
-            Market("ETHW-26-DEC-5K", "Will Ethereum exceed $5,000 by December 2026?", "Crypto"),
-            Market("BTC-DOM-60", "Will Bitcoin dominance exceed 60%?", "Crypto"),
-            Market("ETH-BTC-RATIO", "Will ETH/BTC ratio exceed 0.08?", "Crypto"),
-            Market("US-PRES-2024", "Who will win the 2024 US Presidential election?", "Politics"),
-            Market("SENATE-CONTROL", "Which party will control the Senate?", "Politics"),
-            Market("FED-RATE-DEC", "Will Fed raise rates in December?", "Economics"),
-            Market("CPI-OVER-4", "Will CPI exceed 4%?", "Economics"),
-            Market("SP500-5000", "Will S&P 500 close above 5000?", "Finance"),
-            Market("NASDAQ-ALLTIME", "Will Nasdaq hit all-time high?", "Finance"),
-            Market("SUPER-BOWL-LVIII", "Who will win Super Bowl LVIII?", "Sports"),
-            Market("NBA-CHAMP-2024", "Who will win NBA Championship 2024?", "Sports"),
-            Market("HURRICANE-CAT5", "Will a Category 5 hurricane make landfall?", "Weather"),
-            Market("AI-BREAKTHROUGH", "Will there be major AI breakthrough?", "Technology"),
-            Market("OSCAR-BEST-PICTURE", "Which film wins Best Picture?", "Entertainment"),
-        ]
-    
-    def cluster_markets(self, markets: List[Market]) -> List[Cluster]:
-        """
-        Cluster markets based on embedding similarity.
-        
-        Uses agglomerative clustering approach:
-        1. Embed all markets
-        2. Calculate pairwise similarities
-        3. Group markets with similarity > threshold
-        """
-        if not markets:
-            return []
-        
-        # Embed all markets
-        embeddings = {}
-        for market in markets:
-            text = market.to_text()
-            embeddings[market.ticker] = self.embedder.embed(text)
-        
-        # Calculate pairwise similarities
-        similarities = {}
-        for i, m1 in enumerate(markets):
-            for m2 in markets[i+1:]:
-                sim = self.embedder.similarity(
-                    embeddings[m1.ticker],
-                    embeddings[m2.ticker]
-                )
-                if sim >= self.similarity_threshold:
-                    similarities[(m1.ticker, m2.ticker)] = sim
-        
-        # Build clusters using connected components
-        clusters = self._build_clusters(markets, similarities)
-        
-        return clusters
-    
-    def _build_clusters(self, markets: List[Market], similarities: Dict) -> List[Cluster]:
-        """Build clusters from similarity graph"""
-        # Group by domain first
-        domain_groups = {}
-        
-        for market in markets:
-            text = market.to_text()
-            embedding = self.embedder.embed(text)
-            
-            # Find dominant domain
-            max_idx = np.argmax(embedding)
-            domain = self.embedder.domains[max_idx]
-            
-            if domain not in domain_groups:
-                domain_groups[domain] = []
-            domain_groups[domain].append((market, embedding))
-        
-        # Create clusters
-        clusters = []
-        for domain, items in domain_groups.items():
-            if len(items) < 2:
+def embed_market(market: Market) -> List[float]:
+    """
+    Multi-dimensional feature vector combining:
+    - Semantic domain scores (7 dims)
+    - Volatility (1 dim)
+    - Sentiment (1 dim)
+    - Volume weight (1 dim)
+    Total: 10 dimensions
+    """
+    text = f"{market.title} {market.category} {market.ticker}".lower()
+
+    # Semantic dimensions
+    vec = []
+    for domain, keywords in DOMAIN_KEYWORDS.items():
+        score = 0
+        for kw in keywords:
+            if kw in text:
+                score += 2 if f" {kw} " in f" {text} " else 1
+        vec.append(score)
+
+    # Normalize semantic part
+    sem_norm = math.sqrt(sum(v * v for v in vec)) or 1.0
+    vec = [v / sem_norm for v in vec]
+
+    # Add volatility, sentiment, volume_weight (normalized)
+    vec.append(market.volatility)
+    vec.append((market.sentiment + 1.0) / 2.0)  # shift to [0, 1]
+    vec.append(min(market.volume / 800000.0, 1.0))
+
+    return vec
+
+
+def cosine_similarity(a: List[float], b: List[float]) -> float:
+    dot = sum(x * y for x, y in zip(a, b))
+    na = math.sqrt(sum(x * x for x in a)) or 1e-9
+    nb = math.sqrt(sum(x * x for x in b)) or 1e-9
+    return dot / (na * nb)
+
+
+def load_markets(filepath: str) -> List[Market]:
+    with open(filepath, 'r') as f:
+        data = json.load(f)
+
+    items = data.get('qualifying_markets', []) or data.get('markets', [])
+    markets = []
+    for item in items:
+        m = Market(
+            ticker=item.get('ticker', ''),
+            title=item.get('title', ''),
+            category=item.get('category', ''),
+            volume=item.get('volume', 0),
+            yes_bid=item.get('yes_bid', 0),
+            yes_ask=item.get('yes_ask', 0),
+            no_bid=item.get('no_bid', 0),
+            no_ask=item.get('no_ask', 0),
+            yes_ratio=item.get('yes_ratio', 50),
+        )
+        m.volatility = compute_volatility(m)
+        m.sentiment, m.news_sentiment_label = compute_sentiment(m)
+        markets.append(m)
+    return markets
+
+
+def cluster_markets(markets: List[Market], threshold: float = 0.65) -> List[Cluster]:
+    """
+    Cluster using greedy agglomerative approach on multi-dimensional embeddings.
+    Each market belongs to exactly one cluster (no duplicates).
+    """
+    embeddings = {m.ticker: embed_market(m) for m in markets}
+    market_map = {m.ticker: m for m in markets}
+
+    # Compute pairwise similarities
+    tickers = [m.ticker for m in markets]
+    assigned = set()
+    clusters = []
+
+    # Sort markets by volume (high-volume markets seed clusters first)
+    tickers_sorted = sorted(tickers, key=lambda t: market_map[t].volume, reverse=True)
+
+    for seed in tickers_sorted:
+        if seed in assigned:
+            continue
+
+        # Start new cluster with this seed
+        group = [seed]
+        assigned.add(seed)
+
+        for candidate in tickers_sorted:
+            if candidate in assigned:
                 continue
-            
-            market_tickers = [item[0].ticker for item in items]
-            
-            # Calculate average correlation strength
-            avg_strength = 0
-            count = 0
-            for i, (_, emb1) in enumerate(items):
-                for _, emb2 in items[i+1:]:
-                    sim = self.embedder.similarity(emb1, emb2)
-                    avg_strength += sim
-                    count += 1
-            
-            if count > 0:
-                avg_strength /= count
-            
-            cluster = Cluster(
-                id=f"{domain}_cluster",
-                label=f"{domain.capitalize()} Markets",
-                markets=market_tickers,
-                correlation_strength=round(avg_strength, 2),
-                description=f"Markets related to {domain}"
-            )
-            clusters.append(cluster)
-        
-        # Sort by correlation strength
-        clusters.sort(key=lambda c: c.correlation_strength, reverse=True)
-        
-        return clusters
-    
-    def find_hidden_correlations(self, markets: List[Market]) -> List[Dict]:
-        """
-        Find non-obvious correlations between markets.
-        
-        Example: Crypto markets might correlate with tech stocks
-        """
-        embeddings = {m.ticker: self.embedder.embed(m.to_text()) for m in markets}
-        
-        hidden = []
-        for i, m1 in enumerate(markets):
-            for m2 in markets[i+1:]:
-                # Skip if same obvious category
-                if m1.category == m2.category:
-                    continue
-                
-                sim = self.embedder.similarity(
-                    embeddings[m1.ticker],
-                    embeddings[m2.ticker]
-                )
-                
-                # High similarity across different categories = hidden correlation
-                if sim >= 0.4:
-                    hidden.append({
-                        "market1": m1.ticker,
-                        "market2": m2.ticker,
-                        "categories": [m1.category, m2.category],
-                        "correlation": round(sim, 2),
-                        "insight": f"{m1.category} market correlates with {m2.category} market"
-                    })
-        
-        return sorted(hidden, key=lambda x: x['correlation'], reverse=True)
-    
-    def generate_output(self, clusters: List[Cluster], hidden: List[Dict]) -> Dict:
-        """Generate final output JSON"""
-        return {
-            "generated_at": datetime.now().isoformat(),
-            "method": "LLM embedding similarity (keyword-based)",
-            "similarity_threshold": self.similarity_threshold,
-            "clusters": [
-                {
-                    "id": c.id,
-                    "label": c.label,
-                    "markets": c.markets,
-                    "correlation_strength": c.correlation_strength,
-                    "description": c.description
-                }
-                for c in clusters
-            ],
-            "hidden_correlations": hidden[:10],  # Top 10
-            "summary": {
-                "total_clusters": len(clusters),
-                "total_markets_clustered": sum(len(c.markets) for c in clusters),
-                "hidden_correlations_found": len(hidden)
+            # Check similarity to all current group members (complete linkage)
+            min_sim = min(cosine_similarity(embeddings[candidate], embeddings[g])
+                         for g in group)
+            if min_sim >= threshold:
+                group.append(candidate)
+                assigned.add(candidate)
+
+        if len(group) >= 2:
+            # Compute cluster strength = average pairwise similarity
+            pair_sims = []
+            for i in range(len(group)):
+                for j in range(i + 1, len(group)):
+                    pair_sims.append(cosine_similarity(embeddings[group[i]], embeddings[group[j]]))
+            strength = sum(pair_sims) / len(pair_sims) if pair_sims else 0.0
+
+            # Derive label from dominant category
+            cats = [market_map[t].category for t in group]
+            dominant_cat = max(set(cats), key=cats.count)
+            cross_cat = len(set(cats)) > 1
+
+            avg_vol = sum(market_map[t].volatility for t in group) / len(group)
+            avg_sent = sum(market_map[t].sentiment for t in group) / len(group)
+
+            label = f"{dominant_cat} Markets"
+            if cross_cat:
+                other_cats = sorted(set(cats) - {dominant_cat})
+                label = f"{dominant_cat} + {'/'.join(other_cats)}"
+
+            cluster_id = f"cluster_{len(clusters) + 1}"
+            clusters.append(Cluster(
+                id=cluster_id,
+                label=label,
+                markets=group,
+                strength=round(strength, 3),
+                description=_describe_cluster(group, market_map, strength, cross_cat),
+                avg_volatility=round(avg_vol, 3),
+                avg_sentiment=round(avg_sent, 3),
+                cross_category=cross_cat,
+            ))
+
+    # Markets not in any cluster (singletons) — add as single-market clusters
+    for ticker in tickers_sorted:
+        if ticker not in assigned:
+            m = market_map[ticker]
+            clusters.append(Cluster(
+                id=f"singleton_{ticker}",
+                label=f"{m.category}: {ticker}",
+                markets=[ticker],
+                strength=0.0,
+                description=f"Unclustered market: {m.title}",
+                avg_volatility=round(m.volatility, 3),
+                avg_sentiment=round(m.sentiment, 3),
+                cross_category=False,
+            ))
+
+    clusters.sort(key=lambda c: c.strength, reverse=True)
+    return clusters
+
+
+def _describe_cluster(tickers, market_map, strength, cross_cat):
+    n = len(tickers)
+    cats = list(set(market_map[t].category for t in tickers))
+    desc = f"{n} markets"
+    if cross_cat:
+        desc += f" spanning {', '.join(cats)}"
+    desc += f" | similarity={strength:.2f}"
+    sents = [market_map[t].news_sentiment_label for t in tickers]
+    dominant_sent = max(set(sents), key=sents.count)
+    desc += f" | dominant sentiment: {dominant_sent}"
+    return desc
+
+
+def find_hidden_correlations(markets: List[Market], threshold: float = 0.4) -> List[Dict]:
+    """Cross-category correlations (different category but high embedding similarity)."""
+    embeddings = {m.ticker: embed_market(m) for m in markets}
+    hidden = []
+    for i, m1 in enumerate(markets):
+        for m2 in markets[i + 1:]:
+            if m1.category == m2.category:
+                continue
+            sim = cosine_similarity(embeddings[m1.ticker], embeddings[m2.ticker])
+            if sim >= threshold:
+                hidden.append({
+                    "market1": m1.ticker,
+                    "market2": m2.ticker,
+                    "categories": [m1.category, m2.category],
+                    "correlation": round(sim, 3),
+                    "sentiment_alignment": round(abs(m1.sentiment - m2.sentiment), 3),
+                    "insight": _cross_category_insight(m1, m2, sim),
+                })
+    return sorted(hidden, key=lambda x: x['correlation'], reverse=True)
+
+
+def _cross_category_insight(m1, m2, sim):
+    if {m1.category, m2.category} & {"Crypto", "Economics"}:
+        return f"Crypto-macro linkage: {m1.category} and {m2.category} share risk-on/risk-off dynamics"
+    if {m1.category, m2.category} & {"Rates", "Economics"}:
+        return f"Rate-sensitive: Fed policy affects both {m1.category} and {m2.category}"
+    if {m1.category, m2.category} & {"Commodities", "Climate"}:
+        return f"Supply chain: {m1.category} and {m2.category} linked via physical supply"
+    return f"{m1.category} correlates with {m2.category} (similarity={sim:.2f})"
+
+
+def generate_output(markets, clusters, hidden):
+    return {
+        "generated_at": datetime.now().isoformat(),
+        "task": "T546 (improved from T344)",
+        "method": "Multi-dimensional embedding: semantic + volatility + news sentiment",
+        "features": ["keyword_semantic", "bid_ask_volatility", "price_implied_sentiment",
+                      "category_baseline_sentiment", "volume_weight"],
+        "clusters": [
+            {
+                "id": c.id,
+                "label": c.label,
+                "markets": c.markets,
+                "strength": c.strength,
+                "avg_volatility": c.avg_volatility,
+                "avg_sentiment": c.avg_sentiment,
+                "cross_category": c.cross_category,
+                "description": c.description,
             }
-        }
+            for c in clusters
+        ],
+        "hidden_correlations": hidden[:10],
+        "market_features": {
+            m.ticker: {
+                "category": m.category,
+                "volatility": m.volatility,
+                "sentiment": m.sentiment,
+                "sentiment_label": m.news_sentiment_label,
+                "volume": m.volume,
+            }
+            for m in markets
+        },
+        "summary": {
+            "total_markets": len(markets),
+            "total_clusters": len([c for c in clusters if len(c.markets) >= 2]),
+            "singleton_markets": len([c for c in clusters if len(c.markets) == 1]),
+            "total_markets_clustered": sum(len(c.markets) for c in clusters if len(c.markets) >= 2),
+            "hidden_correlations_found": len(hidden),
+            "avg_cluster_strength": round(
+                sum(c.strength for c in clusters if len(c.markets) >= 2) /
+                max(len([c for c in clusters if len(c.markets) >= 2]), 1), 3),
+        },
+    }
 
 
 def main():
-    """Main execution"""
-    print("LLM-Based Market Clustering Engine — Task 344")
+    print("Phase 2: LLM Market Clustering Engine v2 (T546)")
+    print("Features: semantic + volatility + news sentiment")
     print("=" * 60)
-    
-    # Initialize engine
-    engine = MarketClusteringEngine(similarity_threshold=0.3)
-    
-    # Load markets
-    input_path = "../public/markets_filtered.json"
-    markets = engine.load_markets(input_path)
-    print(f"\nLoaded {len(markets)} markets")
-    
-    # Perform clustering
-    print("\nClustering markets...")
-    clusters = engine.cluster_markets(markets)
-    print(f"Found {len(clusters)} clusters")
-    
-    # Find hidden correlations
-    print("\nFinding hidden correlations...")
-    hidden = engine.find_hidden_correlations(markets)
-    print(f"Found {len(hidden)} hidden correlations")
-    
-    # Generate output
-    output = engine.generate_output(clusters, hidden)
-    
-    # Display results
+
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    input_path = os.path.join(script_dir, "..", "..", "public", "markets_filtered.json")
+    output_path = os.path.join(script_dir, "..", "..", "public", "market_clusters.json")
+
+    markets = load_markets(input_path)
+    print(f"\nLoaded {len(markets)} markets from Phase 1")
+
+    # Show per-market features
+    print(f"\n{'Ticker':30s} {'Cat':14s} {'Vol':>8s} {'Volatility':>10s} {'Sentiment':>10s} {'Label':>10s}")
+    print("-" * 86)
+    for m in markets:
+        print(f"{m.ticker:30s} {m.category:14s} {m.volume:>8d} {m.volatility:>10.3f} {m.sentiment:>10.3f} {m.news_sentiment_label:>10s}")
+
+    # Cluster
+    print("\nClustering markets (threshold=0.65)...")
+    clusters = cluster_markets(markets, threshold=0.65)
+    multi_clusters = [c for c in clusters if len(c.markets) >= 2]
+    singletons = [c for c in clusters if len(c.markets) == 1]
+    print(f"Found {len(multi_clusters)} clusters + {len(singletons)} singletons")
+
+    # Display clusters
     print("\n" + "=" * 60)
     print("CLUSTERS")
     print("=" * 60)
-    
-    for cluster in clusters:
-        print(f"\n{cluster.label} (strength: {cluster.correlation_strength})")
-        for ticker in cluster.markets:
-            print(f"  - {ticker}")
-    
+    for c in multi_clusters:
+        print(f"\n[{c.id}] {c.label} (strength={c.strength}, vol={c.avg_volatility}, sent={c.avg_sentiment})")
+        for t in c.markets:
+            print(f"  - {t}")
+
+    # Hidden correlations
+    print("\nFinding cross-category correlations...")
+    hidden = find_hidden_correlations(markets, threshold=0.4)
+    print(f"Found {len(hidden)} hidden correlations")
+
     if hidden:
         print("\n" + "=" * 60)
         print("HIDDEN CORRELATIONS (Top 5)")
         print("=" * 60)
-        
-        for corr in hidden[:5]:
-            print(f"\n{corr['market1']} <-> {corr['market2']}")
-            print(f"  Correlation: {corr['correlation']}")
-            print(f"  Insight: {corr['insight']}")
-    
+        for h in hidden[:5]:
+            print(f"\n  {h['market1']} <-> {h['market2']} (r={h['correlation']})")
+            print(f"  {h['insight']}")
+
     # Save output
-    output_path = "../public/market_clusters.json"
+    output = generate_output(markets, clusters, hidden)
     with open(output_path, 'w') as f:
         json.dump(output, f, indent=2)
-    
-    print(f"\n✅ Output saved to: {output_path}")
-    print(f"   Total clusters: {output['summary']['total_clusters']}")
-    print(f"   Markets clustered: {output['summary']['total_markets_clustered']}")
-    print(f"   Hidden correlations: {output['summary']['hidden_correlations_found']}")
-    
+
+    print(f"\nOutput saved: {output_path}")
+    print(f"  Clusters: {output['summary']['total_clusters']}")
+    print(f"  Markets clustered: {output['summary']['total_markets_clustered']}")
+    print(f"  Avg strength: {output['summary']['avg_cluster_strength']}")
+    print(f"  Hidden correlations: {output['summary']['hidden_correlations_found']}")
+
     return output
 
 

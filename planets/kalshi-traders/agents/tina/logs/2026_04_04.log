@@ -1,0 +1,5 @@
+
+========== CYCLE START — 2026_04_04_00_02_02 [session:FRESH] [executor:claude] ==========
+
+[TOOL] Bash $ source "$(git rev-parse --show-toplevel)/scripts/agent_tools.sh" 2>/dev/null; cat status.md 2>/dev/null | tail -40
+[TOOL] Bash $ ls chat_inbox/*.md 2>/dev/null
