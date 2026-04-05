@@ -12,6 +12,7 @@ UNREAD_FILES=()
 for msg in "$INBOX_DIR"/*.md; do
     [ -f "$msg" ] || continue
     [[ "$(basename "$msg")" == read_* ]] && continue
+    [[ "$(basename "$msg")" == processed_* ]] && continue
     UNREAD_FILES+=("$msg")
 done
 shopt -u nullglob

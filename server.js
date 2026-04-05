@@ -1580,6 +1580,27 @@ async function handleRequest(req, res) {
     if (smartRunConfig.enabled === false) {
       return json(res, { ok: false, message: "Smart run is disabled. Set enabled:true in smart_run_config.json to allow." }, 403);
     }
+    // Cost cap check — refuse to start agents if daily spend exceeds cap
+    const dailyCap = parseFloat(smartRunConfig.daily_cost_cap_usd || 0);
+    if (dailyCap > 0) {
+      try {
+        const metricsPath = path.join(DIR, "backend", "metrics_queue.jsonl");
+        if (fs.existsSync(metricsPath)) {
+          const todayStr = new Date().toISOString().slice(0, 10);
+          const lines = fs.readFileSync(metricsPath, "utf8").split("\n").filter(Boolean);
+          let todayCost = 0;
+          for (const line of lines) {
+            try {
+              const m = JSON.parse(line);
+              if (m.date === todayStr && m.cost) todayCost += m.cost;
+            } catch (_) {}
+          }
+          if (todayCost >= dailyCap) {
+            return json(res, { ok: false, message: `Daily cost cap reached: $${todayCost.toFixed(2)} >= $${dailyCap}. Agents will not be started.` }, 429);
+          }
+        }
+      } catch (_) {}
+    }
     const body = await parseBody(req);
     const parsedMax = parseInt(body.max, 10);
     // If request provides a valid max, use it. Otherwise fall back to 20 (the hardcoded default),

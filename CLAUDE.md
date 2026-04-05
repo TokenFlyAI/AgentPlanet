@@ -134,6 +134,14 @@ bash smart_run.sh --dry-run --selection-mode random
 ```
 Also configurable in the Fleet tab UI → Selection Mode radio → Apply Settings.
 
+**Set daily cost caps** (prevents runaway spending):
+```bash
+curl -X POST http://localhost:3199/api/smart-run/config \
+  -d '{"daily_cost_cap_usd": 20, "per_agent_cost_cap_usd": 5}'
+```
+- `daily_cost_cap_usd`: Total daily spend limit across all agents. Smart-start returns 429 when exceeded.
+- `per_agent_cost_cap_usd`: Per-agent daily limit. `run_agent.sh` checks before each cycle and stops if exceeded.
+
 ## Session Resume Architecture
 
 `run_agent.sh` manages session lifecycle automatically:
